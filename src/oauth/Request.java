@@ -28,7 +28,7 @@ public class Request
 	
   private static final String CONTENT_LENGTH = "Content-Length";
   private static final String CONTENT_TYPE = "Content-Type";  
-  public static final String DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded";
+  private static final String DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded";
 
   private String url;
   private Verb verb;

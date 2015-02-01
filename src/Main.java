@@ -1,57 +1,48 @@
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
-import oauth.OAuthAPISpotify;
 import oauth.Token;
+import server.HTTPServer;
+import spotify.OAuthAPISpotify;
+import spotify.Spotify;
 import utils.XMLFile;
 
 public class Main {
 	
+	private static void printUsage() {
+		System.out.println("usage: [configFile=config.xml]");
+	}
+	
 	public static void main(String[] args) {
 		
-		XMLFile config = new XMLFile("config.xml");
-		if(config.read() == false) {
-			return;
-		}		
+		String configFile = "config.xml";
 		
-		String clientID = config.getString("config.clientID", "");
-		String clientSecret = config.getString("config.clientSecret", "");
-		String redirectURI = config.getString("config.redirectURI", "");
-		if(clientID.length() == 0 || clientSecret.length() == 0 || redirectURI.length() == 0) {
-			System.out.println("PLEASE STORE CLIENT ID, CLIENT SECRET AND REDIRECT URI IN CONFIG FILE!");
+		if(args.length == 1)
+			configFile = args[0];
+		else if(args.length > 1) {
+			printUsage();
 			return;
 		}
 		
-		String scope = "user-read-private";
+		XMLFile config = new XMLFile(configFile);
+		if(config.read() == false) {
+			return;
+		}		
+						
+		HTTPServer server = new HTTPServer();
+		if(server.isOnline() == false)
+			return;
 		
-		OAuthAPISpotify oauthSpotify = new OAuthAPISpotify(clientID, clientSecret, redirectURI, scope);
-		oauthSpotify.getAuthorizationUrl();
-				
-		String authorizationUrl = oauthSpotify.getAuthorizationUrl();	
-		System.out.println("visit");
-    System.out.println(authorizationUrl);
-    System.out.println("then paste authorization code below");
-    
-		Scanner scanner = new Scanner(System.in);
-		String code = scanner.nextLine();	
-		scanner.close();
-		
-		Token authorizationToken = oauthSpotify.getAuthorizationToken(code);
-    if(authorizationToken.failed())
-    {
-    	System.err.println("ERROR: "+authorizationToken.getError());
-    	return;
-    }
-    else
-    	System.out.println("Token will expire @ "+authorizationToken.getExpirationTime());
-    
-    Token refreshToken = oauthSpotify.getRefreshToken(authorizationToken);
-    if(refreshToken.failed())
-    {
-    	System.err.println("ERROR: "+refreshToken.getError());
-    	return;
-    }
-    else
-    	System.out.println("Token will expire @ "+refreshToken.getExpirationTime());
+		Spotify spotify = new Spotify(config);
+		server.addListener(spotify);
+		String authorizationURL = spotify.getAuthorizationRequestURL();
+		try {
+			Desktop.getDesktop().browse(new URI(authorizationURL));
+		} catch(IOException | URISyntaxException e) {
+			System.out.println("please visit:\n"+authorizationURL);
+		}			
 	}
-
 }

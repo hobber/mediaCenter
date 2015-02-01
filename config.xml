@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<config>
+  <spotify>
+    <clientID></clientID>
+    <clientSecret></clientSecret>
+    <redirectURI></redirectURI>
+  </spotify>
+</config>
+
