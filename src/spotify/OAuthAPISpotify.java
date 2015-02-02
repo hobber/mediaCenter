@@ -4,7 +4,6 @@ import oauth.OAuthRequest;
 import oauth.Request;
 import oauth.Response;
 import oauth.Token;
-import oauth.Request.Verb;
 
 public class OAuthAPISpotify {
 

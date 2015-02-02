@@ -1,17 +1,15 @@
 package spotify;
 
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Scanner;
+import http.HTTPListener;
+import http.HTTPUtils;
 
-import org.json.JSONObject;
+import java.util.Map;
 
 import oauth.Token;
-import server.HTTPListener;
-import server.HTTPServer;
+
+import org.apache.http.client.methods.HttpGet;
+
+import spotify.datastructure.User;
 import utils.XMLFile;
 
 public class Spotify extends HTTPListener {
@@ -25,6 +23,7 @@ public class Spotify extends HTTPListener {
 	private String redirectURI;
 	private String code;
 	private OAuthAPISpotify oauthSpotify;
+	private Token authorizationToken;
 	
 	public Spotify(XMLFile config) {
 	  super(URL_PATH);	  
@@ -51,7 +50,7 @@ public class Spotify extends HTTPListener {
 	 * requests refresh and access tokens, is called when code was received
 	 */
 	private void sendAccessRequest() {	
-		Token authorizationToken = oauthSpotify.getAuthorizationToken(code);
+		authorizationToken = oauthSpotify.getAuthorizationToken(code);
     if(authorizationToken.failed())
     {
     	System.err.println("ERROR: "+authorizationToken.getError());
@@ -59,7 +58,7 @@ public class Spotify extends HTTPListener {
     }
     else
     	System.out.println("Token will expire @ "+authorizationToken.getExpirationTime());
-    
+    /*
     Token refreshToken = oauthSpotify.getRefreshToken(authorizationToken);
     if(refreshToken.failed())
     {
@@ -68,6 +67,18 @@ public class Spotify extends HTTPListener {
     }
     else
     	System.out.println("Token will expire @ "+refreshToken.getExpirationTime());
+    */
+	}
+	
+	public boolean isReady() {
+		return authorizationToken != null;
+	}
+	
+	public User getCurrentUser() {
+		String url = "https://api.spotify.com/v1/me";
+		HttpGet request = new HttpGet(url);		
+		request.setHeader("Authorization", "Bearer "+authorizationToken.getAccessToken());
+		return new User(HTTPUtils.sendHTTPGetRequest(request));
 	}
 	
 	@Override

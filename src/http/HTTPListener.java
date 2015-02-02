@@ -1,4 +1,4 @@
-package server;
+package http;
 
 import java.util.Map;
 

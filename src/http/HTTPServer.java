@@ -1,23 +1,10 @@
-package server;
+package http;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -87,7 +74,6 @@ public class HTTPServer {
 		}
 	}
 
-	private static String USER_AGENT = "MediaCenter/1.0";
 	private static final String CONTEXT = "/mediaCenter/";
 	private com.sun.net.httpserver.HttpServer server;
 	private SimpleHTTPHandler handler;
@@ -110,58 +96,11 @@ public class HTTPServer {
 		return online;
 	}
 	
-	public void addListener(HTTPListener listener) {
-		handler.addListener(listener);
+	public void stop() {
+		server.stop(0);
 	}
 	
-	public static JSONObject sendHTTPGetRequest(String url, boolean readResponse) {	
-		try {
-			URL resourceUrl = new URL(url);			
-			HttpURLConnection conn = (HttpURLConnection)resourceUrl.openConnection();
-			conn.setInstanceFollowRedirects(false);
-			conn.setRequestProperty("User-Agent", "Mozilla/5.0...");
-			switch (conn.getResponseCode())
-	     {
-	        case HttpURLConnection.HTTP_MOVED_PERM:
-	        case HttpURLConnection.HTTP_MOVED_TEMP:
-	        	System.out.println("LOCATION: "+ conn.getHeaderField("Location"));
-	          break;
-	        default:
-	        	System.out.println("OK");
-	     }
-		
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		HttpGet request = new HttpGet(url);		
-		request.setHeader("User-Agent", USER_AGENT);
-		request.setHeader("Accept", "application/json");
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpResponse response;
-		try {
-			response = client.execute(request);			
-		} catch (IOException e) {
-			System.err.println("ERROR: Could not send the request!");
-			return null;
-		} 
-
-		int responseCode = response.getStatusLine().getStatusCode(); 
-		if(responseCode != 200)
-		{
-			System.err.println("Error: sending request failed (" + responseCode +
-					" - " + response.getStatusLine().getReasonPhrase() + ")!");
-			return null;
-		}		
-		
-		if(readResponse == false)
-			return null;
-		
-		try {
-			return new JSONObject(EntityUtils.toString(response.getEntity()));
-		} catch(IOException | JSONException e) {
-			System.err.println("ERROR: Could not read response!");
-			return null;
-		}
+	public void addListener(HTTPListener listener) {
+		handler.addListener(listener);
 	}
 }

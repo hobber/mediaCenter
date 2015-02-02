@@ -1,13 +1,12 @@
+import http.HTTPServer;
+
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Scanner;
 
-import oauth.Token;
-import server.HTTPServer;
-import spotify.OAuthAPISpotify;
 import spotify.Spotify;
+import spotify.datastructure.User;
 import utils.XMLFile;
 
 public class Main {
@@ -43,6 +42,19 @@ public class Main {
 			Desktop.getDesktop().browse(new URI(authorizationURL));
 		} catch(IOException | URISyntaxException e) {
 			System.out.println("please visit:\n"+authorizationURL);
-		}			
+		}	
+		
+		while(spotify.isReady() == false) {
+			try {
+				Thread.sleep(500);
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		User user = spotify.getCurrentUser();
+		System.out.println(user);
+		
+		server.stop();
 	}
 }
