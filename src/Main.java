@@ -6,7 +6,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import spotify.Spotify;
-import spotify.datastructure.User;
+import spotify.datastructure.SpotifyUser;
+import spotify.datastructure.SpotifyUserPlayListList;
 import utils.XMLFile;
 
 public class Main {
@@ -52,8 +53,9 @@ public class Main {
 			}
 		}
 		
-		User user = spotify.getCurrentUser();
-		System.out.println(user);
+		//SpotifyUser user = spotify.getCurrentUser();
+		//System.out.println(user);
+		SpotifyUserPlayListList playlist = spotify.getPlayList();
 		
 		server.stop();
 	}

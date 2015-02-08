@@ -9,7 +9,8 @@ import oauth.Token;
 
 import org.apache.http.client.methods.HttpGet;
 
-import spotify.datastructure.User;
+import spotify.datastructure.SpotifyUserPlayListList;
+import spotify.datastructure.SpotifyUser;
 import utils.XMLFile;
 
 public class Spotify extends HTTPListener {
@@ -24,6 +25,8 @@ public class Spotify extends HTTPListener {
 	private String code;
 	private OAuthAPISpotify oauthSpotify;
 	private Token authorizationToken;
+	
+	private SpotifyUser currentUser = null;
 	
 	public Spotify(XMLFile config) {
 	  super(URL_PATH);	  
@@ -74,11 +77,18 @@ public class Spotify extends HTTPListener {
 		return authorizationToken != null;
 	}
 	
-	public User getCurrentUser() {
-		String url = "https://api.spotify.com/v1/me";
-		HttpGet request = new HttpGet(url);		
-		request.setHeader("Authorization", "Bearer "+authorizationToken.getAccessToken());
-		return new User(HTTPUtils.sendHTTPGetRequest(request));
+	public SpotifyUser getCurrentUser() {
+		if(currentUser == null)
+			currentUser = new SpotifyUser(this); 
+		return currentUser;
+	}
+	
+	public SpotifyUserPlayListList getPlayList() {			
+		return new SpotifyUserPlayListList(this);
+	}
+	
+	public void signAPIRequest(SpotifyAPIRequest request) {
+		request.addHeader("Authorization", "Bearer "+authorizationToken.getAccessToken());
 	}
 	
 	@Override
