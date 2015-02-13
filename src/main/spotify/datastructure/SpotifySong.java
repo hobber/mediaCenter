@@ -15,8 +15,7 @@ public class SpotifySong extends SpotifyElement {
 	private String albumId;
 	private int durationMs;
 	private int trackNumber;
-	private int discNumber;
-	private boolean isPlayable;	
+	private int discNumber;	
 	
 	public SpotifySong(JSONObject song) {
 		JSONObject track;
@@ -36,8 +35,7 @@ public class SpotifySong extends SpotifyElement {
 		albumId = getResponseSubString(track, "album.id");
 		durationMs = getResponseInt(track, "duration_ms", 0);
 		trackNumber = getResponseInt(track, "track_number", 0);
-		discNumber = getResponseInt(track, "disc_number", 0);		
-		isPlayable = getResponseBoolean(track, "is_playable", false);
+		discNumber = getResponseInt(track, "disc_number", 0);			
 		
 		try {
 			JSONArray artists = track.getJSONArray("artists");
@@ -51,6 +49,9 @@ public class SpotifySong extends SpotifyElement {
 		isValid = true;
 	}
 	
+	public String getAlbumId() {
+		return albumId;
+	}
 	
 	@Override
 	public String toString() {

@@ -1,16 +1,13 @@
 package main.spotify;
 
-import java.util.Calendar;
 import java.util.Map;
 
 import main.http.HTTPListener;
-import main.http.HTTPUtils;
 import main.oauth.Token;
+import main.spotify.datastructure.SpotifyAlbum;
 import main.spotify.datastructure.SpotifyUser;
 import main.spotify.datastructure.SpotifyUserPlayListList;
 import main.utils.XMLFile;
-
-import org.apache.http.client.methods.HttpGet;
 
 public class Spotify extends HTTPListener {
 
@@ -38,7 +35,7 @@ public class Spotify extends HTTPListener {
 		redirectURI = config.getString("config.spotify.redirectURI", "");		
 				
 		if(clientID.length() == 0 || clientSecret.length() == 0 || redirectURI.length() == 0) {
-			System.out.println("PLEASE STORE CLIENT ID, CLIENT SECRET AND REDIRECT URI IN CONFIG FILE!");
+			System.out.println("PLEASE STORE CLIENT ID, CLIENT SECRET AND REDIRECT URI IN CONFIG FILE!");			
 			return false;
 		}
 		
@@ -47,8 +44,9 @@ public class Spotify extends HTTPListener {
 		String expirationTime = config.getString("config.spotify.authorization.expirationTime", "");
 		
 		if(accessToken.length() != 0 && refreshToken.length() != 0 && expirationTime.length() != 0) {
-			this.authorizationToken = new Token(accessToken, refreshToken, expirationTime);			
+			authorizationToken = new Token(accessToken, refreshToken, expirationTime);						
 		}
+		
 		return true;
 	}
 	
@@ -56,9 +54,11 @@ public class Spotify extends HTTPListener {
 		config.add("config.spotify.clientID", clientID);
 		config.add("config.spotify.clientSecret", clientSecret);
 		config.add("config.spotify.redirectURI", redirectURI);
-		config.add("config.spotify.authorization.accessToken", authorizationToken.getAccessToken());
-		config.add("config.spotify.authorization.refreshToken", authorizationToken.getRefreshToken());
-		config.add("config.spotify.authorization.expirationTime", authorizationToken.getExpirationTime());
+		if(authorizationToken != null && authorizationToken.isValid()) { 
+			config.add("config.spotify.authorization.accessToken", authorizationToken.getAccessToken());
+			config.add("config.spotify.authorization.refreshToken", authorizationToken.getRefreshToken());
+			config.add("config.spotify.authorization.expirationTime", authorizationToken.getExpirationTime());
+		}
 	}
 	
 	public boolean hasValidAuthorizationToken() {
@@ -95,7 +95,7 @@ public class Spotify extends HTTPListener {
 	}
 	
 	public boolean isReady() {
-		return authorizationToken != null;
+		return authorizationToken != null && authorizationToken.isValid();
 	}
 	
 	public SpotifyUser getCurrentUser() {
@@ -104,8 +104,12 @@ public class Spotify extends HTTPListener {
 		return currentUser;
 	}
 	
-	public SpotifyUserPlayListList getPlayList() {			
+	public SpotifyUserPlayListList getUserPlayListList() {			
 		return new SpotifyUserPlayListList(this);
+	}
+	
+	public SpotifyAlbum getAlbum(String albumId) {
+		return new SpotifyAlbum(this, albumId);
 	}
 	
 	public void signAPIRequest(SpotifyAPIRequest request) {

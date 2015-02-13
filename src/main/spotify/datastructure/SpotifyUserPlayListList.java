@@ -32,8 +32,7 @@ public class SpotifyUserPlayListList extends SpotifyPagedElement {
 			JSONArray items = playList.getJSONArray("items");
 			for(int i=0; i<items.length(); i++)
 			{
-				SpotifyPlayList item = new SpotifyPlayList(spotify, items.getJSONObject(i));
-				System.out.println(item);
+				SpotifyPlayList item = new SpotifyPlayList(spotify, items.getJSONObject(i));				
 				playLists.add(item);
 			}
 			return true;
@@ -41,5 +40,13 @@ public class SpotifyUserPlayListList extends SpotifyPagedElement {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	public int size() {
+		return playLists.size();
+	}
+	
+	public SpotifyPlayList getPlayList(int index) {		
+		return playLists.get(index);
 	}
 }

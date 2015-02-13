@@ -42,8 +42,10 @@ public class Token {
 		try {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(new SimpleDateFormat(DATE_FORMAT).parse(expirationTime));
-			if(calendar.after(Calendar.getInstance().getTimeInMillis()))
+			if(calendar.getTimeInMillis() > Calendar.getInstance().getTimeInMillis())
 				return true;
+			else
+				System.out.println(Calendar.getInstance().getTimeInMillis() + " vs. " + calendar.getTimeInMillis());
 		} catch(ParseException e) {
 			e.printStackTrace();
 		}
@@ -57,8 +59,7 @@ public class Token {
   		while(iterator.hasNext()){
   			String key = (String)iterator.next();
   			try {
-  				String element = responseObject.get(key).toString();
-  				System.out.println(key + ": " + element);
+  				String element = responseObject.get(key).toString();  				
   			  if(key.equals("expires_in") == true) {
   			  	Calendar calendar = Calendar.getInstance();
   			  	calendar.add(Calendar.SECOND, Integer.parseInt(element));
@@ -105,10 +106,14 @@ public class Token {
 	}
 	
 	public boolean isValid() {
-		if(failed() == true)
+		if(failed() == true) {
+			System.out.println("Token is invalid: " + error);
 			return false;
-		if(expirationTime <= Calendar.getInstance().getTimeInMillis())
+		}
+		if(expirationTime <= Calendar.getInstance().getTimeInMillis()) {
+			System.out.println("Token is expired");
 			return false;
+		}
 		return true;
 	}
 	

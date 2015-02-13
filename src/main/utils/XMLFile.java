@@ -306,6 +306,10 @@ public class XMLFile {
 		}
 	}
 	
+	public void clear() {
+		list.clear();
+	}
+	
 	@Override
 	public String toString() {
 		return list.toString();
