@@ -6,8 +6,9 @@ public abstract class HTTPListener {
 	
 	private String urlPath;
 	
-	public HTTPListener(String urlPath) {
+	public HTTPListener(HTTPServer server, String urlPath) {
 		this.urlPath = urlPath;
+		server.addListener(this);
 	}
 	
 	public String getURLPath() {

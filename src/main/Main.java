@@ -1,8 +1,5 @@
 package main;
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.concurrent.TimeoutException;
 
 import main.http.HTTPServer;
 import main.spotify.Spotify;
@@ -40,23 +37,11 @@ public class Main {
 			return;
 		}
 		
-		Spotify spotify = new Spotify(config);
-		server.addListener(spotify);
-		if(spotify.hasValidAuthorizationToken() == false) {			
-			String authorizationURL = spotify.getAuthorizationRequestURL();
-			try {
-				Desktop.getDesktop().browse(new URI(authorizationURL));
-			} catch(IOException | URISyntaxException e) {
-				System.out.println("please visit:\n"+authorizationURL);
-			}	
-
-			while(spotify.isReady() == false) {
-				try {
-					Thread.sleep(500);
-				} catch(InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+		Spotify spotify = new Spotify(server, config);
+		try {
+			spotify.getAuthorization();
+		} catch(TimeoutException e) {
+			System.err.println("ERROR: Spotify could not get authorization");
 		}
 		
 		SpotifyUser user = spotify.getCurrentUser();
@@ -81,6 +66,11 @@ public class Main {
 		config.clear();
 		spotify.storeConfig(config);
 		config.write();
+		
+		try {
+			Thread.sleep(60000);
+		} catch(Exception e) {			
+		}
 		
 		server.stop();
 	}

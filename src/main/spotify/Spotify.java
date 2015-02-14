@@ -1,9 +1,15 @@
 package main.spotify;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import main.http.HTTPListener;
-import main.oauth.Token;
+import main.http.HTTPServer;
+import main.oauth.OAuthToken;
 import main.spotify.datastructure.SpotifyAlbum;
 import main.spotify.datastructure.SpotifyUser;
 import main.spotify.datastructure.SpotifyUserPlayListList;
@@ -20,31 +26,35 @@ public class Spotify extends HTTPListener {
 	private String redirectURI;
 	private String code;
 	private OAuthAPISpotify oauthSpotify;
-	private Token authorizationToken;
+	private OAuthTokenSpotify authorizationToken;
+	private int timeout;
 	
 	private SpotifyUser currentUser = null;
 	
-	public Spotify(XMLFile config) {
-	  super(URL_PATH);	  
-	  readConfig(config);
+	public Spotify(HTTPServer server, XMLFile config) {
+	  super(server, URL_PATH);	  
+	  if(initialize(config) == false)
+	  	return;	  
   }
 	
-	private boolean readConfig(XMLFile config) {
+	private boolean initialize(XMLFile config) {
 		clientID = config.getString("config.spotify.clientID", "");
 		clientSecret = config.getString("config.spotify.clientSecret", "");
-		redirectURI = config.getString("config.spotify.redirectURI", "");		
+		redirectURI = config.getString("config.spotify.redirectURI", "");	
+		timeout = config.getInt("config.spotify.timeout", 120000);
 				
 		if(clientID.length() == 0 || clientSecret.length() == 0 || redirectURI.length() == 0) {
 			System.out.println("PLEASE STORE CLIENT ID, CLIENT SECRET AND REDIRECT URI IN CONFIG FILE!");			
 			return false;
 		}
+		oauthSpotify = new OAuthAPISpotify(clientID, clientSecret, redirectURI, SCOPE);
 		
 		String accessToken = config.getString("config.spotify.authorization.accessToken", "");
 		String refreshToken = config.getString("config.spotify.authorization.refreshToken", "");
 		String expirationTime = config.getString("config.spotify.authorization.expirationTime", "");
 		
 		if(accessToken.length() != 0 && refreshToken.length() != 0 && expirationTime.length() != 0) {
-			authorizationToken = new Token(accessToken, refreshToken, expirationTime);						
+			authorizationToken = oauthSpotify.createAuthorizationToken(accessToken, refreshToken, expirationTime);						
 		}
 		
 		return true;
@@ -54,6 +64,7 @@ public class Spotify extends HTTPListener {
 		config.add("config.spotify.clientID", clientID);
 		config.add("config.spotify.clientSecret", clientSecret);
 		config.add("config.spotify.redirectURI", redirectURI);
+		config.add("config.spotify.timeout", timeout);
 		if(authorizationToken != null && authorizationToken.isValid()) { 
 			config.add("config.spotify.authorization.accessToken", authorizationToken.getAccessToken());
 			config.add("config.spotify.authorization.refreshToken", authorizationToken.getRefreshToken());
@@ -61,13 +72,71 @@ public class Spotify extends HTTPListener {
 		}
 	}
 	
-	public boolean hasValidAuthorizationToken() {
+	public void getAuthorization() throws TimeoutException {
+		if(isReady())
+			return;
+		
+		if(oauthSpotify == null)
+			throw new RuntimeException("ERROR: authorization requires correct config!");					
+		
+		String authorizationURL = oauthSpotify.getAuthorizationUrl();
+		try {
+			Desktop.getDesktop().browse(new URI(authorizationURL));
+		} catch(IOException | URISyntaxException e) {
+			System.out.println("please visit:\n"+authorizationURL);
+		}	
+
+		int timeCounter = 0;
+		while(isReady() == false && timeCounter <= timeout) {
+			try {
+				Thread.sleep(500);
+			} catch(InterruptedException e) {
+				e.printStackTrace();				
+			}
+			timeCounter += 500;
+		}		
+		
+		if(timeCounter > timeout)
+			throw new TimeoutException("Did not receive authorization code within "+timeout+"ms");		
+	}	
+	
+	public boolean isReady() {
 		return authorizationToken != null && authorizationToken.isValid();
 	}
 	
-	public String getAuthorizationRequestURL() {
-		oauthSpotify = new OAuthAPISpotify(clientID, clientSecret, redirectURI, SCOPE);		
-		return oauthSpotify.getAuthorizationUrl();		
+	public SpotifyUser getCurrentUser() {
+		if(currentUser == null)
+			currentUser = new SpotifyUser(this); 
+		return currentUser;
+	}
+	
+	public SpotifyUserPlayListList getUserPlayListList() {	
+		if(makeReady() == false)
+			return null;
+		return new SpotifyUserPlayListList(this);
+	}
+	
+	public SpotifyAlbum getAlbum(String albumId) {
+		if(makeReady() == false)
+			return null;
+		return new SpotifyAlbum(this, albumId);
+	}
+	
+	public void signAPIRequest(SpotifyAPIRequest request) {
+		request.addHeader("Authorization", "Bearer "+authorizationToken.getAccessToken());
+	}
+	
+	private boolean makeReady() {
+		if(isReady() == false) {
+			try {
+				getAuthorization();
+				return true;
+			} catch(TimeoutException e) {
+				System.err.println(e.getMessage());
+				return false;
+			}
+		}
+		return true;	
 	}
 	
 	/**
@@ -75,9 +144,9 @@ public class Spotify extends HTTPListener {
 	 */
 	private void sendAccessRequest() {	
 		authorizationToken = oauthSpotify.getAuthorizationToken(code);
-    if(authorizationToken.failed())
+    if(authorizationToken.isValid() == false)
     {
-    	System.err.println("ERROR: "+authorizationToken.getError());
+    	System.err.println("ERROR: could not send authorization request!");
     	return;
     }
     else
@@ -93,33 +162,15 @@ public class Spotify extends HTTPListener {
     	System.out.println("Token will expire @ "+refreshToken.getExpirationTime());
     */
 	}
-	
-	public boolean isReady() {
-		return authorizationToken != null && authorizationToken.isValid();
-	}
-	
-	public SpotifyUser getCurrentUser() {
-		if(currentUser == null)
-			currentUser = new SpotifyUser(this); 
-		return currentUser;
-	}
-	
-	public SpotifyUserPlayListList getUserPlayListList() {			
-		return new SpotifyUserPlayListList(this);
-	}
-	
-	public SpotifyAlbum getAlbum(String albumId) {
-		return new SpotifyAlbum(this, albumId);
-	}
-	
-	public void signAPIRequest(SpotifyAPIRequest request) {
-		request.addHeader("Authorization", "Bearer "+authorizationToken.getAccessToken());
-	}
 
 	@Override
   public String handleHTTPGetRequest(Map<String, String> parameters) {
 	  if(parameters.containsKey(CODE_PARAMETER) == false) {
-	  	return "<html><body>please visit <a href=\"" +getAuthorizationRequestURL() + "\">this</a> to get authorization code.</body></html>";
+	  	if(oauthSpotify == null) {
+	  		return "<html><body>Spotify has invalid configuration!</body></html>";
+	  	}
+	  	String authorizationURL = oauthSpotify.getAuthorizationUrl();
+	  	return "<html><body>please visit <a href=\"" +authorizationURL + "\">this</a> to get authorization code.</body></html>";
 	  }
 	  
 	  code = parameters.get(CODE_PARAMETER);
