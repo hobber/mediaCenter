@@ -1,9 +1,12 @@
 package main.spotify;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import main.http.HTTPResponse;
 import main.oauth.OAuthAPI;
 import main.oauth.OAuthRequest;
-import main.oauth.Request;
-import main.oauth.Response;
+import main.oauth.OAuthResponse;
 import main.oauth.OAuthToken;
 
 public class OAuthAPISpotify implements OAuthAPI {
@@ -45,31 +48,45 @@ public class OAuthAPISpotify implements OAuthAPI {
   }
 	
 	public OAuthTokenSpotify getAuthorizationToken(String code) {
-    OAuthRequest request = new OAuthRequest(Request.Verb.POST, ACCESS_TOKEN_ENDPOINT);    
+    OAuthRequest request = new OAuthRequest(OAuthRequest.Verb.POST, ACCESS_TOKEN_ENDPOINT);    
     request.addBodyParameter(GRANT_TYPE, GRANT_AUTHORIZATION);
     request.addBodyParameter(CODE, code);
     request.addBodyParameter(REDIRECT_URI, redirectURI);
     request.addBodyParameter(CLIENT_ID, clientID);
     request.addBodyParameter(CLIENT_SECRET, clientSecret);
     
-    Response response = request.send();
-    return OAuthTokenSpotify.createToken(this, response);    
-  }
+    OAuthResponse response = request.send();
+    try {
+    	JSONObject responseBody = new JSONObject(response.getBody());
+    	HTTPResponse httpResponse = new HTTPResponse(responseBody, response.isSuccessful());
+    	return OAuthTokenSpotify.createToken(this, httpResponse);
+    } catch(JSONException e) {
+    	e.printStackTrace();
+    	return null;
+    }        
+	}
 	
 	public OAuthTokenSpotify createAuthorizationToken(String accessToken, String refreshToken, String expirationTime) {    
     return OAuthTokenSpotify.createToken(this, accessToken, refreshToken, expirationTime);    
   }
 	
-	public Response getRefreshResponse(OAuthToken token) {
+	public HTTPResponse getRefreshResponse(OAuthToken token) {
 		if(token instanceof OAuthTokenSpotify == false)
 			throw new RuntimeException("invalid token type");
 		
-    OAuthRequest request = new OAuthRequest(Request.Verb.POST, ACCESS_TOKEN_ENDPOINT);    
+    OAuthRequest request = new OAuthRequest(OAuthRequest.Verb.POST, ACCESS_TOKEN_ENDPOINT);    
     request.addBodyParameter(GRANT_TYPE, GRANT_REFRESH);
     request.addBodyParameter(REFRESH_TOKEN, ((OAuthTokenSpotify)token).getRefreshToken());
     request.addBodyParameter(CLIENT_ID, clientID);
     request.addBodyParameter(CLIENT_SECRET, clientSecret);
     
-    return request.send();  
+    OAuthResponse response = request.send();
+    try {
+    	JSONObject responseBody = new JSONObject(response.getBody());
+    	return new HTTPResponse(responseBody, response.isSuccessful());
+    } catch(JSONException e) {
+    	e.printStackTrace();
+    	return null;
+    }
   } 
 }

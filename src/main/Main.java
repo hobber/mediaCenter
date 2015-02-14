@@ -2,6 +2,7 @@ package main;
 import java.util.concurrent.TimeoutException;
 
 import main.http.HTTPServer;
+import main.oauth.OAuthTokenRefresher;
 import main.spotify.Spotify;
 import main.spotify.datastructure.SpotifyPlayList;
 import main.spotify.datastructure.SpotifySong;
@@ -65,13 +66,9 @@ public class Main {
 		
 		config.clear();
 		spotify.storeConfig(config);
-		config.write();
+		config.write();		
 		
-		try {
-			Thread.sleep(60000);
-		} catch(Exception e) {			
-		}
-		
+	  OAuthTokenRefresher.stop();
 		server.stop();
 	}
 }

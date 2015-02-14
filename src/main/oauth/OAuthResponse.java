@@ -13,7 +13,7 @@ import main.oauth.utils.StreamUtils;
  * 
  * @author Pablo Fernandez
  */
-public class Response
+public class OAuthResponse
 {
   private int code;
   private String message;
@@ -21,7 +21,7 @@ public class Response
   private InputStream stream;
   private Map<String, String> headers;
 
-  public Response(HttpURLConnection connection) throws IOException
+  public OAuthResponse(HttpURLConnection connection) throws IOException
   {
     try
     {

@@ -3,6 +3,7 @@ package main.spotify.datastructure;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.http.HTTPResponse;
 import main.spotify.Spotify;
 
 import org.json.JSONArray;
@@ -21,8 +22,8 @@ public class SpotifyUserPlayListList extends SpotifyPagedElement {
 			isValid = true;
 	}
 	
-	private boolean addAPIResponse(Spotify spotify, JSONObject playList) {
-		if(playList == null)
+	private boolean addAPIResponse(Spotify spotify, HTTPResponse playList) {
+		if(playList.isValid() == false)
 			return false;
 		
 		if(handleAPIResponse(playList) == false)

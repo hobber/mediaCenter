@@ -1,15 +1,12 @@
 package main.spotify.datastructure;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Vector;
 
+import main.http.HTTPResponse;
 import main.spotify.Spotify;
-import main.spotify.SpotifyAPIRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SpotifyAlbum extends SpotifyElement {
 	
@@ -21,19 +18,21 @@ public class SpotifyAlbum extends SpotifyElement {
 	
 	public SpotifyAlbum(Spotify spotify, String albumId) {		
 		createAPIRequest("albums/" + albumId);		
-		JSONObject album = request.sendRequest();	
-		
-		if(getResponseSubString(album, "type").equals("album") == false)
+		HTTPResponse response = request.sendRequest();	
+		if(response.isValid() == false)
 			return;
 		
-		spotifyUri = getResponseString(album, "id");
-		albumName = getResponseString(album, "name");
-		popularity = getResponseInt(album, "popularity", 0);
-		releaseDate = getResponseString(album, "release_date");
-		tracksUrl = getResponseSubString(album, "tracks.href");	
+		if(response.getResponseSubString("type").equals("album") == false)
+			return;
+		
+		spotifyUri = response.getResponseString("id");
+		albumName = response.getResponseString("name");
+		popularity = response.getResponseInt("popularity", 0);
+		releaseDate = response.getResponseString("release_date");
+		tracksUrl = response.getResponseSubString("tracks.href");	
 		
 		try {
-			JSONArray artists = album.getJSONArray("artists");
+			JSONArray artists = response.getJSONArray("artists");
 			for(int i=0; i<artists.length(); i++)
 				this.artists.add(new SpotifyArtist(artists.getJSONObject(i)));
 		} catch(JSONException e) {

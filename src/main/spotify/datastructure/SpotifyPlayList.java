@@ -3,6 +3,7 @@ package main.spotify.datastructure;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.http.HTTPResponse;
 import main.spotify.Spotify;
 import main.spotify.SpotifyAPIRequest;
 
@@ -42,12 +43,12 @@ public class SpotifyPlayList extends SpotifyPagedElement {
 		createAPIRequest(path);
 		spotify.signAPIRequest(request);
 		
-		JSONObject playList = request.sendRequest();			
-		if(playList == null)
+		HTTPResponse response = request.sendRequest();			
+		if(response.isValid() == false)
 			return false;
 		
 		try {
-			JSONArray items = playList.getJSONArray("items");
+			JSONArray items = response.getJSONArray("items");
 			for(int i=0; i<items.length(); i++) {
 				SpotifySong song = new SpotifySong(items.getJSONObject(i));				
 				songs.add(song);

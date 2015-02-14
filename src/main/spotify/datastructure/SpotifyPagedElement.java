@@ -1,8 +1,7 @@
 package main.spotify.datastructure;
 
+import main.http.HTTPResponse;
 import main.spotify.SpotifyAPIRequest;
-
-import org.json.JSONObject;
 
 public class SpotifyPagedElement extends SpotifyElement {
 	
@@ -15,11 +14,11 @@ public class SpotifyPagedElement extends SpotifyElement {
 		request.setPage(pageCounter);
 	}
 	
-	protected boolean handleAPIResponse(JSONObject response) {
+	protected boolean handleAPIResponse(HTTPResponse response) {
 		if(totalElements == 0)
-			totalElements = Integer.parseInt(getResponseString(response, "total"));
+			totalElements = Integer.parseInt(response.getResponseString("total"));
 		
-		int pageIndex = Integer.parseInt(getResponseString(response, "offset")) / SpotifyAPIRequest.PAGE_SIZE;		
+		int pageIndex = Integer.parseInt(response.getResponseString("offset")) / SpotifyAPIRequest.PAGE_SIZE;		
 		if(pageIndex != pageCounter)
 			return false;		
 		return true;

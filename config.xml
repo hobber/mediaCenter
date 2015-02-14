@@ -3,7 +3,8 @@
   <spotify>
     <clientID></clientID>
     <clientSecret></clientSecret>
-    <redirectURI></redirectURI>
+    <redirectURI>http://localhost:8080/mediaCenter/spotify</redirectURI>
+    <timeout>120000</timeout>
   </spotify>
 </config>
 

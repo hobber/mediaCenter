@@ -9,7 +9,6 @@ import java.util.concurrent.TimeoutException;
 
 import main.http.HTTPListener;
 import main.http.HTTPServer;
-import main.oauth.OAuthToken;
 import main.spotify.datastructure.SpotifyAlbum;
 import main.spotify.datastructure.SpotifyUser;
 import main.spotify.datastructure.SpotifyUserPlayListList;
@@ -53,7 +52,7 @@ public class Spotify extends HTTPListener {
 		String refreshToken = config.getString("config.spotify.authorization.refreshToken", "");
 		String expirationTime = config.getString("config.spotify.authorization.expirationTime", "");
 		
-		if(accessToken.length() != 0 && refreshToken.length() != 0 && expirationTime.length() != 0) {
+		if(accessToken.length() != 0 && refreshToken.length() != 0 && expirationTime.length() != 0) {			
 			authorizationToken = oauthSpotify.createAuthorizationToken(accessToken, refreshToken, expirationTime);						
 		}
 		
@@ -138,30 +137,6 @@ public class Spotify extends HTTPListener {
 		}
 		return true;	
 	}
-	
-	/**
-	 * requests refresh and access tokens, is called when code was received
-	 */
-	private void sendAccessRequest() {	
-		authorizationToken = oauthSpotify.getAuthorizationToken(code);
-    if(authorizationToken.isValid() == false)
-    {
-    	System.err.println("ERROR: could not send authorization request!");
-    	return;
-    }
-    else
-    	System.out.println("Token will expire @ "+authorizationToken.getExpirationTime());
-    /*
-    Token refreshToken = oauthSpotify.getRefreshToken(authorizationToken);
-    if(refreshToken.failed())
-    {
-    	System.err.println("ERROR: "+refreshToken.getError());
-    	return;
-    }
-    else
-    	System.out.println("Token will expire @ "+refreshToken.getExpirationTime());
-    */
-	}
 
 	@Override
   public String handleHTTPGetRequest(Map<String, String> parameters) {
@@ -177,4 +152,16 @@ public class Spotify extends HTTPListener {
 	  sendAccessRequest();
 	  return "received code sucessfully";
   }
+	
+	/**
+	 * requests refresh and access tokens, is called when code was received
+	 */
+	private void sendAccessRequest() {
+		authorizationToken = oauthSpotify.getAuthorizationToken(code);
+    if(authorizationToken.isValid() == false)
+    {
+    	System.err.println("ERROR: could not send authorization request!");
+    	return;
+    }
+	}
 }

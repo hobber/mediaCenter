@@ -3,6 +3,7 @@ package main.spotify;
 import java.util.HashMap;
 import java.util.Map;
 
+import main.http.HTTPResponse;
 import main.http.HTTPUtils;
 
 import org.apache.http.client.methods.HttpGet;
@@ -42,7 +43,7 @@ public class SpotifyAPIRequest {
 		return this;
 	}
 	
-	public JSONObject sendRequest() {
+	public HTTPResponse sendRequest() {
 		String url = API_URL + path + query;
 		HttpGet request = new HttpGet(url);
 		for (Map.Entry<String, String> header : headers.entrySet())

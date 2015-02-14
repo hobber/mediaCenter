@@ -1,8 +1,7 @@
 package main.spotify.datastructure;
 
+import main.http.HTTPResponse;
 import main.spotify.Spotify;
-
-import org.json.JSONObject;
 
 /**
  * {@link} https://developer.spotify.com/web-api/get-current-users-profile/
@@ -16,16 +15,16 @@ public class SpotifyUser extends SpotifyElement {
 		createAPIRequest("me");
 		spotify.signAPIRequest(request);	
 		
-		JSONObject user = request.sendRequest();			
-		if(user == null)
+		HTTPResponse response = request.sendRequest();			
+		if(response.isValid() == false)
 			return;
 				
-		if(getResponseString(user, "type").equals("user") == false)
+		if(response.getResponseString("type").equals("user") == false)
 			return;
 		
-		id = getResponseString(user, "id");
-		spotifyUri = getResponseString(user, "uri");
-		displayName = getResponseString(user, "display_name");
+		id = response.getResponseString("id");
+		spotifyUri = response.getResponseString("uri");
+		displayName = response.getResponseString("display_name");
 		if(displayName.equals("null"))
 			displayName = id;			
 		isValid = true;					

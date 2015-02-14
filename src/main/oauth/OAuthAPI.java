@@ -1,7 +1,9 @@
 package main.oauth;
 
+import main.http.HTTPResponse;
+
 public interface OAuthAPI {
 	
-	public Response getRefreshResponse(OAuthToken token);
+	public HTTPResponse getRefreshResponse(OAuthToken token);
 	
 }

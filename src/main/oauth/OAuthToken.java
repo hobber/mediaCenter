@@ -9,13 +9,13 @@ abstract public class OAuthToken {
 	public final static String DATE_FORMAT = "dd.MM.yyyy HH:mm:ss";
 	protected static SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 	
-	private long expirationTime = 0;
-	private String accessToken = null;	
+	protected long expirationTime = 0;
+	protected String accessToken = null;	
 	
 	public OAuthToken(String accessToken, long expirationTime) {				
 		this.expirationTime = expirationTime;
 		this.accessToken = accessToken;
-		TokenExpirationObserver.addToken(this);		
+		OAuthTokenRefresher.addToken(this);		
 	}
 	
 	public boolean checkExpirationTime(String expirationTime) {
@@ -37,14 +37,17 @@ abstract public class OAuthToken {
 	}	
 	
 	public boolean willExpireWithin(long millis) {
-		if(expirationTime+millis <= Calendar.getInstance().getTimeInMillis()) {			
+		if(expirationTime < 0)
+			return false;
+		
+		if(expirationTime+millis > Calendar.getInstance().getTimeInMillis()) {			
 			return false;
 		}
 		return true;
 	}
 	
 	public boolean isValid() {
-		return willExpireWithin(0);		
+		return willExpireWithin(0) ? false : true;		
 	}
 	
 	public String getExpirationTime() {
