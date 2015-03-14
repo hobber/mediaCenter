@@ -6,5 +6,8 @@
     <redirectURI>http://localhost:8080/mediaCenter/spotify</redirectURI>
     <timeout>120000</timeout>
   </spotify>
+  <tmdb>
+    <api_key></api_key>
+  </tmdb>
 </config>
 

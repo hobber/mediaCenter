@@ -1,6 +1,8 @@
 package main.http;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -12,6 +14,7 @@ public class HTTPResponse {
 
 	private  boolean isValid = false;
 	private JSONObject response;
+	private String htmlBody = "";
 	
 	public HTTPResponse(JSONObject body, boolean isValid) {
 		this.isValid = isValid;
@@ -19,7 +22,6 @@ public class HTTPResponse {
 	}
 	
 	public HTTPResponse(HttpResponse response) {
-
 		int responseCode = response.getStatusLine().getStatusCode(); 
 		if(responseCode != 200)
 		{
@@ -29,12 +31,29 @@ public class HTTPResponse {
 		}		
 		
 		try {
+			InputStream inputstream = response.getEntity().getContent();
+			Scanner scanner = new java.util.Scanner(inputstream);
+			Scanner s = scanner.useDelimiter("\\A");
+	    htmlBody =  s.hasNext() ? s.next() : "";
+	    scanner.close();
+	    this.response = new JSONObject(htmlBody);
+	    isValid = true;
+		} catch(IOException | IllegalStateException | JSONException e) {			
+		}
+		
+ 		try {
 			this.response = new JSONObject(EntityUtils.toString(response.getEntity()));
 			isValid = true;
-		} catch(IOException | JSONException e) {
-			System.err.println("ERROR: Could not read response!");
-			return;
+		} catch(IOException | JSONException e) {			
 		}
+	}
+	
+	public boolean hasBody() {
+		return htmlBody.length() > 0;
+	}
+	
+	public String getBody() {
+		return htmlBody;
 	}
 	
 	public boolean isValid() {
@@ -84,6 +103,17 @@ public class HTTPResponse {
 			if(value == null)
 				return defaultValue;
 			return Integer.parseInt(value.toString());		
+		} catch (JSONException e) {
+			return defaultValue;
+		}
+	}
+	
+	public double getResponseDouble(String key, double defaultValue) {
+		try {
+			Object value = response.get(key);
+			if(value == null)
+				return defaultValue;
+			return Double.parseDouble(value.toString());		
 		} catch (JSONException e) {
 			return defaultValue;
 		}
