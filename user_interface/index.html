@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Media Center</title>       
+    <link rel="stylesheet" type="text/css" href="style.css"/> 
+    <script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="./menu_controller.js"></script>
+    <script src="./content_controller.js"></script>          
+  </head>
+
+  <body id="page" ng-app="MediaCenter">
+    <div id="sidebar">
+      <div id="menuHeader">
+        Media Center
+      </div>
+      <div id="menu" ng-controller="MenuController" ng-init=load()></div>
+    </div>
+    <div id="content" ng-controller="ContentController" ng-init=load()></div>
+  </body> 
+</html>

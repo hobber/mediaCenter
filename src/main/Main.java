@@ -1,17 +1,7 @@
 package main;
-import java.util.concurrent.TimeoutException;
-
 import main.http.HTTPResponse;
-import main.http.HTTPServer;
 import main.http.HTTPUtils;
-import main.media.MP3Player;
-import main.oauth.OAuthTokenRefresher;
-import main.spotify.Spotify;
-import main.spotify.datastructure.SpotifyPlayList;
-import main.spotify.datastructure.SpotifySong;
-import main.spotify.datastructure.SpotifyUser;
-import main.spotify.datastructure.SpotifyUserPlayListList;
-import main.tmdb.TMDB;
+import main.server.Server;
 import main.utils.XMLFile;
 
 public class Main {
@@ -54,7 +44,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		
+						
 		String configFile = "config.xml";
 		
 		if(args.length == 1)
@@ -67,8 +57,11 @@ public class Main {
 		XMLFile config = new XMLFile(configFile);
 		if(config.read() == false) {
 			return;
-		}		
-	
+		}
+		
+		Server server = new Server();
+		
+	/*
 		HTTPServer server = new HTTPServer();
 		if(server.isOnline() == false) {
 			System.err.println("ERROR: server could not be startet!");
@@ -76,6 +69,8 @@ public class Main {
 		}
 		
 		TMDB tmdb = new TMDB(config.getElement("config.tmdb")); 
+		*/
+		
 		
 /*		
 		Spotify spotify = new Spotify(server, config);
@@ -113,6 +108,6 @@ public class Main {
 		
 	  OAuthTokenRefresher.stop();
 */
-		server.stop();		
+	//	server.stop();		
 	}
 }
