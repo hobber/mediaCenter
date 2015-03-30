@@ -1,43 +1,42 @@
 package main;
-import main.http.HTTPResponse;
-import main.http.HTTPUtils;
-import main.server.Server;
+import main.data.DataController;
+import main.data.DataSeries;
 import main.utils.XMLFile;
 
 public class Main {
 
-	private static void readAustrianCharts() {
-		HTTPResponse response = HTTPUtils.sendHTTPGetRequest("http://www.austriancharts.at/weekchart.asp?cat=s");
-		String body = response.getBody();
-		body = body.substring(body.indexOf("<tr><td class=\"text\""));
-		body = body.substring(0, body.indexOf("<!--"));
-		while(true) {
-			int indexStart = body.indexOf("<tr>");
-			if(indexStart < 0)
-				break;
-			
-			int indexEnd = body.indexOf("</tr>", indexStart);
-			if(indexEnd < 0)
-				break;
-			
-			String entry = body.substring(indexStart, indexEnd);
-			body = body.substring(indexEnd);
-			
-			int indexInterpret = entry.indexOf("interpret=");
-			if(indexInterpret < 0)
-				continue;
-			int indexTitle = entry.indexOf("&titel=", indexInterpret);
-			if(indexTitle < 0)
-				continue;
-			int indexCategory = entry.indexOf("&cat=", indexTitle);
-			if(indexCategory < 0)
-				continue;
-			
-			String artist = entry.substring(indexInterpret+10, indexTitle);
-			String title = entry.substring(indexTitle+7, indexCategory);
-			System.out.println(artist + " - " + title);						
-		}
-	}
+//	private static void readAustrianCharts() {
+//		HTTPResponse response = HTTPUtils.sendHTTPGetRequest("http://www.austriancharts.at/weekchart.asp?cat=s");
+//		String body = response.getBody();
+//		body = body.substring(body.indexOf("<tr><td class=\"text\""));
+//		body = body.substring(0, body.indexOf("<!--"));
+//		while(true) {
+//			int indexStart = body.indexOf("<tr>");
+//			if(indexStart < 0)
+//				break;
+//			
+//			int indexEnd = body.indexOf("</tr>", indexStart);
+//			if(indexEnd < 0)
+//				break;
+//			
+//			String entry = body.substring(indexStart, indexEnd);
+//			body = body.substring(indexEnd);
+//			
+//			int indexInterpret = entry.indexOf("interpret=");
+//			if(indexInterpret < 0)
+//				continue;
+//			int indexTitle = entry.indexOf("&titel=", indexInterpret);
+//			if(indexTitle < 0)
+//				continue;
+//			int indexCategory = entry.indexOf("&cat=", indexTitle);
+//			if(indexCategory < 0)
+//				continue;
+//			
+//			String artist = entry.substring(indexInterpret+10, indexTitle);
+//			String title = entry.substring(indexTitle+7, indexCategory);
+//			System.out.println(artist + " - " + title);						
+//		}
+//	}
 	
 	private static void printUsage() {
 		System.out.println("usage: [configFile=config.xml]");
@@ -59,7 +58,13 @@ public class Main {
 			return;
 		}
 		
-		Server server = new Server();
+		DataController dataController = new DataController("series.mcif", "series.mcdf", "series.mccf");
+		dataController.printList();	
+		DataSeries series = new DataSeries("Once upon a time");
+		dataController.add(series);
+		dataController.printList();
+		
+		//Server server = new Server();
 		
 	/*
 		HTTPServer server = new HTTPServer();

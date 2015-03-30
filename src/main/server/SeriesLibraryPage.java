@@ -33,5 +33,4 @@ public class SeriesLibraryPage implements UserContentPage {
 		episode.put(image);
 		return content;
   }
-
 }

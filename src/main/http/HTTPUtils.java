@@ -2,13 +2,9 @@ package main.http;
 
 import java.io.IOException;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class HTTPUtils {
 
@@ -22,8 +18,7 @@ public class HTTPUtils {
 		return sendHTTPGetRequest(request);
 	}
 	
-	public static HTTPResponse sendHTTPGetRequest(HttpGet request) {		
-		HttpResponse response;
+	public static HTTPResponse sendHTTPGetRequest(HttpGet request) {				
 		try {
 			return new HTTPResponse(client.execute(request));			
 		} catch (IOException e) {

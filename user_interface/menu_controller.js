@@ -99,8 +99,10 @@ app.controller('MenuController', ['$scope', '$rootScope', '$compile',
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
           menu = JSON.parse(xmlHttp.response).entries;
-          if(prepareMenu() === true)
+          if(prepareMenu() === true) {
             buildMenu();
+            $rootScope.$broadcast('showContent', menu[menu[0].link].id);
+          }
         } else {
           console.log('request failed');
         }
@@ -126,8 +128,7 @@ app.controller('MenuController', ['$scope', '$rootScope', '$compile',
           element.setAttribute('id', 'menuSubEntry');
         element.setAttribute('class', entry.group === visibleGroup ? 'ng-show' : 'ng-hide');
         $compile(element)($scope);
-      }
-      
+      }      
     };
   }
 ]);
