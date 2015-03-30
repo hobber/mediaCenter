@@ -7,6 +7,12 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import main.server.content.UserContentGroup;
+import main.server.content.UserContentPage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,16 +23,22 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 public class Server implements HttpHandler {
-
+	
 	private final static String RESSOURCE_PATH = "./user_interface";
+	
+	private Map<String, UserContentGroup> contentGroups = new HashMap<String, UserContentGroup>();
 	
 	public Server() {
 		try {
 			HttpServer server = HttpServer.create(new InetSocketAddress(11111), 0);
 			server.createContext("/", this);
-			server.setExecutor(null); // creates a default executor
+			server.setExecutor(null);
 			server.start();
 			System.out.println("started...");
+			
+			UserContentGroup group = new UserContentGroup("Series", "content/series.png");
+			group.addPage(new SeriesLibraryPage());
+			registerUserContentGroup(group);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -59,23 +71,58 @@ public class Server implements HttpHandler {
 	}
 	
 	public JSONObject getContent(String name) {
-		JSONObject response = new JSONObject();
-		try {
-			JSONObject movies = new JSONObject();
-			movies.put("name", "Movies");
-			movies.put("icon", "content/movie.png");
-			movies.put("type",  "menuEntry");
-			response.put("entries", movies);
-		} catch(JSONException e) {
-			System.err.println("Error: " + e.getMessage());
+		int index = name.indexOf(".");
+		if(index < 0) {
+			System.err.println("ERROR: invalid name " + name);
 		}
-		System.out.println("return " + response.toString());
-		return response;
+		
+		String groupName = name.substring(0, index);
+		String pageName = name.substring(index + 1);		
+		
+		UserContentGroup group = contentGroups.get(groupName);		
+		if(group == null) {
+			System.out.println("ERROR: group " + groupName + " not found");			
+			return new JSONObject();
+		}
+		
+		UserContentPage page = group.getContentPage(pageName);
+		if(page == null) {
+			System.out.println("ERROR: page " + pageName + " not found");			
+			return new JSONObject();
+		}
+		
+		JSONObject content = new JSONObject();
+		try {
+			content.put("content", page.toJSON());
+		} catch(JSONException e) {
+			System.err.println("ERROR: " + e.getMessage());			
+		}
+		return content;		
 	}
 	
 	public JSONObject getMenu() {
 		JSONObject response = new JSONObject();
 		try {		
+			for(String groupName : contentGroups.keySet()) {
+				UserContentGroup group = contentGroups.get(groupName);
+				JSONObject groupElement = new JSONObject();
+				groupElement.put("name", groupName);
+				groupElement.put("icon", group.getIconPath());
+				groupElement.put("type", "menuEntry");
+				groupElement.put("id",  groupName);
+				response.append("entries", groupElement);
+								
+				List<UserContentPage> list = group.getContentPages();
+				for(UserContentPage page : list) {
+					JSONObject element = new JSONObject();
+					element.put("name", page.getName());
+					element.put("type",  "menuSubEntry");
+					element.put("id",  groupName + "." + page.getName());
+					response.append("entries", element);
+				}
+			}
+			
+			/*
 			JSONObject movies = new JSONObject();
 			movies.put("name", "Movies");
 			movies.put("icon", "content/movie.png");
@@ -94,6 +141,12 @@ public class Server implements HttpHandler {
 			moviesLibrary.put("type",  "menuSubEntry");
 			moviesLibrary.put("id",  "movies.library");
 			response.append("entries", moviesLibrary);
+			
+			JSONObject moviesFavourites = new JSONObject();
+			moviesFavourites.put("name", "Favourites");
+			moviesFavourites.put("type",  "menuSubEntry");
+			moviesFavourites.put("id",  "movies.favourites");
+			response.append("entries", moviesFavourites);
 			
 			JSONObject moviesSearch = new JSONObject();
 			moviesSearch.put("name", "Search");
@@ -119,6 +172,12 @@ public class Server implements HttpHandler {
 			seriesLibrary.put("type",  "menuSubEntry");
 			seriesLibrary.put("id",  "series.library");
 			response.append("entries", seriesLibrary);
+			
+			JSONObject seriesFavourites = new JSONObject();
+			seriesFavourites.put("name", "Favourites");
+			seriesFavourites.put("type",  "menuSubEntry");
+			seriesFavourites.put("id",  "series.favourites");
+			response.append("entries", seriesFavourites);
 			
 			JSONObject seriesSearch = new JSONObject();
 			seriesSearch.put("name", "Search");
@@ -146,6 +205,7 @@ public class Server implements HttpHandler {
 			settings.put("type",  "menuEntry");
 			settings.put("id",  "settings");
 			response.append("entries", settings);	
+			*/
 		} catch(JSONException e) {
 			e.printStackTrace();
 		}
@@ -154,17 +214,17 @@ public class Server implements HttpHandler {
 	
 	public void handleAPIRequest(HttpExchange exchange) throws IOException {
 		String uri = exchange.getRequestURI().toString();
-		String type = uri.substring(5);
-		System.out.println("api: " + uri + " -> " + type);		
+		String request = uri.substring(5);
+		System.out.println("api: " + uri + " -> " + request);		
 		
 		Headers headers = exchange.getResponseHeaders();
 		headers.add("Content-Type", "application/jsonp; charset=UTF-8");
 		
 		JSONObject buffer;
-		if(type.startsWith("menu"))
+		if(request.startsWith("menu"))
 			buffer = getMenu();
 		else
-			buffer = getContent(type);
+			buffer = getContent(request.substring(8));
 		String response = buffer.toString();
 		exchange.sendResponseHeaders(200, response.length());
 		OutputStream os = exchange.getResponseBody();
@@ -174,14 +234,13 @@ public class Server implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {		
-		if(exchange.getRequestMethod().equals("GET")) {
-			String uri = exchange.getRequestURI().toString();
+		if(exchange.getRequestMethod().equals("GET")) {					
+			String uri = exchange.getRequestURI().toString();			
 			if(uri.startsWith("/api")) {
 				handleAPIRequest(exchange);
 			}
 			else {
-				String path = RESSOURCE_PATH + uri;
-//		  System.out.println("get " + path);
+				String path = RESSOURCE_PATH + uri;		  
 				byte[] response = Files.readAllBytes(Paths.get(path));
 				exchange.sendResponseHeaders(200, response.length);
 				OutputStream os = exchange.getResponseBody();
@@ -197,12 +256,17 @@ public class Server implements HttpHandler {
 		}
 		else {
 			exchange.sendResponseHeaders(405, 0);
-		}		
-//		for (String key : exchange.getRequestHeaders().keySet()) {
-//			System.out.print("header: " + key + " = " );
-//			for (String value : exchange.getRequestHeaders().get(key)) {
-//				System.out.println(value);
-//			}
-//		}
+		}				
+	}
+	
+	public boolean registerUserContentGroup(UserContentGroup group) {
+		String name = group.getName();
+		if(contentGroups.containsKey(name)) {
+			System.err.println("ERROR: " + name + " was already added");
+			return false;
+		}
+		
+		contentGroups.put(name, group);		
+		return true;
 	}
 }

@@ -22,12 +22,12 @@
   border-bottom: 1px solid #ffffff;
 }
 #menuSubEntry {
-  background-color: #888888;
+  background-color: #b0b0b0;
   height: 20px;  
   border-bottom: 1px solid #ffffff;
 }
 #menuSubEntrySelected {
-  background-color: #C0C0C0;
+  background-color: #eeeeee;
   height: 20px;  
   border-bottom: 1px solid #ffffff;
 }
@@ -37,5 +37,20 @@
   bottom: 0;
   left: 250px; 
   width: 100%;
-  background-color: #C0C0C0;
+  background-color: #eeeeee;
+  margin-left: 1px;
 }
+#contentMenu {
+  position: relative;
+  background-color: #606060;
+  height: 38px;
+  width: 100%;
+}
+#contentContainer {
+  position: relative; 
+}
+#contentItem {
+  position: absolute; 
+}
+
+
