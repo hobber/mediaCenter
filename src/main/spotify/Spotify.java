@@ -12,7 +12,7 @@ import main.http.HTTPServer;
 import main.spotify.datastructure.SpotifyAlbum;
 import main.spotify.datastructure.SpotifyUser;
 import main.spotify.datastructure.SpotifyUserPlayListList;
-import main.utils.XMLFile;
+import main.utils.ConfigFile;
 
 public class Spotify extends HTTPListener {
 
@@ -30,13 +30,13 @@ public class Spotify extends HTTPListener {
 	
 	private SpotifyUser currentUser = null;
 	
-	public Spotify(HTTPServer server, XMLFile config) {
+	public Spotify(HTTPServer server, ConfigFile config) {
 	  super(server, URL_PATH);	  
 	  if(initialize(config) == false)
 	  	return;	  
   }
 	
-	private boolean initialize(XMLFile config) {
+	private boolean initialize(ConfigFile config) {
 		clientID = config.getString("config.spotify.clientID", "");
 		clientSecret = config.getString("config.spotify.clientSecret", "");
 		redirectURI = config.getString("config.spotify.redirectURI", "");	
@@ -59,7 +59,7 @@ public class Spotify extends HTTPListener {
 		return true;
 	}
 	
-	public void storeConfig(XMLFile config) {
+	public void storeConfig(ConfigFile config) {
 		config.add("config.spotify.clientID", clientID);
 		config.add("config.spotify.clientSecret", clientSecret);
 		config.add("config.spotify.redirectURI", redirectURI);

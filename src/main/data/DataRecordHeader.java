@@ -1,6 +1,7 @@
 package main.data;
 
 
+
 public class DataRecordHeader implements DataObject {
 	
 	private int dataId;
@@ -8,6 +9,7 @@ public class DataRecordHeader implements DataObject {
   private int dataLength;
   private short classId;
   private boolean used;
+  private DataObject body = null;
 	
 	public DataRecordHeader(int dataId, int dataPointer, int dataLength, short classId) {
 		this.dataId = dataId;
@@ -40,7 +42,7 @@ public class DataRecordHeader implements DataObject {
 	
 	public short getClassId() {
 		return classId;
-	}
+	}	
 	
 	@Override
 	public int getEntrySize() {
@@ -49,6 +51,18 @@ public class DataRecordHeader implements DataObject {
 	
 	public static int getByteCount() {
 		return 15;
+	}
+	
+	public void setBody(DataObject body) {
+		this.body = body;
+	}
+	
+	public boolean hasBody() {
+		return body != null;
+	}
+	
+	public DataObject getBody() {		
+		return body;
 	}
 	
 	@Override
@@ -65,5 +79,10 @@ public class DataRecordHeader implements DataObject {
 		buffer.putShort(12, classId);
 		buffer.putByte(14, (byte)(used ? 1 : 0));
 		return buffer;
-  }
+	}
+	
+	@Override
+	public boolean match(DataQuery dataQuery) {		
+		return true;
+	}
 }

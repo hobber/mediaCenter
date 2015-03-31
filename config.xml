@@ -1,5 +1,11 @@
 <?xml version="1.0" ?>
 <config>
+  <server>
+    <port>11011</port>
+  </server>
+  <data>
+    <path>./data/</path>
+  </data>
   <spotify>
     <clientID></clientID>
     <clientSecret></clientSecret>

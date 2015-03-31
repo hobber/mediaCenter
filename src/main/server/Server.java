@@ -25,37 +25,23 @@ import com.sun.net.httpserver.HttpServer;
 public class Server implements HttpHandler {
 	
 	private final static String RESSOURCE_PATH = "./user_interface";
+	static final Server INSTANCE = new Server();
 	
 	private Map<String, UserContentGroup> contentGroups = new HashMap<String, UserContentGroup>();
 	
-	public Server() {
+	private Server() {
 		try {
 			HttpServer server = HttpServer.create(new InetSocketAddress(11111), 0);
 			server.createContext("/", this);
 			server.setExecutor(null);
 			server.start();
-			System.out.println("started...");
-			
-			UserContentGroup group = new UserContentGroup("Series", "content/series.png");
-			group.addPage(new SeriesLibraryPage());
-			registerUserContentGroup(group);
+			System.out.println("server started...");			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public String readFile(String fileName) {
-		try {
-			byte[] encoded = Files.readAllBytes(Paths.get(fileName));
-			return new String(encoded, Charset.defaultCharset());
-		} catch(Exception e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
-		return "";
-	}
-
-	public static long copy(InputStream is, OutputStream os) {
+	private static long copy(InputStream is, OutputStream os) {
 		byte[] buf = new byte[8192];
 		long total = 0;
 		int len = 0;
@@ -70,7 +56,7 @@ public class Server implements HttpHandler {
 		return total;
 	}
 	
-	public JSONObject getContent(String name) {
+	private JSONObject getContent(String name) {
 		int index = name.indexOf(".");
 		if(index < 0) {
 			System.err.println("ERROR: invalid name " + name);
@@ -100,7 +86,7 @@ public class Server implements HttpHandler {
 		return content;		
 	}
 	
-	public JSONObject getMenu() {
+	private JSONObject getMenu() {
 		JSONObject response = new JSONObject();
 		try {		
 			for(String groupName : contentGroups.keySet()) {
@@ -125,86 +111,21 @@ public class Server implements HttpHandler {
 			/*
 			JSONObject movies = new JSONObject();
 			movies.put("name", "Movies");
-			movies.put("icon", "content/movie.png");
-			movies.put("type",  "menuEntry");
-			movies.put("id",  "movies");
-			response.append("entries", movies);
-			
-			JSONObject moviesHome = new JSONObject();
 			moviesHome.put("name", "Home");
-			moviesHome.put("type",  "menuSubEntry");
-			moviesHome.put("id",  "movies.home");
-			response.append("entries", moviesHome);
-			
-			JSONObject moviesLibrary = new JSONObject();
 			moviesLibrary.put("name", "Library");
-			moviesLibrary.put("type",  "menuSubEntry");
-			moviesLibrary.put("id",  "movies.library");
-			response.append("entries", moviesLibrary);
-			
-			JSONObject moviesFavourites = new JSONObject();
 			moviesFavourites.put("name", "Favourites");
-			moviesFavourites.put("type",  "menuSubEntry");
-			moviesFavourites.put("id",  "movies.favourites");
-			response.append("entries", moviesFavourites);
-			
-			JSONObject moviesSearch = new JSONObject();
 			moviesSearch.put("name", "Search");
-			moviesSearch.put("type",  "menuSubEntry");
-			moviesSearch.put("id",  "movies.search");
-			response.append("entries", moviesSearch);
-			
-			JSONObject series = new JSONObject();
+
 			series.put("name", "Series");
-			series.put("icon", "content/series.png");
-			series.put("type",  "menuEntry");
-			series.put("id",  "series");
-			response.append("entries", series);
-			
-			JSONObject seriesHome = new JSONObject();
 			seriesHome.put("name", "Home");
-			seriesHome.put("type",  "menuSubEntry");
-			seriesHome.put("id",  "series.home");
-			response.append("entries", seriesHome);
-			
-			JSONObject seriesLibrary = new JSONObject();
 			seriesLibrary.put("name", "Library");
-			seriesLibrary.put("type",  "menuSubEntry");
-			seriesLibrary.put("id",  "series.library");
-			response.append("entries", seriesLibrary);
-			
-			JSONObject seriesFavourites = new JSONObject();
 			seriesFavourites.put("name", "Favourites");
-			seriesFavourites.put("type",  "menuSubEntry");
-			seriesFavourites.put("id",  "series.favourites");
-			response.append("entries", seriesFavourites);
-			
-			JSONObject seriesSearch = new JSONObject();
 			seriesSearch.put("name", "Search");
-			seriesSearch.put("type",  "menuSubEntry");
-			seriesSearch.put("id",  "series.search");
-			response.append("entries", seriesSearch);
-						
-			JSONObject music = new JSONObject();
 			music.put("name", "Music");
-			music.put("icon", "content/music.png");
-			music.put("type",  "menuEntry");
-			music.put("id",  "music");
-			response.append("entries", music);
 			
-			JSONObject images = new JSONObject();
 			images.put("name", "Images");
-			images.put("icon", "content/image.png");
-			images.put("type",  "menuEntry");
-			images.put("id",  "images");
-			response.append("entries", images);	
 			
-			JSONObject settings = new JSONObject();
 			settings.put("name", "Settings");
-			settings.put("icon", "content/settings.png");
-			settings.put("type",  "menuEntry");
-			settings.put("id",  "settings");
-			response.append("entries", settings);	
 			*/
 		} catch(JSONException e) {
 			e.printStackTrace();
@@ -212,7 +133,7 @@ public class Server implements HttpHandler {
 		return response;
 	}
 	
-	public void handleAPIRequest(HttpExchange exchange) throws IOException {
+	private void handleAPIRequest(HttpExchange exchange) throws IOException {
 		String uri = exchange.getRequestURI().toString();
 		String request = uri.substring(5);
 		System.out.println("api: " + uri + " -> " + request);		
@@ -259,14 +180,14 @@ public class Server implements HttpHandler {
 		}				
 	}
 	
-	public boolean registerUserContentGroup(UserContentGroup group) {
+	public static boolean registerUserContentGroup(UserContentGroup group) {
 		String name = group.getName();
-		if(contentGroups.containsKey(name)) {
+		if(INSTANCE.contentGroups.containsKey(name)) {
 			System.err.println("ERROR: " + name + " was already added");
 			return false;
 		}
 		
-		contentGroups.put(name, group);		
+		INSTANCE.contentGroups.put(name, group);		
 		return true;
 	}
 }

@@ -1,13 +1,9 @@
 package main.tmdb;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import main.http.HTTPResponse;
 import main.tmdb.datastructure.TMDBSeason;
 import main.tmdb.datastructure.TMDBSeries;
-import main.utils.XMLFile.ElementList;
+import main.utils.ConfigElementGroup;
 
 public class TMDB {
 	
@@ -18,7 +14,7 @@ public class TMDB {
 	private String sessionId;
 	private int accountId;
 
-	public TMDB(ElementList config) {
+	public TMDB(ConfigElementGroup config) {
 		apiKey = config.getString("api_key", null);
 		if(apiKey == null)
 			throw new RuntimeException("TMDB: no API key provided!");

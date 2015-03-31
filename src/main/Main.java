@@ -1,7 +1,14 @@
 package main;
+import java.util.List;
+
 import main.data.DataController;
+import main.data.DataObject;
+import main.data.DataQuery;
+import main.data.DataSelector;
 import main.data.DataSeries;
-import main.utils.XMLFile;
+import main.server.SeriesLibraryPage;
+import main.server.content.UserContentGroup;
+import main.utils.ConfigFile;
 
 public class Main {
 
@@ -42,8 +49,8 @@ public class Main {
 		System.out.println("usage: [configFile=config.xml]");
 	}
 	
-	public static void main(String[] args) {
-						
+	public static void main(String[] args) {			
+		
 		String configFile = "config.xml";
 		
 		if(args.length == 1)
@@ -53,17 +60,26 @@ public class Main {
 			return;
 		}
 		
-		XMLFile config = new XMLFile(configFile);
+		ConfigFile config = new ConfigFile(configFile);
 		if(config.read() == false) {
 			return;
 		}
 		
-		DataController dataController = new DataController("series.mcif", "series.mcdf", "series.mccf");
-		dataController.printList();	
+		DataController dataController = new DataController(config.getElement("config.data"));		
 		DataSeries series = new DataSeries("Once upon a time");
-		dataController.add(series);
-		dataController.printList();
+		//dataController.add(series);
+		DataQuery query = new DataQuery(DataSeries.getClassName());
+		query.addQuery("name", "Once upon a time");
+		List<DataObject> selectedObjects = dataController.select(query);		
+		System.out.println("Selection:");
+		for(DataObject object : selectedObjects)
+			System.out.println(object);
+//		dataController.printList();
 		
+
+		//UserContentGroup group = new UserContentGroup("Series", "content/series.png");
+		//group.addPage(new SeriesLibraryPage());
+		//registerUserContentGroup(group);
 		//Server server = new Server();
 		
 	/*

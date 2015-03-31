@@ -11,7 +11,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+
+import main.utils.ConfigElementGroup;
 
 public class DataController {
 	
@@ -24,10 +28,14 @@ public class DataController {
 	private int fileLength;
 	private short nextClassIndex;
 	
-	public DataController(String indexFile, String dataFile, String classFile) {
-		this.indexFile = indexFile;
-		this.dataFile = dataFile;
-		this.classFile = classFile;		
+	public DataController(ConfigElementGroup config) {
+		String path = config.getString("path", "./");
+		File file = new File(path);
+		if(file.exists() == false)
+			file.mkdirs();
+		indexFile = path + "index.mcif";
+		dataFile = path + "data.mcdf";
+		classFile = path + "classes.mccf";	
 		readClassList();
 		readIndex();
 	}
@@ -115,8 +123,7 @@ public class DataController {
 			System.out.println(headers.get(id) + ": " + get(id));
 	}
 	
-	private short getClassId(String className) {
-		System.out.println("class: " + className);
+	private short getClassId(String className) {		
 		for(Short id : classList.keySet())
 			if(classList.get(id).equals(className))
 				return id;
@@ -161,36 +168,74 @@ public class DataController {
 		return id;
 	}
 	
-	public DataObject get(int id) {
-		DataRecordHeader header = headers.get(id);
-		if(header == null)
-			throw new RuntimeException("entry with ID " + id + " not found!");
-		
-		DataBuffer buffer;
+	private DataBuffer getBuffer(DataRecordHeader header) {	
 		try {
 			int dataLength = header.getDataLength();			
 			BufferedInputStream stream = new BufferedInputStream(new FileInputStream(dataFile));
-			buffer = new DataBuffer(dataLength);
+			DataBuffer buffer = new DataBuffer(dataLength);
 			stream.skip(header.getDataPointer());
 			int status = stream.read(buffer.getArray());
 			stream.close();			
 			if(status < dataLength)
-				throw new RuntimeException("failed to read data entry with ID " + id);
+				throw new RuntimeException("failed to read data entry with ID " + header.getDataId());
+			return buffer;
 		} catch(IOException e) {
-      System.err.println("ERROR: " + e.getMessage());  
-      return null;
-   }
-		
+			System.err.println("ERROR: " + e.getMessage());  
+			return null;
+		}
+	}
+	
+	private DataObject convertBufferToObject(DataRecordHeader header, DataBuffer buffer) {
 		String className = classList.get(header.getClassId());
 		if(className == null)
 			throw new RuntimeException("could not find class with ID " + header.getClassId());			
 		
 		try {
 			Class<?> myClass = Class.forName(className);
-			return (DataObject)myClass.getConstructor(DataBuffer.class).newInstance(buffer);
+			DataObject dataObject = (DataObject)myClass.getConstructor(DataBuffer.class).newInstance(buffer);
+			header.setBody(dataObject);
+			return dataObject;
 		} catch(Exception e) {
 			System.err.println("ERROR: " + e.getMessage());
 			return null;
-		}          
+		} 
+	}
+	
+	public DataObject get(int id) {
+		DataRecordHeader header = headers.get(id);
+		if(header == null)
+			throw new RuntimeException("entry with ID " + id + " not found!");
+		
+		if(header.hasBody())
+			return header.getBody();
+		
+		DataBuffer buffer = getBuffer(header);
+		if(buffer == null)
+			return null;
+		
+		return convertBufferToObject(header, buffer);       
+	}
+	
+	public List<DataObject> select(DataQuery query) {		
+		Short selectedClassId = getClassId(query.getQueryClassName());
+		if(selectedClassId < 0)
+			throw new RuntimeException("selected class " + query.getQueryClassName() + " not found");
+		
+		List<DataObject> dataObjects = new LinkedList<DataObject>();
+		for(DataRecordHeader header : headers.values()) {			
+			if(selectedClassId != header.getClassId())
+				continue;
+			
+			DataObject dataObject;
+			if(header.hasBody())
+				dataObject = header.getBody();
+			else
+				dataObject = convertBufferToObject(header, getBuffer(header));
+			
+			if(dataObject.match(query))				
+				dataObjects.add(dataObject);			
+		}
+		
+		return dataObjects;
 	}
 }

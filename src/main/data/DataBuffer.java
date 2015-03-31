@@ -42,7 +42,7 @@ public class DataBuffer {
 	
 	public String getString(int index, int length) {
 		char[] tmp = new char[length];
-		for(int i=0; i<length; i++)
+		for(int i = 0; i < length && i < buffer.capacity() - index ; i++)
 			tmp[i] = (char)buffer.get(index + i);	  
 		return new String(tmp);
 	}

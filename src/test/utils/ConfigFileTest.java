@@ -4,15 +4,17 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
-import main.utils.XMLFile;
+import main.utils.ConfigElement;
+import main.utils.ConfigElementGroup;
+import main.utils.ConfigFile;
 
 import org.junit.Test;
 
-public class XMLFileTest {
+public class ConfigFileTest {
 
 	@Test
 	public void testAddAndGetString() {
-		XMLFile file = new XMLFile("test.xml");
+		ConfigFile file = new ConfigFile("test.xml");
 		file.add("a.b.c1.d.e1.f", "test1");
 		file.add("a.b.c1.d.e2.f", "test2");
 		file.add("a.b.c1.d.e3",   "test3");
@@ -30,7 +32,7 @@ public class XMLFileTest {
 
 	@Test
 	public void testAddAndGetInt() {
-		XMLFile file = new XMLFile("test.xml");
+		ConfigFile file = new ConfigFile("test.xml");
 		file.add("a_b.c_d.number1", 1);
 		file.add("a_b.c_d.number2", 2);
 		file.add("a_b.number3",     3);
@@ -44,15 +46,15 @@ public class XMLFileTest {
 
 	@Test
 	public void testAddAndGetElement() {
-		XMLFile.ElementValue<String> element1 = new XMLFile.ElementValue<String>("test1");
-		XMLFile.ElementValue<Integer> element2 = new XMLFile.ElementValue<Integer>(2);
-		XMLFile.ElementValue<String> element3 = new XMLFile.ElementValue<String>("test3");
-		XMLFile.ElementValue<Integer> element4 = new XMLFile.ElementValue<Integer>(4);
-		XMLFile.ElementList list = new XMLFile.ElementList();
+		ConfigElement<String> element1 = new ConfigElement<String>("test1");
+		ConfigElement<Integer> element2 = new ConfigElement<Integer>(2);
+		ConfigElement<String> element3 = new ConfigElement<String>("test3");
+		ConfigElement<Integer> element4 = new ConfigElement<Integer>(4);
+		ConfigElementGroup list = new ConfigElementGroup();
 		list.add("l1", element1);
 		list.add("l2", element2);
 		
-		XMLFile file = new XMLFile("test.xml");
+		ConfigFile file = new ConfigFile("test.xml");
 		file.add("a.b.c.d.e.f.g1.h.i.j.k", list);
 		file.add("a.b.c.d.e.f.g2", element3);
 		file.add("a.b.c.d.e.f.g3.h.i", element4);
@@ -64,12 +66,12 @@ public class XMLFileTest {
 
 	@Test
 	public void testAddAndGetList() {
-		XMLFile file = new XMLFile("test.xml");
+		ConfigFile file = new ConfigFile("test.xml");
 		file.add("a.b.c.d1.e.f", 1);		
 		file.add("a.b.c.d2",    "2");
 		file.add("a.b.c.d3.e.f", 3);
 		
-		XMLFile.ElementList list = file.getElement("a.b.c");
+		ConfigElementGroup list = file.getElement("a.b.c");
 		assertEquals(1, list.getInt("d1.e.f", -1));
 		assertEquals("2", list.getString("d2", "failed"));
 		assertEquals(3, list.getInt("d3.e.f", -1));
@@ -79,7 +81,7 @@ public class XMLFileTest {
 	
 	@Test(expected=RuntimeException.class)
 	public void testCreateInvalidFile1() {
-		XMLFile file1 = new XMLFile("test.xml");
+		ConfigFile file1 = new ConfigFile("test.xml");
 		file1.add("a.b.c.d1.e.f", 1);
 		file1.add("a.b.c.d1", 2);
 		file1.add("b", 5);	
@@ -87,19 +89,19 @@ public class XMLFileTest {
 	
 	@Test
 	public void testRInvalidFile() {
-		XMLFile file = new XMLFile("test/testfiles/two_equal_tags.xml");
+		ConfigFile file = new ConfigFile("test/testfiles/two_equal_tags.xml");
 		assertFalse(file.read());
 		
-		file = new XMLFile("test/testfiles/two_root_nodes.xml");
+		file = new ConfigFile("test/testfiles/two_root_nodes.xml");
 		assertFalse(file.read());
 		
-		file = new XMLFile("test/testfiles/wrong_end_tag.xml");
+		file = new ConfigFile("test/testfiles/wrong_end_tag.xml");
 		assertFalse(file.read());
 	}
 	
 	@Test
 	public void testReadAndWriteCorrect() {
-		XMLFile file1 = new XMLFile("test.xml");
+		ConfigFile file1 = new ConfigFile("test.xml");
 		file1.add("a.b.c.d1.e.f1",  1);
 		file1.add("a.b.c.d1.e.f2", "2");
 		file1.add("a.b.c.d2",      "3");
@@ -109,7 +111,7 @@ public class XMLFileTest {
 		System.out.println("----------------------------");
 		file1.write();
 		
-		XMLFile file2 = new XMLFile("test.xml");		
+		ConfigFile file2 = new ConfigFile("test.xml");		
 		assertTrue(file2.read());
 		System.out.println("test:");
 		System.out.println(file2.toString());
