@@ -34,6 +34,14 @@ public class DataBuffer {
 		return buffer.getInt(index);
 	}	
 	
+	public void putFloat(int index, float value) {
+		buffer.putFloat(index, value);
+	}
+	
+	public float getFloat(int index) {
+		return buffer.getFloat(index);
+	}
+	
 	public void putString(int index, String value) {
 		byte[] bytes = value.getBytes();
 		for(int i = 0; i < bytes.length; i++)

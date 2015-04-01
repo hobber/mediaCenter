@@ -4,10 +4,11 @@ import java.util.List;
 import main.data.DataController;
 import main.data.DataObject;
 import main.data.DataQuery;
-import main.data.DataSelector;
-import main.data.DataSeries;
-import main.server.SeriesLibraryPage;
-import main.server.content.UserContentGroup;
+import main.http.HTTPUtils;
+import main.server.Server;
+import main.tmdb.TMDB;
+import main.tmdb.datastructure.TMDBSearchResult;
+import main.tmdb.datastructure.TMDBSeries;
 import main.utils.ConfigFile;
 
 public class Main {
@@ -49,10 +50,8 @@ public class Main {
 		System.out.println("usage: [configFile=config.xml]");
 	}
 	
-	public static void main(String[] args) {			
-		
-		String configFile = "config.xml";
-		
+	public static void main(String[] args) {					
+		String configFile = "config.xml";		
 		if(args.length == 1)
 			configFile = args[0];
 		else if(args.length > 1) {
@@ -64,34 +63,50 @@ public class Main {
 		if(config.read() == false) {
 			return;
 		}
-		
+						
 		DataController dataController = new DataController(config.getElement("config.data"));		
-		DataSeries series = new DataSeries("Once upon a time");
+		TMDB tmdb = new TMDB(config.getElement("config.tmdb"));		
+		PluginController.startPlugins();
+		
+		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
+		for(TMDBSearchResult series : seriesList)
+			System.out.println(series);
+		
+		if(Server.run(config.getElement("config.server")) == false)
+			return;		
+		
+//		TMDBSeries series = tmdb.getSeries(39272);
+//		System.out.println(series);
+////		dataController.add(series);
+//		DataQuery query = new DataQuery(TMDBSeries.getClassName());
+//		query.addQuery("name", "Once Upon a Time");
+//		List<DataObject> selectedObjects = dataController.select(query);		
+//		System.out.println("Selection:");
+//		for(DataObject object : selectedObjects)
+//			System.out.println(object);
+		
+		
+/*  DataSeries series = new DataSeries("Vorstadtweiber");
 		//dataController.add(series);
 		DataQuery query = new DataQuery(DataSeries.getClassName());
 		query.addQuery("name", "Once upon a time");
 		List<DataObject> selectedObjects = dataController.select(query);		
 		System.out.println("Selection:");
 		for(DataObject object : selectedObjects)
-			System.out.println(object);
-//		dataController.printList();
+			System.out.println(object);*/
 		
 
 		//UserContentGroup group = new UserContentGroup("Series", "content/series.png");
 		//group.addPage(new SeriesLibraryPage());
 		//registerUserContentGroup(group);
-		//Server server = new Server();
+		//
 		
-	/*
-		HTTPServer server = new HTTPServer();
-		if(server.isOnline() == false) {
-			System.err.println("ERROR: server could not be startet!");
-			return;
-		}
-		
-		TMDB tmdb = new TMDB(config.getElement("config.tmdb")); 
-		*/
-		
+	
+//		HTTPServer server = new HTTPServer();
+//		if(server.isOnline() == false) {
+//			System.err.println("ERROR: server could not be startet!");
+//			return;
+//		}
 		
 /*		
 		Spotify spotify = new Spotify(server, config);

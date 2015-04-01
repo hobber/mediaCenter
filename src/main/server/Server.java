@@ -4,16 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import main.http.HTTPUtils;
 import main.server.content.UserContentGroup;
 import main.server.content.UserContentPage;
+import main.utils.ConfigElementGroup;
 
+import org.apache.http.client.methods.HttpPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,23 +26,43 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Server implements HttpHandler {
 	
-	private final static String RESSOURCE_PATH = "./user_interface";
-	static final Server INSTANCE = new Server();
+	private static final String RESSOURCE_PATH = "./user_interface";
+	private static Server INSTANCE;
+	private HttpServer server;
+	private int portNumber;
 	
 	private Map<String, UserContentGroup> contentGroups = new HashMap<String, UserContentGroup>();
 	
-	private Server() {
-		try {
-			HttpServer server = HttpServer.create(new InetSocketAddress(11111), 0);
-			server.createContext("/", this);
-			server.setExecutor(null);
-			server.start();
-			System.out.println("server started...");			
-		} catch(Exception e) {
-			e.printStackTrace();
+	private Server(ConfigElementGroup config) {
+		portNumber = config.getInt("port", 11011);
+		if(createServer() == false) {
+			HttpPost request = new HttpPost("http://localhost:"+portNumber+"/terminate");
+			HTTPUtils.sendHTTPPostRequest(request);
+			createServer();
 		}
 	}
-
+	
+	private boolean createServer() {
+		try {
+			server = HttpServer.create(new InetSocketAddress(portNumber), 0);
+			server.createContext("/", this);
+			server.setExecutor(null);			
+			return true;			
+		} catch(Exception e) {
+			return false;
+		}
+	}
+	
+	public static synchronized boolean run(ConfigElementGroup config) {
+		INSTANCE = new Server(config);
+		if(INSTANCE.server == null) {
+			System.err.println("ERROR: address already in use, close other server instance.");
+			return false;
+		}
+		INSTANCE.server.start();
+		return true;
+	}
+	
 	private static long copy(InputStream is, OutputStream os) {
 		byte[] buf = new byte[8192];
 		long total = 0;
@@ -154,9 +176,11 @@ public class Server implements HttpHandler {
 	}
 
 	@Override
-	public void handle(HttpExchange exchange) throws IOException {		
-		if(exchange.getRequestMethod().equals("GET")) {					
-			String uri = exchange.getRequestURI().toString();			
+	public void handle(HttpExchange exchange) throws IOException {	
+		String method = exchange.getRequestMethod();
+		String uri = exchange.getRequestURI().toString();
+		
+		if(method.equals("GET")) {											
 			if(uri.startsWith("/api")) {
 				handleAPIRequest(exchange);
 			}
@@ -169,11 +193,17 @@ public class Server implements HttpHandler {
 				os.close();	
 			}
 		}
-		else if(exchange.getRequestMethod().equals("POST")) {
-			System.out.print("post ");
-	  	copy(exchange.getRequestBody(), System.out);
-	  	System.out.println("");
-			exchange.sendResponseHeaders(200, 0);
+		else if(method.equals("POST")) {
+			if(uri.startsWith("/terminate")) {
+				exchange.sendResponseHeaders(200, 0);
+				server.stop(0);
+			}
+			else {
+				System.out.print("post ");
+				copy(exchange.getRequestBody(), System.out);
+				System.out.println("");
+				exchange.sendResponseHeaders(200, 0);
+			}
 		}
 		else {
 			exchange.sendResponseHeaders(405, 0);

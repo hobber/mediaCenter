@@ -1,11 +1,23 @@
 package main.tmdb;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+
+import main.Plugin;
 import main.http.HTTPResponse;
-import main.tmdb.datastructure.TMDBSeason;
+import main.http.HTTPUtils;
+import main.tmdb.datastructure.TMDBGenreList;
+import main.tmdb.datastructure.TMDBSearchResult;
 import main.tmdb.datastructure.TMDBSeries;
 import main.utils.ConfigElementGroup;
+import main.utils.JSONArray;
+import main.utils.JSONContainer;
 
-public class TMDB {
+public class TMDB extends Plugin {
+	
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	
 	private String apiKey;
 	private String userName;
@@ -13,8 +25,17 @@ public class TMDB {
 	private String requestToken;	
 	private String sessionId;
 	private int accountId;
+	
+	private ConfigElementGroup config;
+ 
+	private TMDBGenreList genres = new TMDBGenreList(); 
 
 	public TMDB(ConfigElementGroup config) {
+		super("TMDB");
+		this.config = config;
+	}
+	
+	public void start() {
 		apiKey = config.getString("api_key", null);
 		if(apiKey == null)
 			throw new RuntimeException("TMDB: no API key provided!");
@@ -39,29 +60,15 @@ public class TMDB {
 		if(getAccountId() == false)
 			throw new RuntimeException("TMDB: could not get account ID!");
 		
-		/*
-		getAccountLists();
-		getFavouriteMovies();
-		getFavouriteSeries();
-		getWatchListMovies();
-		getWatchListSeries();
-		getPopularMovies();*/
-		//searchSeries();
-		
-		TMDBSeries series = getSeries(39272);
-		System.out.println(series);
-		for(int i=0; i<series.numberOfSeasons(); i++)
-			System.out.println(getSeason(39272, i));		
-		
-		
-		System.out.println("TMDB: everything fine :)");
+		if(getGenres() == false)
+			throw new RuntimeException("TMDB: could not get genre list!");				
 	}
 	
-	public void signRequest(TMDBRequest request) {
+	private void signRequest(TMDBRequest request) {
 		request.addQuery("api_key", apiKey);
 	}
 	
-	public boolean getRequestToken() {
+	private boolean getRequestToken() {
 		TMDBRequest request = new TMDBRequest("authentication/token/new");
 		signRequest(request);
 		HTTPResponse response = request.sendRequest();
@@ -74,7 +81,7 @@ public class TMDB {
 		return true;		
 	}
 	
-	public boolean validateLogin() {
+	private boolean validateLogin() {
 		TMDBRequest request = new TMDBRequest("authentication/token/validate_with_login");
 		request.addQuery("request_token", requestToken);
 		request.addQuery("username", userName);
@@ -85,7 +92,7 @@ public class TMDB {
 		return response.getResponseBoolean("success", false);		
 	}
 	
-	public boolean getSessionId() {
+	private boolean getSessionId() {
 		TMDBRequest request = new TMDBRequest("authentication/session/new");
 		request.addQuery("request_token", requestToken);
 		signRequest(request);
@@ -99,7 +106,7 @@ public class TMDB {
 		return true;
 	}
 	
-	public boolean getAccountId() {
+	private boolean getAccountId() {
 		TMDBRequest request = new TMDBRequest("account");
 		request.addQuery("session_id", sessionId);
 		signRequest(request);
@@ -108,6 +115,24 @@ public class TMDB {
 		accountId = response.getResponseInt("id", -1);
 		if(accountId < 0)
 			return false;
+		return true;
+	}
+
+	private boolean getGenres() {
+		TMDBRequest requestMovie = TMDBGenreList.createRequestMovie();
+		signRequest(requestMovie);
+		HTTPResponse responseMovie = requestMovie.sendRequest();
+		if(responseMovie.isValid() == false)
+			return false;
+		genres.add(responseMovie.getJSONBody().getArray("genres"));
+		
+		TMDBRequest requestSeries = TMDBGenreList.createRequestSeries();
+		signRequest(requestSeries);
+		HTTPResponse responseSeries = requestSeries.sendRequest();
+		if(responseSeries.isValid() == false)
+			return false;
+		genres.add(responseSeries.getJSONBody().getArray("genres"));	
+		
 		return true;
 	}
 	
@@ -156,28 +181,62 @@ public class TMDB {
 		signRequest(request);		
 		HTTPResponse response = request.sendRequest();
 		System.out.println(response);			
-	}
-	
-	public void searchSeries() {
+	}	
+		
+	public List<TMDBSearchResult> searchSeries(String seriesName) {
 		TMDBRequest request = new TMDBRequest("search/tv");
-		request.addQuery("query", "Once+upon+a+time"); //39272
-		signRequest(request);		
-		HTTPResponse response = request.sendRequest();
-		System.out.println(response);	
+		request.addQuery("query", HTTPUtils.encodeTerm(seriesName));
+		signRequest(request);
+		
+		JSONContainer response = request.sendRequest().getJSONBody();
+		if(response == null)
+			throw new RuntimeException("TMDB: failed to search for " + seriesName);
+		
+		JSONArray array = response.getArray("results");
+		List<TMDBSearchResult> list = new LinkedList<TMDBSearchResult>();
+		for(int i=0; i<array.length(); i++) {
+			JSONContainer series = array.getContainer(i);
+			Integer id = series.getInt("id", null);
+			String name = series.getString("name", null);
+			String airDate = series.getString("first_air_date", null);
+			String posterPath = series.getString("poster_path", "");
+			
+			if(id == null || name == null) {
+				System.err.println("TMDB: failed to read a search result for " + seriesName + " (" + series + ")");
+				continue;
+			}
+			
+			list.add(new TMDBSearchResult(id, name + " (" + getYear(airDate) + ")", posterPath));
+		}
+		return list;	
 	}
 	
 	public TMDBSeries getSeries(int id) {
 		TMDBRequest request = TMDBSeries.createRequest(id);		
 		signRequest(request);		
 		HTTPResponse response = request.sendRequest();		
-		return new TMDBSeries(response);		
-		//http://image.tmdb.org/t/p/w500/6S8rM2Qq3B3g3dgAnJlilgUc2dE.jpg?api_key=5a18658d75c3eb554e23c1102133c187
+		return new TMDBSeries(response.getJSONBody());
 	}
-	
+	/*
 	public TMDBSeason getSeason(int seriesId, int season) {
 		TMDBRequest request = TMDBSeason.createRequest(seriesId, season);		
 		signRequest(request);		
 		HTTPResponse response = request.sendRequest();		
 		return new TMDBSeason(response);
+	}
+	*/
+	
+	private String getYear(String date) {
+		if(date == null)
+			return "?";
+				
+		try {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(DATE_FORMAT.parse(date));
+			return Integer.toString(calendar.get(Calendar.YEAR));
+		} catch(Exception e) {
+			System.err.println("ERROR: " + e);
+			return "?";
+		}		
 	}
 }

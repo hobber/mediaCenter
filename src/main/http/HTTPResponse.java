@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
+import main.utils.JSONContainer;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -48,11 +50,11 @@ public class HTTPResponse {
 		}
 	}
 	
-	public boolean hasBody() {
+	public boolean hasHTMLBody() {
 		return htmlBody.length() > 0;
 	}
 	
-	public String getBody() {
+	public String getHTMLBody() {
 		return htmlBody;
 	}
 	
@@ -60,6 +62,14 @@ public class HTTPResponse {
 		return isValid;
 	}
 	
+	public JSONContainer getJSONBody() {
+		return new JSONContainer(response);
+	}
+	
+	
+	
+	
+	//TODO: remove code below!!
 	public String getResponseString(String key) {
 		try {
 			Object value = response.get(key);
@@ -103,6 +113,17 @@ public class HTTPResponse {
 			if(value == null)
 				return defaultValue;
 			return Integer.parseInt(value.toString());		
+		} catch (JSONException e) {
+			return defaultValue;
+		}
+	}
+	
+	public float getResponseFloat(String key, float defaultValue) {
+		try {
+			Object value = response.get(key);
+			if(value == null)
+				return defaultValue;
+			return Float.parseFloat(value.toString());		
 		} catch (JSONException e) {
 			return defaultValue;
 		}

@@ -2,7 +2,7 @@ package main.data;
 
 
 
-public class DataRecordHeader implements DataObject {
+public class DataRecordHeader {
 	
 	private int dataId;
   private int dataPointer;
@@ -44,7 +44,6 @@ public class DataRecordHeader implements DataObject {
 		return classId;
 	}	
 	
-	@Override
 	public int getEntrySize() {
 		return getByteCount();
 	}
@@ -70,7 +69,6 @@ public class DataRecordHeader implements DataObject {
 		return String.format("%08d - %08d - %08d - %04d - %d", dataId, dataPointer, dataLength, classId, used ? 1 : 0);
 	}
 
-	@Override
   public DataBuffer serialize() {
 		DataBuffer buffer = new DataBuffer(getEntrySize());
 		buffer.putInt(0, dataId);
@@ -79,10 +77,5 @@ public class DataRecordHeader implements DataObject {
 		buffer.putShort(12, classId);
 		buffer.putByte(14, (byte)(used ? 1 : 0));
 		return buffer;
-	}
-	
-	@Override
-	public boolean match(DataQuery dataQuery) {		
-		return true;
-	}
+	}	
 }

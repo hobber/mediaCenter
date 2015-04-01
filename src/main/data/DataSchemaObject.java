@@ -2,10 +2,10 @@ package main.data;
 
 public abstract class DataSchemaObject<Type> {
 	protected Type value;
-	protected short index;
+	protected int index;
 	protected String name;
 	
-	protected DataSchemaObject(short index, String name) {
+	protected DataSchemaObject(int index, String name) {
 		this.index = index;
 		this.name = name;
 	}
@@ -18,9 +18,9 @@ public abstract class DataSchemaObject<Type> {
 		return value;
 	}
 	
-	public abstract short getNumberOfHeaderBytes();
-	public abstract short getObjectTotalSize();
+	public abstract int getNumberOfHeaderBytes();
+	public abstract int getObjectTotalSize();
 	public abstract void readValue(DataBuffer buffer);
-	public abstract short writeValue(DataBuffer buffer, short offset);	
+	public abstract int writeValue(DataBuffer buffer, int offset);	
 	public abstract boolean match(String mask);
 }

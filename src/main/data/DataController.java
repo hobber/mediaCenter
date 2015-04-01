@@ -117,22 +117,15 @@ public class DataController {
     }
 	}
 	
-	public void printList() {
-		System.out.println(indexFile + " contains " + headers.size() + " entries:");
-		for(Integer id : headers.keySet())
-			System.out.println(headers.get(id) + ": " + get(id));
-	}
-	
 	private short getClassId(String className) {		
 		for(Short id : classList.keySet())
 			if(classList.get(id).equals(className))
-				return id;
+				return id;		
 		
-		short id = nextClassIndex++;
-		classList.put(id, className);
+		short id = nextClassIndex++;		
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(classFile));			
-			writer.write(String.format("%05d %s", id, className));						
+			BufferedWriter writer = new BufferedWriter(new FileWriter(classFile, true));			
+			writer.write(String.format("%05d %s\n", id, className));						
 			writer.flush();
 			writer.close();					
     } catch(IOException e) {
@@ -222,7 +215,7 @@ public class DataController {
 			throw new RuntimeException("selected class " + query.getQueryClassName() + " not found");
 		
 		List<DataObject> dataObjects = new LinkedList<DataObject>();
-		for(DataRecordHeader header : headers.values()) {			
+		for(DataRecordHeader header : headers.values()) {	
 			if(selectedClassId != header.getClassId())
 				continue;
 			
