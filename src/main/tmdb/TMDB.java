@@ -8,6 +8,10 @@ import java.util.List;
 import main.Plugin;
 import main.http.HTTPResponse;
 import main.http.HTTPUtils;
+import main.server.Server;
+import main.server.content.UserContentGroup;
+import main.tmdb.content.TMDBLibraryPage;
+import main.tmdb.content.TMDBSearchPage;
 import main.tmdb.datastructure.TMDBGenreList;
 import main.tmdb.datastructure.TMDBSearchResult;
 import main.tmdb.datastructure.TMDBSeries;
@@ -61,7 +65,10 @@ public class TMDB extends Plugin {
 			throw new RuntimeException("TMDB: could not get account ID!");
 		
 		if(getGenres() == false)
-			throw new RuntimeException("TMDB: could not get genre list!");				
+			throw new RuntimeException("TMDB: could not get genre list!");	
+		
+		if(createContentPages() == false)
+			throw new RuntimeException("TMDB: could not create content pages!");
 	}
 	
 	private void signRequest(TMDBRequest request) {
@@ -134,6 +141,13 @@ public class TMDB extends Plugin {
 		genres.add(responseSeries.getJSONBody().getArray("genres"));	
 		
 		return true;
+	}
+	
+	private boolean createContentPages() {
+		UserContentGroup group = new UserContentGroup("Series", "content/series.png");
+		group.addPage(new TMDBLibraryPage());
+		group.addPage(new TMDBSearchPage(this, TMDBSearchPage.Type.SERIES));
+		return Server.registerUserContentGroup(group);		
 	}
 	
 	public void getAccountLists() {
@@ -225,6 +239,10 @@ public class TMDB extends Plugin {
 		return new TMDBSeason(response);
 	}
 	*/
+	
+	public String getPosterURL(String posterPath) {
+		return "http://image.tmdb.org/t/p/w500/" + posterPath +"?api_key="+apiKey;
+	}
 	
 	private String getYear(String date) {
 		if(date == null)

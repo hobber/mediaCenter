@@ -1,12 +1,15 @@
 app.controller('ContentController', ['$scope','$rootScope', '$compile', 
   function($scope, $rootScope, $compile) {
 
+    var menuDiv;
     var contentDiv;
     var contentLinks = [];
     var contentStack = [];
+    var searchTerm;
 
     $scope.init = function() {
-      contentDiv = document.getElementById('content');
+      menuDiv = document.getElementById('contentHeader');
+      contentDiv = document.getElementById('contentBody');
     };
 
     contentFactories = {};
@@ -55,26 +58,49 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
+    contentFactories.backButton = function(definition) {
+      var element = document.createElement('img');
+      element.setAttribute('id', 'contentItem');
+      element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px;');
+      element.setAttribute('width', 38);
+      element.setAttribute('height', 38);
+      element.setAttribute('src', 'content/back.png');
+      element.setAttribute('alt', '&nbsp');
+      element.setAttribute('ng-click', 'back()');
+      $compile(element)($scope);
+      return element;
+    };
+
+    contentFactories.searchField = function(definition) {
+      var element = document.createElement('input');
+      element.setAttribute('type', 'text');
+      element.setAttribute('id', 'searchBox');
+      element.setAttribute('style', 'right: ' + definition.x + 'px; top: 2px;');
+      element.setAttribute('placeholder', 'Search...');
+      element.setAttribute('ng-keypress', 'search(\'' + definition.context + '\', $event)');    
+      element.setAttribute('ng-model', 'searchTerm');   
+      $compile(element)($scope);
+      return element;
+    };
+
     var showErrorPage = function() {
       contentDiv.innerHTML = 'content not found	';
     };
 
-    var addMenuBar = function() {
+    var showMenu = function(menu) {
+      menuDiv.innerHTML = '';
+      if(menu === undefined)
+        return;
+
       var menuBar = document.createElement('div');
       menuBar.setAttribute('id', 'contentMenu');
-      contentDiv.appendChild(menuBar);
+      menuDiv.appendChild(menuBar);
 
-      var back = document.createElement('img');
-      back.setAttribute('id', 'contentItem');
-      back.setAttribute('style', 'right: 250px; top: 0px;');
-      back.setAttribute('width', 38);
-      back.setAttribute('height', 38);
-      back.setAttribute('src', 'content/back.png');
-      back.setAttribute('alt', '&nbsp');
-      back.setAttribute('ng-click', 'back()');
-      $compile(back)($scope);
-      menuBar.appendChild(back);
-    };
+      for(var i = 0; i < menu.length; i++) {
+        var element = menu[i];
+        menuBar.appendChild(contentFactories[element.type](element));
+      }
+    }
 
     var showContent = function(content) {
       if(content === undefined) {
@@ -85,8 +111,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       contentStack.push(content);
       contentDiv.innerHTML = '';
       contentLinks = [];
-      
-      addMenuBar();
+
       for(var i = 0; i < content.length; i++) {
         var groupElement = contentFactories.group(content[i]);
         contentDiv.appendChild(groupElement);
@@ -95,11 +120,15 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
     $rootScope.$on('showContent', function(event, id) {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', 'http://localhost:11111/api?content=' + id, true); 
+      xmlHttp.open('GET', 'http://localhost:11011/api?content=' + id, true); 
       xmlHttp.send();          
       xmlHttp.onloadend = function() {
-        if(xmlHttp.status === 200)
-          showContent(JSON.parse(xmlHttp.response).content);
+        if(xmlHttp.status === 200) {
+          var response = JSON.parse(xmlHttp.response); 
+          contentStack = [];
+          showMenu(response.menu);
+          showContent(response.content);
+        }
         else
           console.log('request failed');
       }
@@ -121,6 +150,23 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       contentStack.pop();
       var content = contentStack.pop();
       showContent(content);
+    };  
+
+    $scope.search = function(context, event) {
+      if(event.keyCode !== 13)
+        return;
+
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET', 'http://localhost:11011/api?context=' + context + '&search=' + $scope.searchTerm, true); 
+      xmlHttp.send();          
+      xmlHttp.onloadend = function() {
+        if(xmlHttp.status === 200) {
+          var response = JSON.parse(xmlHttp.response); 
+          showContent(response.content);
+        }
+        else
+          console.log('request failed:', xmlHttp);
+      }
     };  
   }
 ]);

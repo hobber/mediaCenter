@@ -65,15 +65,17 @@ public class Main {
 		}
 						
 		DataController dataController = new DataController(config.getElement("config.data"));		
-		TMDB tmdb = new TMDB(config.getElement("config.tmdb"));		
-		PluginController.startPlugins();
+		TMDB tmdb = new TMDB(config.getElement("config.tmdb"));				
 		
-		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
-		for(TMDBSearchResult series : seriesList)
-			System.out.println(series);
+//		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
+//		for(TMDBSearchResult series : seriesList)
+//			System.out.println(series);
 		
 		if(Server.run(config.getElement("config.server")) == false)
 			return;		
+		
+		PluginController.startPlugins();
+		System.out.println("server started...");
 		
 //		TMDBSeries series = tmdb.getSeries(39272);
 //		System.out.println(series);
@@ -94,12 +96,7 @@ public class Main {
 		System.out.println("Selection:");
 		for(DataObject object : selectedObjects)
 			System.out.println(object);*/
-		
 
-		//UserContentGroup group = new UserContentGroup("Series", "content/series.png");
-		//group.addPage(new SeriesLibraryPage());
-		//registerUserContentGroup(group);
-		//
 		
 	
 //		HTTPServer server = new HTTPServer();

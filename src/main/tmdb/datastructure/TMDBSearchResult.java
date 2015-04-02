@@ -12,6 +12,18 @@ public class TMDBSearchResult {
 		this.posterPath = posterPath;
 	}
 	
+	public int getId() {
+		return id;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public String getPosterPath() {
+		return posterPath;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%04d: %s", id, description);

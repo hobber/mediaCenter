@@ -3,6 +3,7 @@ package main.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -99,13 +100,7 @@ public class Server implements HttpHandler {
 			return new JSONObject();
 		}
 		
-		JSONObject content = new JSONObject();
-		try {
-			content.put("content", page.toJSON());
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());			
-		}
-		return content;		
+		return page.toJSON();		
 	}
 	
 	private JSONObject getMenu() {
@@ -155,6 +150,48 @@ public class Server implements HttpHandler {
 		return response;
 	}
 	
+	private JSONObject handleContextSpecificRequest(String request) {		
+		int indexPoint = request.indexOf(".");
+		int indexParameter = request.indexOf("&");
+		if(indexParameter < 0)
+			indexParameter = request.length() - 1;
+		
+		if(indexPoint < 0 || indexPoint > indexParameter) {
+			System.err.println("ERROR: " + request + " contains no valid context");
+			return new JSONObject();
+		}
+		
+		String groupName = request.substring(0, indexPoint);
+		UserContentGroup contentGroup = contentGroups.get(groupName);
+		if(contentGroup == null) {
+			System.err.println("ERROR: content group " + groupName + " not found");			
+			return new JSONObject();
+		}
+		
+		String pageName = request.substring(indexPoint + 1, indexParameter);
+		String query = request.substring(indexParameter + 1); 
+		return contentGroup.handle(pageName, query);		
+	}
+	
+	private byte[] convert(String response) {
+		try {
+			//response = "45394: C'era una volta la città dei matti... (?)";
+			byte[] bytes = response.getBytes("UTF-8");
+			for(int i=0; i<bytes.length; i++) {
+				byte b = bytes[i];
+				if(b >= 0)
+					continue;
+								
+				System.out.println("invalid character: " + bytes[i] + " = " + response.charAt(i));
+				bytes[i] = '?';
+			}
+			return bytes;
+		} catch(UnsupportedEncodingException e) {
+			System.err.println("ERROR: " + e.getMessage());
+			return new byte[0];
+		}
+	}
+	
 	private void handleAPIRequest(HttpExchange exchange) throws IOException {
 		String uri = exchange.getRequestURI().toString();
 		String request = uri.substring(5);
@@ -163,15 +200,21 @@ public class Server implements HttpHandler {
 		Headers headers = exchange.getResponseHeaders();
 		headers.add("Content-Type", "application/jsonp; charset=UTF-8");
 		
-		JSONObject buffer;
+		JSONObject buffer = new JSONObject();
 		if(request.startsWith("menu"))
 			buffer = getMenu();
-		else
+		else if(request.startsWith("context=")) {			
+			buffer = handleContextSpecificRequest(request.substring(8));
+		}
+		else if(request.startsWith("content="))
 			buffer = getContent(request.substring(8));
-		String response = buffer.toString();
-		exchange.sendResponseHeaders(200, response.length());
+		else
+			System.err.println("ERROR: " + request + " is an invalid API request");
+		
+		byte[] response = convert(buffer.toString());
+		exchange.sendResponseHeaders(200, response.length);
 		OutputStream os = exchange.getResponseBody();
-		os.write(response.getBytes("UTF-8"));
+		os.write(response);		
 		os.close();	  
 	}
 
@@ -210,7 +253,7 @@ public class Server implements HttpHandler {
 		}				
 	}
 	
-	public static boolean registerUserContentGroup(UserContentGroup group) {
+	public static boolean registerUserContentGroup(UserContentGroup group) {		
 		String name = group.getName();
 		if(INSTANCE.contentGroups.containsKey(name)) {
 			System.err.println("ERROR: " + name + " was already added");

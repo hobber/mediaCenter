@@ -1,9 +1,11 @@
 package main.server.content;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 public interface UserContentPage {
 
 	public String getName();
-	public JSONArray toJSON();
+	public JSONObject toJSON();
+	public void setGroup(UserContentGroup group);
+	public JSONObject handle(String query);
 }

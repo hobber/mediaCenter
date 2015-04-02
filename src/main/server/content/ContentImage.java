@@ -6,12 +6,12 @@ public class ContentImage extends ContentItem {
 
 	public ContentImage(int x, int y, int width, int height, String src) {
 		try {
-			this.put("type", "img");
-			this.put("x", x);
-			this.put("y", y);
-			this.put("width", width);
-			this.put("height", height);
-			this.put("src", src);
+			put("type", "img");
+			put("x", x);
+			put("y", y);
+			put("width", width);
+			put("height", height);
+			put("src", src);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

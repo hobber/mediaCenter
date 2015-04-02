@@ -93,7 +93,7 @@ app.controller('MenuController', ['$scope', '$rootScope', '$compile',
 
     $scope.init = function() {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', 'http://localhost:11111/api?menu', true);
+      xmlHttp.open('GET', 'http://localhost:11011/api?menu', true);
 //    POST:  xmlHttp.send('was los?');   
       xmlHttp.send();          
       xmlHttp.onloadend = function() {
