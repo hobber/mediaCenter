@@ -1,14 +1,7 @@
 package main;
-import java.util.List;
-
 import main.data.DataController;
-import main.data.DataObject;
-import main.data.DataQuery;
-import main.http.HTTPUtils;
 import main.server.Server;
 import main.tmdb.TMDB;
-import main.tmdb.datastructure.TMDBSearchResult;
-import main.tmdb.datastructure.TMDBSeries;
 import main.utils.ConfigFile;
 
 public class Main {
@@ -65,7 +58,7 @@ public class Main {
 		}
 						
 		DataController dataController = new DataController(config.getElement("config.data"));		
-		TMDB tmdb = new TMDB(config.getElement("config.tmdb"));				
+		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				
 		
 //		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
 //		for(TMDBSearchResult series : seriesList)

@@ -45,10 +45,11 @@
   position: relative;
   background-color: #606060;
   height: 38px;
+  margin-bottom: 1px;
 }
 #contentBody {
   overflow-y: auto;
-  height: calc(100% - 38px);
+  height: calc(100% - 39px);
 }
 #contentContainer {
   position: relative; 

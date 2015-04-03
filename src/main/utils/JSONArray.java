@@ -23,6 +23,15 @@ public class JSONArray {
 			return defaultValue;
 		}						
 	}
+	
+	public Short getShort(int index, Short defaultValue) {
+		try {
+			return (short)body.getInt(index);
+		} catch(JSONException e) {
+			System.err.println("ERROR: " + e.getMessage());
+			return defaultValue;
+		}				
+	}
 
 	public Integer getInt(int index, Integer defaultValue) {
 		try {

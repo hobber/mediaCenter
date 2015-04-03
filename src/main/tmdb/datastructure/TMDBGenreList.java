@@ -39,6 +39,10 @@ public class TMDBGenreList {
 		}
 	}	
 	
+	public String get(Integer id) {
+		return genreList.get(id);
+	}
+	
 	@Override
 	public String toString() {
 		String s = "";

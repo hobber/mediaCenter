@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,23 +176,26 @@ public class Server implements HttpHandler {
 		return contentGroup.handle(pageName, query);		
 	}
 	
-	private byte[] convert(String response) {
-		try {
-			//response = "45394: C'era una volta la città dei matti... (?)";
-			byte[] bytes = response.getBytes("UTF-8");
-			for(int i=0; i<bytes.length; i++) {
-				byte b = bytes[i];
-				if(b >= 0)
-					continue;
-								
-				System.out.println("invalid character: " + bytes[i] + " = " + response.charAt(i));
-				bytes[i] = '?';
+	private byte[] convert(String response) {		
+		ArrayList<Byte> bytes = new ArrayList<Byte>(response.length());
+		for(int i=0; i<response.length(); i++) {
+			char c = response.charAt(i);
+			if(c <= 127)
+				bytes.add((byte)c);
+			else { 				
+				byte[] tmp = Charset.forName("UTF-8").encode("" + c).array();
+				for(int j=0; j<2; j++) {
+					String s = String.format("%%%02X", tmp[j] < 0 ? (int)(tmp[j]+256) : (int)tmp[j]);
+					for(int l=0; l<3; l++)
+						bytes.add((byte)s.charAt(l));
+				}
 			}
-			return bytes;
-		} catch(UnsupportedEncodingException e) {
-			System.err.println("ERROR: " + e.getMessage());
-			return new byte[0];
 		}
+		
+		byte[] buffer = new byte[bytes.size()];
+		for(int i=0; i< bytes.size(); i++)
+			buffer[i] = bytes.get(i);
+		return buffer;		
 	}
 	
 	private void handleAPIRequest(HttpExchange exchange) throws IOException {
@@ -219,38 +225,43 @@ public class Server implements HttpHandler {
 	}
 
 	@Override
-	public void handle(HttpExchange exchange) throws IOException {	
-		String method = exchange.getRequestMethod();
-		String uri = exchange.getRequestURI().toString();
-		
-		if(method.equals("GET")) {											
-			if(uri.startsWith("/api")) {
-				handleAPIRequest(exchange);
+	public void handle(HttpExchange exchange) throws IOException {
+		try {
+			String method = exchange.getRequestMethod();
+			String uri = exchange.getRequestURI().toString();
+
+			if(method.equals("GET")) {											
+				if(uri.startsWith("/api")) {
+					handleAPIRequest(exchange);
+				}
+				else {
+					String path = RESSOURCE_PATH + uri;		  
+					byte[] response = Files.readAllBytes(Paths.get(path));
+					exchange.sendResponseHeaders(200, response.length);
+					OutputStream os = exchange.getResponseBody();
+					os.write(response);
+					os.close();	
+				}
+			}
+			else if(method.equals("POST")) {
+				if(uri.startsWith("/terminate")) {
+					exchange.sendResponseHeaders(200, 0);
+					server.stop(0);
+				}
+				else {
+					System.out.print("post ");
+					copy(exchange.getRequestBody(), System.out);
+					System.out.println("");
+					exchange.sendResponseHeaders(200, 0);
+				}
 			}
 			else {
-				String path = RESSOURCE_PATH + uri;		  
-				byte[] response = Files.readAllBytes(Paths.get(path));
-				exchange.sendResponseHeaders(200, response.length);
-				OutputStream os = exchange.getResponseBody();
-				os.write(response);
-				os.close();	
-			}
+				exchange.sendResponseHeaders(405, 0);				
+			}		
+		} catch(Exception e) {
+			System.err.println("ERROR: " + e.getMessage());
+			e.printStackTrace();
 		}
-		else if(method.equals("POST")) {
-			if(uri.startsWith("/terminate")) {
-				exchange.sendResponseHeaders(200, 0);
-				server.stop(0);
-			}
-			else {
-				System.out.print("post ");
-				copy(exchange.getRequestBody(), System.out);
-				System.out.println("");
-				exchange.sendResponseHeaders(200, 0);
-			}
-		}
-		else {
-			exchange.sendResponseHeaders(405, 0);
-		}				
 	}
 	
 	public static boolean registerUserContentGroup(UserContentGroup group) {		

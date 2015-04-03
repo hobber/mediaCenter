@@ -10,7 +10,6 @@ import main.http.HTTPResponse;
 import main.http.HTTPUtils;
 import main.server.Server;
 import main.server.content.UserContentGroup;
-import main.tmdb.content.TMDBLibraryPage;
 import main.tmdb.content.TMDBSearchPage;
 import main.tmdb.datastructure.TMDBGenreList;
 import main.tmdb.datastructure.TMDBSearchResult;
@@ -23,20 +22,28 @@ public class TMDB extends Plugin {
 	
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	
+	private static TMDB INSTANCE;
+	
 	private String apiKey;
 	private String userName;
 	private String password;
 	private String requestToken;	
 	private String sessionId;
 	private int accountId;
+	private LinkedList<String> posterSizes = new LinkedList<String>();
 	
 	private ConfigElementGroup config;
  
 	private TMDBGenreList genres = new TMDBGenreList(); 
-
-	public TMDB(ConfigElementGroup config) {
+	
+	private TMDB(ConfigElementGroup config) {
 		super("TMDB");
 		this.config = config;
+	}
+	
+	public static TMDB create(ConfigElementGroup config) {
+		INSTANCE = new TMDB(config);
+		return INSTANCE;
 	}
 	
 	public void start() {
@@ -63,6 +70,9 @@ public class TMDB extends Plugin {
 		
 		if(getAccountId() == false)
 			throw new RuntimeException("TMDB: could not get account ID!");
+		
+		if(getConfiguration() == false)
+			throw new RuntimeException("TMDB: could not get configuration!");
 		
 		if(getGenres() == false)
 			throw new RuntimeException("TMDB: could not get genre list!");	
@@ -125,6 +135,20 @@ public class TMDB extends Plugin {
 		return true;
 	}
 
+	private boolean getConfiguration() {
+		TMDBRequest request = new TMDBRequest("configuration");
+		signRequest(request);
+		HTTPResponse response = request.sendRequest();	
+		if(response.isValid() == false)
+			return false;
+
+		JSONContainer container = response.getJSONBody();
+		JSONArray posterSizes = container.getArray("images.poster_sizes");
+		for(int i=0; i<posterSizes.length(); i++)			
+			this.posterSizes.add(posterSizes.getString(i, ""));
+		return true;
+	}
+	
 	private boolean getGenres() {
 		TMDBRequest requestMovie = TMDBGenreList.createRequestMovie();
 		signRequest(requestMovie);
@@ -145,7 +169,7 @@ public class TMDB extends Plugin {
 	
 	private boolean createContentPages() {
 		UserContentGroup group = new UserContentGroup("Series", "content/series.png");
-		group.addPage(new TMDBLibraryPage());
+//		group.addPage(new TMDBLibraryPage());
 		group.addPage(new TMDBSearchPage(this, TMDBSearchPage.Type.SERIES));
 		return Server.registerUserContentGroup(group);		
 	}
@@ -238,10 +262,16 @@ public class TMDB extends Plugin {
 		HTTPResponse response = request.sendRequest();		
 		return new TMDBSeason(response);
 	}
-	*/
+	*/	
 	
-	public String getPosterURL(String posterPath) {
-		return "http://image.tmdb.org/t/p/w500/" + posterPath +"?api_key="+apiKey;
+	public static String getPosterURL(String posterPath, boolean preview) {
+		if(preview)
+			return "http://image.tmdb.org/t/p/" + INSTANCE.posterSizes.getFirst()  + posterPath;
+		return "http://image.tmdb.org/t/p/" + INSTANCE.posterSizes.getLast() + posterPath;
+	}
+	
+	public static String getGenreName(Integer id) {
+		return INSTANCE.genres.get(id);
 	}
 	
 	private String getYear(String date) {

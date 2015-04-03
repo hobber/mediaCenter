@@ -226,6 +226,15 @@ public class DataSchema {
 			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of byte");
 		((DataSchemaByte)schemaObject).set(value);
 	}
+	
+	public byte getByte(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaByte == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of byte");
+		return ((DataSchemaByte)schemaObject).get();
+	}
 
 	public void setValue(String fieldName, short value) {
 		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
@@ -234,6 +243,15 @@ public class DataSchema {
 		if(schemaObject instanceof DataSchemaShort == false)
 			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of short");
 		((DataSchemaShort)schemaObject).set(value);
+	}
+	
+	public short getShort(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaShort == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of short");
+		return ((DataSchemaShort)schemaObject).get();
 	}
 
 	public void setValue(String fieldName, int value) {
@@ -245,13 +263,31 @@ public class DataSchema {
 		((DataSchemaInt)schemaObject).set(value);
 	}
 	
+	public int getInt(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaInt == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of int");
+		return ((DataSchemaInt)schemaObject).get();
+	}
+	
 	public void setValue(String fieldName, float value) {
 		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
 		if(schemaObject == null)
 			throw new RuntimeException(className + " has no attribute with name " + fieldName);
 		if(schemaObject instanceof DataSchemaFloat == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of byte");
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of float");
 		((DataSchemaFloat)schemaObject).set(value);
+	}
+	
+	public float getFloat(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaFloat == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of float");
+		return ((DataSchemaFloat)schemaObject).get();
 	}
 	
 	public void setValue(String fieldName, String value) {
@@ -263,6 +299,15 @@ public class DataSchema {
 		((DataSchemaString)schemaObject).set(value);
 	}
 	
+	public String getString(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaString == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of string");
+		return ((DataSchemaString)schemaObject).get();
+	}
+	
 	public void setValue(String fieldName, List<Integer> value) {
 		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
 		if(schemaObject == null)
@@ -270,6 +315,15 @@ public class DataSchema {
 		if(schemaObject instanceof DataSchemaIdList == false)
 			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of ID list");
 		((DataSchemaIdList)schemaObject).set(value);
+	}
+	
+	public List<Integer> getIdList(String fieldName) {
+		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+		if(schemaObject == null)
+			throw new RuntimeException(className + " has no attribute with name " + fieldName);
+		if(schemaObject instanceof DataSchemaIdList == false)
+			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of ID list");
+		return ((DataSchemaIdList)schemaObject).get();
 	}
 	
 	public void readValues(DataBuffer buffer) {

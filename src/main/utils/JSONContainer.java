@@ -31,6 +31,13 @@ public class JSONContainer {
 		return defaultValue;						
 	}
 
+	public Short getShort(String key, Short defaultValue) {
+		Object value = getObject(key);		
+		if(Short.class.isInstance(value))
+			return (Short)value;
+		return defaultValue;					
+	}
+	
 	public Integer getInt(String key, Integer defaultValue) {
 		Object value = getObject(key);		
 		if(Integer.class.isInstance(value))
@@ -38,18 +45,18 @@ public class JSONContainer {
 		return defaultValue;					
 	}
 
-	public Float getFloat(String key, Float defaultValue) {		
+	public Float getFloat(String key, Float defaultValue) {	
 		Object value = getObject(key);
-		if(Float.class.isInstance(value))
-			return (Float)value;
-			return defaultValue;						
+		if(value == null)
+			return defaultValue;
+		return Float.parseFloat(value.toString());					
 	}
 
 	public Double getDouble(String key, Double defaultValue) {
 		Object value = getObject(key);
-		if(Double.class.isInstance(value))
-			return (Double)value;
-		return defaultValue;			
+		if(value == null)
+			return defaultValue;
+		return Double.parseDouble(value.toString());					
 	}
 	
 	public String getString(String key, String defaultValue) {

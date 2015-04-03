@@ -42,7 +42,7 @@ public class TMDBLibraryPage implements UserContentPage {
 			season.put(new ContentText(5, 5, "Season 01"));		
 			ContentGroup episode = new ContentGroup(120);
 			season.appendSubGroup(episode);
-			ContentImage image = new ContentImage(0, 0, 100, 120, "http://image.tmdb.org/t/p/w500/6S8rM2Qq3B3g3dgAnJlilgUc2dE.jpg?api_key=5a18658d75c3eb554e23c1102133c187");
+			ContentImage image = new ContentImage(0, 0, 100, 120, "http://image.tmdb.org/t/p/w500/6S8rM2Qq3B3g3dgAnJlilgUc2dE.jpg");
 			episode.put(image);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());

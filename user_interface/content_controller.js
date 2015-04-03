@@ -54,7 +54,17 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
       else
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;' + definition.style);
-      element.innerHTML = definition.text;
+      if(definition.url === undefined)
+        element.innerHTML = definition.text;
+      else {
+        var text = document.createElement('span');
+        element.appendChild(text);
+        text.innerHTML = definition.text;
+        var url = document.createElement('a');
+        element.appendChild(url);
+        url.setAttribute('href', definition.url);
+        url.innerHTML = definition.url;
+      }
       return element;
     };
 
@@ -124,7 +134,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       xmlHttp.send();          
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
-          var response = JSON.parse(xmlHttp.response); 
+          var response = JSON.parse(decode(xmlHttp.response)); 
           contentStack = [];
           showMenu(response.menu);
           showContent(response.content);
@@ -139,7 +149,15 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         consonsole.error('ERROR: invalid content index ' + index);
         return;
       }
-      showContent(contentLinks[index].subgroup);
+
+      var subgroup = contentLinks[index].subgroup;
+      if(subgroup === undefined)
+        return;
+
+      if(subgroup.type === 'loadOnDemand')
+        sendRequest(subgroup.context, subgroup.query);        
+      else
+        showContent(subgroup);
     };  
 
     $scope.back = function() {
@@ -155,18 +173,40 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
     $scope.search = function(context, event) {
       if(event.keyCode !== 13)
         return;
+      sendRequest(context, 'search=' + $scope.searchTerm);
+    }; 
 
+    var decode = function(response) {
+      var result = '';
+      for(var i=0; i<response.length; i++) {
+        var c = response.charAt(i);
+        if(c !== '%')
+          result += c;
+        else {
+          var tmp = response.substr(i, 6);
+          if(tmp.match(/%[0-9A-Fa-f]{2}%[0-9A-Fa-f]{2}/) != null) {
+            result += decodeURIComponent(tmp);
+            i += 5;
+          }
+          else
+            result += c;
+        }
+      }
+      return result;
+    };
+
+    var sendRequest = function(context, query) {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', 'http://localhost:11011/api?context=' + context + '&search=' + $scope.searchTerm, true); 
+      xmlHttp.open('GET', 'http://localhost:11011/api?context=' + context + '&' + query, true); 
       xmlHttp.send();          
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
-          var response = JSON.parse(xmlHttp.response); 
+          var response = JSON.parse(decode(xmlHttp.response)); 
           showContent(response.content);
         }
         else
           console.log('request failed:', xmlHttp);
       }
-    };  
+    }
   }
 ]);
