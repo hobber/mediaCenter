@@ -11,6 +11,7 @@ import main.http.HTTPUtils;
 import main.server.Server;
 import main.server.content.UserContentGroup;
 import main.tmdb.content.TMDBSearchPage;
+import main.tmdb.datastructure.TMDBCredits;
 import main.tmdb.datastructure.TMDBGenreList;
 import main.tmdb.datastructure.TMDBSearchResult;
 import main.tmdb.datastructure.TMDBSeries;
@@ -254,6 +255,13 @@ public class TMDB extends Plugin {
 		signRequest(request);		
 		HTTPResponse response = request.sendRequest();		
 		return new TMDBSeries(response.getJSONBody());
+	}
+	
+	public TMDBCredits getSeriesCredits(int id) {
+		TMDBRequest request = TMDBCredits.createRequest(id, TMDBCredits.Type.SERIES);		
+		signRequest(request);		
+		HTTPResponse response = request.sendRequest();		
+		return new TMDBCredits(response.getJSONBody());
 	}
 	
 	/*

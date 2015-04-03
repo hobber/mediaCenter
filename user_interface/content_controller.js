@@ -46,6 +46,29 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
+    contentFactories.table = function(definition) {
+      var element = document.createElement('table');
+      console.log('TABLE:', definition);
+      element.setAttribute('id', 'contentItem');
+      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      
+      for(var i=0; i<definition.rows.length; i++) {
+        var row = document.createElement('tr');
+        element.appendChild(row);
+        row.setAttribute('style', 'position: relative; height: ' + definition.rowHeight + 'px;');
+
+        for(var j=0; j<definition.columns; j++) {
+          var column = document.createElement('td');
+          row.appendChild(column);
+          column.setAttribute('style', 'position: relative; width: ' + definition.widths[j] + 'px;');
+
+          var item = definition.rows[i][j];
+          column.appendChild(contentFactories[item.type](item));
+        }
+      }
+      return element;
+    };
+
     contentFactories.backButton = function(definition) {
       var element = document.createElement('img');
       element.setAttribute('id', 'contentItem');
@@ -71,7 +94,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    var createGroup = function(group, isLastGroup) {
+    var createGroup = function(group, groupBoarder, isLastGroup) {
       var groupElement = document.createElement('div');
       var elements = [];
 
@@ -100,9 +123,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         var y = elements[j].y + elements[j].element.offsetHeight;
         if(y > maxY)
           maxY = y;
-        console.log('HEIGHT:', elements[j].element.offsetWidth, elements[j].element.offsetHeight, elements[j].y);        
       }
-      if(isLastGroup)
+
+      if(isLastGroup || groupBoarder === false)
         groupElement.setAttribute('style', 'height: ' + maxY + 'px;');
       else
         groupElement.setAttribute('style', 'height: ' + maxY + 'px; border-bottom: 1px solid #000000; ');
@@ -127,18 +150,22 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       }
     }
 
-    var showContent = function(content) {
+    var showContent = function(content, options) {
       if(content === undefined) {
         showErrorPage();
         return;
       }
-
+console.log('OPTIONS:', options);
       contentStack.push(content);
       contentDiv.innerHTML = '';
       contentLinks = [];
 
+      var groupBoarder = true;
+      if(options !== undefined && options.groupBoarder === false)
+        groupBoarder = false;
+
       for(var i = 0; i < content.length; i++)
-        createGroup(content[i], i === content.length-1);      
+        createGroup(content[i], groupBoarder, i === content.length-1);      
     };
 
     $rootScope.$on('showContent', function(event, id) {
@@ -150,7 +177,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
           var response = JSON.parse(decode(xmlHttp.response)); 
           contentStack = [];
           showMenu(response.menu);
-          showContent(response.content);
+          showContent(response.content, response.options);
         }
         else
           console.log('request failed');
@@ -215,7 +242,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
           var response = JSON.parse(decode(xmlHttp.response)); 
-          showContent(response.content);
+          showContent(response.content, response.options);
         }
         else
           console.log('request failed:', xmlHttp);

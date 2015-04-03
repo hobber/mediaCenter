@@ -5,7 +5,7 @@ import org.json.JSONException;
 public class ContentText extends ContentItem {
 	
 	public enum TextType {
-		NORMAL, TITLE, BLOCK
+		NORMAL, TITLE, SUBTITLE, BLOCK
 	}
 
 	public ContentText(int x, int y, String text) {
@@ -31,6 +31,8 @@ public class ContentText extends ContentItem {
 
 			if(type == TextType.TITLE)
 				put("style", "font-size: 24px; font-weight: 900;");
+			else if(type == TextType.SUBTITLE)
+				put("style", "font-size: 21px; font-weight: 700;");
 			else if(type == TextType.BLOCK)
 				put("style", "text-align: justify; margin-right: 50px;");
 		} catch(JSONException e) {

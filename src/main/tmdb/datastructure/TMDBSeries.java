@@ -4,16 +4,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 import main.data.DataBuffer;
-import main.data.DataContent;
+import main.data.DataObject;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
 import main.server.content.ContentText;
+import main.server.content.ContentObject;
 import main.tmdb.TMDB;
 import main.tmdb.TMDBRequest;
 import main.utils.JSONArray;
 import main.utils.JSONContainer;
 
-public class TMDBSeries extends DataContent {
+public class TMDBSeries extends DataObject implements ContentObject {
 	
 	public static TMDBRequest createRequest(int id) {
 		TMDBRequest request = new TMDBRequest("tv/"+id);
