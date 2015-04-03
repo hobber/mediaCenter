@@ -94,9 +94,9 @@ public class TMDBSearchPage implements UserContentPage {
 			page.put("content", content);
 						
 			for(TMDBSearchResult result : results) {		
-				ContentGroup group = new ContentGroup(150);
+				ContentGroup group = new ContentGroup();
 				content.put(group);
-				if(result.getPosterPath() != null && result.getPosterPath().length() > 0)
+				//if(result.getPosterPath() != null && result.getPosterPath().length() > 0)
 					group.put(new ContentImage(0, 0, 100, 150, TMDB.getPosterURL(result.getPosterPath(), true)));
 				group.put(new ContentText(120, 20, result.getDescription()));	
 				group.putContentGroupOnDemand(new ContentGroupOnDemand(context, "show="+result.getId()));
@@ -115,6 +115,9 @@ public class TMDBSearchPage implements UserContentPage {
 		}
 		
 		TMDBSeries series = tmdb.getSeries(Integer.parseInt(id));
+		
+		// tv/{id}/similar, videos, credits
+		
 		JSONObject page = new JSONObject();			
 		try {			
 			JSONArray content = new JSONArray();

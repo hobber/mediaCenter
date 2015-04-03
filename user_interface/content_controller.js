@@ -14,28 +14,6 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
     contentFactories = {};
 
-    contentFactories.group = function(group) {
-      var groupElement = document.createElement('div');
-      groupElement.setAttribute('id', 'contentContainer');
-      groupElement.setAttribute('style', group.style);
-      for(var j = 0; j < group.items.length; j++) {
-        var definition = group.items[j];
-        if(contentFactories[definition.type] === undefined) {
-          console.error('ERROR: unsupported content type ' + definition.type);
-          continue;
-        }
-        var element = contentFactories[definition.type](definition);
-        groupElement.appendChild(element);
-      }
-
-      var link = contentLinks.length;
-      contentLinks.push(group);
-      groupElement.setAttribute('ng-click', 'clicked(' + link + ')');
-      $compile(groupElement)($scope);         
-
-      return groupElement;
-    };
-
     contentFactories.img = function(definition) {
       var element = document.createElement('img');
       element.setAttribute('id', 'contentItem');
@@ -43,7 +21,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       element.setAttribute('width', definition.width);
       element.setAttribute('height', definition.height);
       element.setAttribute('src', definition.src);
-      element.setAttribute('alt', '&nbsp');
+      element.setAttribute('alt', ' ');
       return element;
     };
 
@@ -75,7 +53,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       element.setAttribute('width', 38);
       element.setAttribute('height', 38);
       element.setAttribute('src', 'content/back.png');
-      element.setAttribute('alt', '&nbsp');
+      element.setAttribute('alt', ' ');
       element.setAttribute('ng-click', 'back()');
       $compile(element)($scope);
       return element;
@@ -91,6 +69,43 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       element.setAttribute('ng-model', 'searchTerm');   
       $compile(element)($scope);
       return element;
+    };
+
+    var createGroup = function(group, isLastGroup) {
+      var groupElement = document.createElement('div');
+      var elements = [];
+
+      groupElement.setAttribute('id', 'contentContainer');      
+      for(var j = 0; j < group.items.length; j++) {
+        var definition = group.items[j];
+        if(contentFactories[definition.type] === undefined) {
+          console.error('ERROR: unsupported content type ' + definition.type);
+          continue;
+        }
+        var element = contentFactories[definition.type](definition);
+        elements.push({element: element, y: definition.y});
+        groupElement.appendChild(element);
+      }
+
+      var link = contentLinks.length;
+      contentLinks.push(group);
+      groupElement.setAttribute('ng-click', 'clicked(' + link + ')');
+      $compile(groupElement)($scope); 
+
+      contentDiv.appendChild(groupElement);
+
+      // calculation of dimensions of group must be done after adding to contentDiv
+      var maxY = 0;
+      for(var j=0; j<elements.length; j++) {
+        var y = elements[j].y + elements[j].element.offsetHeight;
+        if(y > maxY)
+          maxY = y;
+        console.log('HEIGHT:', elements[j].element.offsetWidth, elements[j].element.offsetHeight, elements[j].y);        
+      }
+      if(isLastGroup)
+        groupElement.setAttribute('style', 'height: ' + maxY + 'px;');
+      else
+        groupElement.setAttribute('style', 'height: ' + maxY + 'px; border-bottom: 1px solid #000000; ');
     };
 
     var showErrorPage = function() {
@@ -122,10 +137,8 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       contentDiv.innerHTML = '';
       contentLinks = [];
 
-      for(var i = 0; i < content.length; i++) {
-        var groupElement = contentFactories.group(content[i]);
-        contentDiv.appendChild(groupElement);
-      }
+      for(var i = 0; i < content.length; i++)
+        createGroup(content[i], i === content.length-1);      
     };
 
     $rootScope.$on('showContent', function(event, id) {

@@ -246,7 +246,7 @@ public class TMDB extends Plugin {
 			
 			list.add(new TMDBSearchResult(id, name + " (" + getYear(airDate) + ")", posterPath));
 		}
-		return list;	
+		return list;
 	}
 	
 	public TMDBSeries getSeries(int id) {
@@ -255,6 +255,7 @@ public class TMDB extends Plugin {
 		HTTPResponse response = request.sendRequest();		
 		return new TMDBSeries(response.getJSONBody());
 	}
+	
 	/*
 	public TMDBSeason getSeason(int seriesId, int season) {
 		TMDBRequest request = TMDBSeason.createRequest(seriesId, season);		
