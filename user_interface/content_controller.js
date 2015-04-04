@@ -14,9 +14,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
     contentFactories = {};
 
-    contentFactories.img = function(groupElement, definition) {
+    contentFactories.img = function(parent, definition) {
       var element = document.createElement('img');
-      groupElement.appendChild(element);
+      parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
       element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
       element.setAttribute('width', definition.width);
@@ -26,9 +26,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.text = function(groupElement, definition) {
+    contentFactories.text = function(parent, definition) {
       var element = document.createElement('span');
-      groupElement.appendChild(element);
+      parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
       if(definition.style === undefined)
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
@@ -48,10 +48,10 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.table = function(groupElement, definition) {
+    contentFactories.table = function(parent, definition) {
       var element = document.createElement('table');
-      groupElement.appendChild(element);
-      console.log('TABLE:', definition);
+      parent.appendChild(element);
+
       element.setAttribute('id', 'contentItem');
       element.setAttribute('border', '1');
       element.setAttribute('cellpadding', '0');
@@ -76,9 +76,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.backButton = function(groupElement, definition) {
+    contentFactories.backButton = function(parent, definition) {
       var element = document.createElement('img');
-      groupElement.appendChild(element);
+      parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
       element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px;');
       element.setAttribute('width', 38);
@@ -90,9 +90,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.searchField = function(groupElement, definition) {
+    contentFactories.searchField = function(parent, definition) {
       var element = document.createElement('input');
-      groupElement.appendChild(element);
+      parent.appendChild(element);
       element.setAttribute('type', 'text');
       element.setAttribute('id', 'searchBox');
       element.setAttribute('style', 'right: ' + definition.x + 'px; top: 2px;');
@@ -103,34 +103,34 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    var createGroup = function(group, groupBoarder, isLastGroup) {
+    contentFactories.group = function(parent, definition, options, isLast) {
       var groupElement = document.createElement('div');
-      contentDiv.appendChild(groupElement);
+      parent.appendChild(groupElement);
       groupElement.setAttribute('id', 'contentContainer');      
 
       var maxY = 0;
-      for(var j = 0; j < group.items.length; j++) {
-        var definition = group.items[j];
-        if(contentFactories[definition.type] === undefined) {
-          console.error('ERROR: unsupported content type ' + definition.type);
+      for(var j = 0; j < definition.items.length; j++) {
+        var item = definition.items[j];
+        if(contentFactories[item.type] === undefined) {
+          console.error('ERROR: unsupported content type ' + item.type);
           continue;
         }
 
-        var element = contentFactories[definition.type](groupElement, definition);                
-        var y = definition.y + element.offsetHeight;
+        var element = contentFactories[item.type](groupElement, item, options);                
+        var y = item.y + element.offsetHeight;
         if(y > maxY)
           maxY = y;
       }
 
       var link = contentLinks.length;
-      contentLinks.push(group);
+      contentLinks.push(definition);
       groupElement.setAttribute('ng-click', 'clicked(' + link + ')');
       $compile(groupElement)($scope);
 
       var style = 'height: ' + maxY + 'px;';
-      if(group.subgroup !== undefined)
+      if(definition.subgroup !== undefined)
         style += ' cursor:pointer;';
-      if(isLastGroup === false && groupBoarder === true)
+      if(isLast !== true && (options === undefined || options.groupBoarder !== false))
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
     };
@@ -154,7 +154,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       }
     }
 
-    var showContent = function(content, options) {
+    var showContent = function(content) {
       if(content === undefined) {
         showErrorPage();
         return;
@@ -168,8 +168,17 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       if(options !== undefined && options.groupBoarder === false)
         groupBoarder = false;
 
-      for(var i = 0; i < content.length; i++)
-        createGroup(content[i], groupBoarder, i === content.length-1);      
+      var options = content.options;
+      var items = content.items;
+      for(var i = 0; i < items.length; i++) {
+        var definition = items[i];
+        if(definition.type !== 'group') {
+          console.error('ERROR: content can contain only groups instances of ' + definition.type);
+          continue;
+        }
+        var isLast = (i === items.length-1);
+        contentFactories['group'](contentDiv, definition, options, isLast);
+      }
     };
 
     $rootScope.$on('showContent', function(event, id) {
@@ -181,7 +190,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
           var response = JSON.parse(decode(xmlHttp.response)); 
           contentStack = [];
           showMenu(response.menu);
-          showContent(response.content, response.options);
+          showContent(response.content);
         }
         else
           console.log('request failed');
@@ -246,7 +255,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
           var response = JSON.parse(decode(xmlHttp.response)); 
-          showContent(response.content, response.options);
+          showContent(response.content);
         }
         else
           console.log('request failed:', xmlHttp);

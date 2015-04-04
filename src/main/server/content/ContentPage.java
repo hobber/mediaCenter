@@ -4,41 +4,46 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ContentPage {
+public class ContentPage extends JSONObject {
 
-	private JSONObject page = new JSONObject();	
-	private JSONArray content = new JSONArray();
+	private JSONObject content = new JSONObject();
+	private JSONArray items = new JSONArray();
 	
 	public ContentPage() {	
 		try {
-			page.put("content", content);
+			put("content", content);
+			content.put("items", items);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
 	}	
 	
 	public void addContentGroup(ContentGroup group) {				
-		content.put(group);		
+		items.put(group);
 	}
 	
 	public void merge(ContentPage page) {
 		try {
-			for(int i=0; i<page.content.length(); i++)
-				content.put(page.content.get(i));
+			for(int i=0; i<page.items.length(); i++)
+				items.put(page.items.get(i));
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
 	}
 	
-	public void setOptions(JSONObject options) {
+	public void setOptions(ContentOptions options) {
 		try {
-			page.put("options", options);
+			content.put("options", options);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
 	}
 	
-	public JSONObject getPage() {
-		return page;
+	public void setMenu(ContentMenu menu) {
+		try {
+			put("menu", menu);
+		} catch(JSONException e) {
+			System.err.println("ERROR: " + e.getMessage());
+		}
 	}
 }

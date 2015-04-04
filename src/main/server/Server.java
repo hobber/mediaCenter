@@ -103,7 +103,7 @@ public class Server implements HttpHandler {
 			return new JSONObject();
 		}
 		
-		return page.toJSON();		
+		return page.getPage();		
 	}
 	
 	private JSONObject getMenu() {
@@ -206,7 +206,7 @@ public class Server implements HttpHandler {
 		if(request.startsWith("menu"))
 			buffer = getMenu();
 		else if(request.startsWith("context="))		
-			buffer = handleContextSpecificRequest(request.substring(8)).getPage();		
+			buffer = handleContextSpecificRequest(request.substring(8));		
 		else if(request.startsWith("content="))
 			buffer = getContent(request.substring(8));
 		else

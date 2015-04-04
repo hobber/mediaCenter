@@ -1,15 +1,17 @@
 package main.tmdb.content;
 
+import main.server.content.ContentBackButton;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentGroup;
 import main.server.content.ContentGroupOnDemand;
+import main.server.content.ContentMenu;
+import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
 import main.server.content.ContentSearchField;
 import main.server.content.ContentText;
 import main.server.content.UserContentGroup;
 import main.server.content.UserContentPage;
 import main.tmdb.TMDB;
-import main.tmdb.datastructure.TMDBCredits;
 import main.tmdb.datastructure.TMDBSearchResultList;
 import main.tmdb.datastructure.TMDBSeries;
 
@@ -36,18 +38,12 @@ public class TMDBSearchPage implements UserContentPage {
   }
 
 	@Override
-  public JSONObject toJSON() {
-		JSONObject page = new JSONObject();	
-		try {
-			JSONArray menu = new JSONArray();
-			page.put("menu", menu);
-			menu.put(new ContentSearchField(context, 10));
-
-			JSONArray content = new JSONArray();
-			page.put("content", content);
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
+  public ContentPage getPage() {
+		ContentPage page = new ContentPage();	
+		ContentMenu menu = new ContentMenu();
+		page.setMenu(menu);
+		menu.put(new ContentSearchField(context, 45));
+		menu.put(new ContentBackButton(0));
 		return page;
   }
 	
@@ -67,8 +63,12 @@ public class TMDBSearchPage implements UserContentPage {
 		String term = query.substring(index+1);		
 		if(task.equals("search") == true)
 			return search(term);
-		if(task.equals("show") == true)
-			return show(term);
+		if(task.equals("show") == true) {
+			if(type == Type.SERIES)
+				return showSeries(term);
+			else
+				return new ContentErrorPage("movies are currently not supported");
+		}
 		if(task.equals("cast") == true)
 			return credits(term);
 		if(task.equals("similar") == true)
@@ -88,18 +88,16 @@ public class TMDBSearchPage implements UserContentPage {
 		return results.getPage(context);		
 	}
 	
-	private ContentPage show(String id) {
+	private ContentPage showSeries(String id) {
 		if(id.length() == 0)
 			return new ContentErrorPage("empty id is not allowed"); 		
 		
 		int seriesId = Integer.parseInt(id);
-		TMDBSeries series = tmdb.getSeries(seriesId);
-		
-		// tv/{id}/similar, videos
+		TMDBSeries series = tmdb.getSeries(seriesId);		
 		
 		ContentPage page = series.getPage(null);		
 		try {						
-			JSONObject options = new JSONObject();
+			ContentOptions options = new ContentOptions();
 			page.setOptions(options);
 			options.put("groupBoarder", false);
 			
@@ -113,7 +111,7 @@ public class TMDBSearchPage implements UserContentPage {
 			cast.putContentGroupOnDemand(new ContentGroupOnDemand(context, "cast="+id));
 			
 			ContentGroup similar = new ContentGroup();
-			page.addContentGroup(similar);			
+			page.addContentGroup(similar);
 			similar.put(new ContentText(20, 5, "&bull;Ähnliche Serien"));				
 			similar.putContentGroupOnDemand(new ContentGroupOnDemand(context, "similar="+id));			
 		} catch(JSONException e) {
@@ -126,15 +124,19 @@ public class TMDBSearchPage implements UserContentPage {
 		if(id.length() == 0)
 			return new ContentErrorPage("empty id is not allowed");		
 		
-		TMDBCredits credits = tmdb.getSeriesCredits(Integer.parseInt(id));	
-		return credits.getPage(null);					
+		if(type == Type.SERIES)
+			return tmdb.getSeriesCredits(Integer.parseInt(id)).getPage(null);
+		else
+			return new ContentErrorPage("movies are currently not supported"); 					
 	}
 	
 	private ContentPage similar(String id) {
 		if(id.length() == 0)
 			return new ContentErrorPage("empty id is not allowed");		
 		
-		TMDBSearchResultList similarSeries = tmdb.getSimilarSeries(Integer.parseInt(id));	
-		return similarSeries.getPage(context);					
+		if(type == Type.SERIES)
+			return tmdb.getSimilarSeries(Integer.parseInt(id)).getPage(context);
+		else
+			return new ContentErrorPage("movies are currently not supported"); 							
 	}
 }

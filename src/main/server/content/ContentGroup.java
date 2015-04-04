@@ -7,10 +7,10 @@ public class ContentGroup extends JSONObject {
 	
 	public ContentGroup() {
 		try {
-			append("style", "height: 100%;");			
+			put("type", "group");
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
-		}		
+		}	  
 	}
 	
 	public void put(ContentItem item) {		
