@@ -101,7 +101,7 @@ app.controller('MenuController', ['$scope', '$rootScope', '$compile',
           menu = JSON.parse(xmlHttp.response).entries;
           if(prepareMenu() === true) {
             buildMenu();
-            $rootScope.$broadcast('showContent', menu[menu[0].link].id);
+            $rootScope.$broadcast('showPage', menu[menu[0].link].id);
           }
         } else {
           console.log('request failed');

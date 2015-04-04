@@ -39,11 +39,8 @@ public class TMDBSearchPage implements UserContentPage {
 
 	@Override
   public ContentPage getPage() {
-		ContentPage page = new ContentPage();	
-		ContentMenu menu = new ContentMenu();
-		page.setMenu(menu);
-		menu.put(new ContentSearchField(context, 45));
-		menu.put(new ContentBackButton(0));
+		ContentPage page = new ContentPage();			
+		page.setMenu(ContentMenu.createSearchMenu(context));		
 		return page;
   }
 	
@@ -85,7 +82,9 @@ public class TMDBSearchPage implements UserContentPage {
 			return new ContentErrorPage("search for movies is currently not implemented");
 		
 		TMDBSearchResultList results = tmdb.searchSeries(searchTerm);
-		return results.getPage(context);		
+		ContentPage page = results.getPage(context);
+		page.setMenu(ContentMenu.createSearchMenu(context));
+		return page;		
 	}
 	
 	private ContentPage showSeries(String id) {
@@ -97,6 +96,8 @@ public class TMDBSearchPage implements UserContentPage {
 		
 		ContentPage page = series.getPage(null);		
 		try {						
+			page.setMenu(ContentMenu.createBackMenu());
+			
 			ContentOptions options = new ContentOptions();
 			page.setOptions(options);
 			options.put("groupBoarder", false);

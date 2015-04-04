@@ -6,13 +6,11 @@ import org.json.JSONObject;
 
 public class ContentPage extends JSONObject {
 
-	private JSONObject content = new JSONObject();
 	private JSONArray items = new JSONArray();
 	
 	public ContentPage() {	
-		try {
-			put("content", content);
-			content.put("items", items);
+		try {			
+			put("items", items);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
@@ -33,7 +31,7 @@ public class ContentPage extends JSONObject {
 	
 	public void setOptions(ContentOptions options) {
 		try {
-			content.put("options", options);
+			put("options", options);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

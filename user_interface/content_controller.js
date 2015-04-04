@@ -83,7 +83,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px;');
       element.setAttribute('width', 38);
       element.setAttribute('height', 38);
-      element.setAttribute('src', 'content/back.png');
+      element.setAttribute('src', 'content/back.svg');
       element.setAttribute('alt', ' ');
       element.setAttribute('ng-click', 'back()');
       $compile(element)($scope);
@@ -154,11 +154,14 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       }
     }
 
-    var showContent = function(content) {
+    var showPage = function(content) {
       if(content === undefined) {
         showErrorPage();
         return;
       }
+
+      if(content.menu !== undefined)
+        showMenu(content.menu);
 
       contentStack.push(content);
       contentDiv.innerHTML = '';
@@ -181,7 +184,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       }
     };
 
-    $rootScope.$on('showContent', function(event, id) {
+    $rootScope.$on('showPage', function(event, id) {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.open('GET', 'http://localhost:11011/api?content=' + id, true); 
       xmlHttp.send();          
@@ -189,8 +192,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         if(xmlHttp.status === 200) {
           var response = JSON.parse(decode(xmlHttp.response)); 
           contentStack = [];
-          showMenu(response.menu);
-          showContent(response.content);
+          showPage(response);
         }
         else
           console.log('request failed');
@@ -210,7 +212,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       if(subgroup.type === 'loadOnDemand')
         sendRequest(subgroup.context, subgroup.query);        
       else
-        showContent(subgroup);
+        showPage(subgroup);
     };  
 
     $scope.back = function() {
@@ -220,7 +222,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       }
       contentStack.pop();
       var content = contentStack.pop();
-      showContent(content);
+      showPage(content);
     };  
 
     $scope.search = function(context, event) {
@@ -255,7 +257,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       xmlHttp.onloadend = function() {
         if(xmlHttp.status === 200) {
           var response = JSON.parse(decode(xmlHttp.response)); 
-          showContent(response.content);
+          showPage(response);
         }
         else
           console.log('request failed:', xmlHttp);
