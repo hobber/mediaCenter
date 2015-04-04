@@ -3,8 +3,6 @@ package main.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -15,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import main.http.HTTPUtils;
+import main.server.content.ContentErrorPage;
+import main.server.content.ContentPage;
 import main.server.content.UserContentGroup;
 import main.server.content.UserContentPage;
 import main.utils.ConfigElementGroup;
@@ -153,23 +153,19 @@ public class Server implements HttpHandler {
 		return response;
 	}
 	
-	private JSONObject handleContextSpecificRequest(String request) {		
+	private ContentPage handleContextSpecificRequest(String request) {		
 		int indexPoint = request.indexOf(".");
 		int indexParameter = request.indexOf("&");
 		if(indexParameter < 0)
 			indexParameter = request.length() - 1;
 		
-		if(indexPoint < 0 || indexPoint > indexParameter) {
-			System.err.println("ERROR: " + request + " contains no valid context");
-			return new JSONObject();
-		}
+		if(indexPoint < 0 || indexPoint > indexParameter)
+			return new ContentErrorPage(request + " contains no valid context");		
 		
 		String groupName = request.substring(0, indexPoint);
 		UserContentGroup contentGroup = contentGroups.get(groupName);
-		if(contentGroup == null) {
-			System.err.println("ERROR: content group " + groupName + " not found");			
-			return new JSONObject();
-		}
+		if(contentGroup == null)
+			return new ContentErrorPage("content group " + groupName + " not found");		
 		
 		String pageName = request.substring(indexPoint + 1, indexParameter);
 		String query = request.substring(indexParameter + 1); 
@@ -209,9 +205,8 @@ public class Server implements HttpHandler {
 		JSONObject buffer = new JSONObject();
 		if(request.startsWith("menu"))
 			buffer = getMenu();
-		else if(request.startsWith("context=")) {			
-			buffer = handleContextSpecificRequest(request.substring(8));
-		}
+		else if(request.startsWith("context="))		
+			buffer = handleContextSpecificRequest(request.substring(8)).getPage();		
 		else if(request.startsWith("content="))
 			buffer = getContent(request.substring(8));
 		else

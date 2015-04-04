@@ -1,17 +1,16 @@
 package main.tmdb.content;
 
-import java.util.List;
-
+import main.server.content.ContentErrorPage;
 import main.server.content.ContentGroup;
 import main.server.content.ContentGroupOnDemand;
-import main.server.content.ContentImage;
+import main.server.content.ContentPage;
 import main.server.content.ContentSearchField;
 import main.server.content.ContentText;
 import main.server.content.UserContentGroup;
 import main.server.content.UserContentPage;
 import main.tmdb.TMDB;
 import main.tmdb.datastructure.TMDBCredits;
-import main.tmdb.datastructure.TMDBSearchResult;
+import main.tmdb.datastructure.TMDBSearchResultList;
 import main.tmdb.datastructure.TMDBSeries;
 
 import org.json.JSONArray;
@@ -58,13 +57,11 @@ public class TMDBSearchPage implements UserContentPage {
 	}
 	
 	@Override
-	public JSONObject handle(String query) {
+	public ContentPage handle(String query) {
 		
 		int index = query.indexOf("=");
-		if(index < 0) {
-			System.err.println("ERROR: invalid search query " + query);
-			return new JSONObject();
-		}
+		if(index < 0)
+			return new ContentErrorPage("invalid search query " + query);	
 		
 		String task = query.substring(0, index);
 		String term = query.substring(index+1);		
@@ -75,68 +72,41 @@ public class TMDBSearchPage implements UserContentPage {
 		if(task.equals("cast") == true)
 			return credits(term);
 		
-		System.err.println("ERROR: " + query + " is not supported");
-		return new JSONObject();
+		return new ContentErrorPage(query + " is not supported");
 	}
 	
-	private JSONObject search(String searchTerm) {		
-		if(searchTerm.length() == 0) {
-			System.err.println("ERROR: empty search query is not allowed");
-			return new JSONObject(); 
-		}
+	private ContentPage search(String searchTerm) {		
+		if(searchTerm.length() == 0)
+			return new ContentErrorPage("empty search query is not allowed");		
 		
-		List<TMDBSearchResult> results;
-		if(type == Type.SERIES)
-			results = tmdb.searchSeries(searchTerm);		
-		else
-			throw new RuntimeException("search for movies is currently not implemented");
+		if(type == Type.MOVIES)
+			return new ContentErrorPage("search for movies is currently not implemented");
 		
-		JSONObject page = new JSONObject();			
-		try {			
-			JSONArray content = new JSONArray();
-			page.put("content", content);
-						
-			for(TMDBSearchResult result : results) {		
-				ContentGroup group = new ContentGroup();
-				content.put(group);
-				group.put(new ContentImage(0, 0, 100, 150, TMDB.getPosterURL(result.getPosterPath(), true)));
-				group.put(new ContentText(120, 20, result.getDescription()));	
-				group.putContentGroupOnDemand(new ContentGroupOnDemand(context, "show="+result.getId()));
-			}
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
-		
-		return page;
+		TMDBSearchResultList results = tmdb.searchSeries(searchTerm);
+		return results.getPage(context);		
 	}
 	
-	private JSONObject show(String id) {
-		if(id.length() == 0) {
-			System.err.println("ERROR: empty id is not allowed");
-			return new JSONObject(); 
-		}
+	private ContentPage show(String id) {
+		if(id.length() == 0)
+			return new ContentErrorPage("empty id is not allowed"); 		
 		
 		int seriesId = Integer.parseInt(id);
 		TMDBSeries series = tmdb.getSeries(seriesId);
 		
 		// tv/{id}/similar, videos
 		
-		JSONObject page = new JSONObject();			
+		ContentPage page = series.getPage("");		
 		try {						
 			JSONObject options = new JSONObject();
-			page.put("options", options);
+			page.setOptions(options);
 			options.put("groupBoarder", false);
 			
-			JSONArray content = new JSONArray();
-			page.put("content", content);					
-		  content.put(series.getContentGroup());
-		  
 		  ContentGroup infos = new ContentGroup();
-			content.put(infos);			
+		  page.addContentGroup(infos);		
 			infos.put(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));			
 		  
 			ContentGroup cast = new ContentGroup();
-			content.put(cast);			
+			page.addContentGroup(cast);			
 			cast.put(new ContentText(20, 10, "&bull;Besetzung"));				
 			cast.putContentGroupOnDemand(new ContentGroupOnDemand(context, "cast="+id));
 		} catch(JSONException e) {
@@ -145,26 +115,11 @@ public class TMDBSearchPage implements UserContentPage {
 		return page;
 	}
 	
-	private JSONObject credits(String id) {
-		if(id.length() == 0) {
-			System.err.println("ERROR: empty id is not allowed");
-			return new JSONObject(); 
-		}
+	private ContentPage credits(String id) {
+		if(id.length() == 0)
+			return new ContentErrorPage("empty id is not allowed");		
 		
-		TMDBCredits credits = tmdb.getSeriesCredits(Integer.parseInt(id));		
-		
-		JSONObject page = new JSONObject();			
-		try {						
-			JSONObject options = new JSONObject();
-			page.put("options", options);
-			options.put("groupBoarder", false);
-			
-			JSONArray content = new JSONArray();
-			page.put("content", content);					
-		  content.put(credits.getContentGroup());					 
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
-		return page;
+		TMDBCredits credits = tmdb.getSeriesCredits(Integer.parseInt(id));	
+		return credits.getPage("");					
 	}
 }

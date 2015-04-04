@@ -14,6 +14,7 @@ import main.tmdb.content.TMDBSearchPage;
 import main.tmdb.datastructure.TMDBCredits;
 import main.tmdb.datastructure.TMDBGenreList;
 import main.tmdb.datastructure.TMDBSearchResult;
+import main.tmdb.datastructure.TMDBSearchResultList;
 import main.tmdb.datastructure.TMDBSeries;
 import main.utils.ConfigElementGroup;
 import main.utils.JSONArray;
@@ -222,7 +223,7 @@ public class TMDB extends Plugin {
 		System.out.println(response);			
 	}	
 		
-	public List<TMDBSearchResult> searchSeries(String seriesName) {
+	public TMDBSearchResultList searchSeries(String seriesName) {
 		TMDBRequest request = new TMDBRequest("search/tv");
 		request.addQuery("query", HTTPUtils.encodeTerm(seriesName));
 		signRequest(request);
@@ -231,23 +232,7 @@ public class TMDB extends Plugin {
 		if(response == null)
 			throw new RuntimeException("TMDB: failed to search for " + seriesName);
 		
-		JSONArray array = response.getArray("results");
-		List<TMDBSearchResult> list = new LinkedList<TMDBSearchResult>();
-		for(int i=0; i<array.length(); i++) {
-			JSONContainer series = array.getContainer(i);
-			Integer id = series.getInt("id", null);
-			String name = series.getString("name", null);
-			String airDate = series.getString("first_air_date", null);
-			String posterPath = series.getString("poster_path", "");
-			
-			if(id == null || name == null) {
-				System.err.println("TMDB: failed to read a search result for " + seriesName + " (" + series + ")");
-				continue;
-			}
-			
-			list.add(new TMDBSearchResult(id, name + " (" + getYear(airDate) + ")", posterPath));
-		}
-		return list;
+		return new TMDBSearchResultList(response.getArray("results"));
 	}
 	
 	public TMDBSeries getSeries(int id) {
@@ -283,7 +268,7 @@ public class TMDB extends Plugin {
 		return INSTANCE.genres.get(id);
 	}
 	
-	private String getYear(String date) {
+	public static String getYear(String date) {
 		if(date == null)
 			return "?";
 				

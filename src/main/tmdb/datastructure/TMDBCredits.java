@@ -7,6 +7,7 @@ import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentObject;
+import main.server.content.ContentPage;
 import main.server.content.ContentTable;
 import main.server.content.ContentText;
 import main.tmdb.TMDB;
@@ -38,8 +39,11 @@ public class TMDBCredits implements ContentObject {
 	}
 
 	@Override
-  public ContentGroup getContentGroup() {	  
+  public ContentPage getPage(String options) {	
+		ContentPage page = new ContentPage();
 	  ContentGroup group = new ContentGroup();
+	  page.addContentGroup(group);
+	  
 	  group.put(new ContentText(10, 5, "Besetzung:", ContentText.TextType.SUBTITLE));	  
 	  
 	  ContentTable table = new ContentTable(10, 35, 3, 60);
@@ -51,6 +55,6 @@ public class TMDBCredits implements ContentObject {
 	  	columns.add(new ContentText(0, 20, character.getActorName()));
 	  	table.addRow(columns);
 	  }
-	  return group;
+	  return page;
   }	
 }

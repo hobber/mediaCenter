@@ -3,6 +3,7 @@ package main.tmdb.content;
 import main.server.content.ContentBackButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
+import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.UserContentGroup;
 import main.server.content.UserContentPage;
@@ -56,8 +57,8 @@ public class TMDBLibraryPage implements UserContentPage {
 	
 
 	@Override
-	public JSONObject handle(String query) {
+	public ContentPage handle(String query) {
 		System.err.println("ERROR: TMDBLibraryPage does not support any queries");
-		return new JSONObject();
+		return new ContentPage();
 	}
 }

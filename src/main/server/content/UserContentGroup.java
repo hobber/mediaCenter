@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.json.JSONObject;
-
 public class UserContentGroup {
 
 	private String name;
@@ -40,12 +38,10 @@ public class UserContentGroup {
 		return pages.get(name);
 	}
 	
-	public JSONObject handle(String pageName, String query) {
+	public ContentPage handle(String pageName, String query) {
 		UserContentPage page = pages.get(pageName);
-		if(page == null) {
-			System.err.println("ERROR: group " + name + " has no page with name " + pageName);
-			return new JSONObject();
-		}
+		if(page == null)
+			return new ContentErrorPage("group " + name + " has no page with name " + pageName);		
 		return page.handle(query);
 	}
 }

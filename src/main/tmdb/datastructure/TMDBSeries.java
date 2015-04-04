@@ -7,6 +7,7 @@ import main.data.DataBuffer;
 import main.data.DataObject;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
+import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.ContentObject;
 import main.tmdb.TMDB;
@@ -76,8 +77,11 @@ public class TMDBSeries extends DataObject implements ContentObject {
 	}
 	
 	@Override
-	public ContentGroup getContentGroup() {
+	public ContentPage getPage(String options) {
+		ContentPage page = new ContentPage();
 		ContentGroup group = new ContentGroup();
+		page.addContentGroup(group);
+		
 		group.put(new ContentImage(0, 0, 300, 450, TMDB.getPosterURL(schema.getString("posterPath"), false)));		
 		
 		int x = 330, y = 20, stepY = 23;
@@ -118,7 +122,7 @@ public class TMDBSeries extends DataObject implements ContentObject {
 	  }
 				
 		group.put(new ContentText(x, y+stepY, "Inhalt: " + schema.getString("summary"), ContentText.TextType.BLOCK));
-		return group;
+		return page;
 	}
 	
 	public static String getClassName() {
