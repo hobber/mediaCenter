@@ -80,7 +80,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       var element = document.createElement('img');
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
-      element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px;');
+      element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px; cursor:pointer;');
       element.setAttribute('width', 38);
       element.setAttribute('height', 38);
       element.setAttribute('src', 'content/back.svg');
@@ -116,27 +116,38 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
           continue;
         }
 
-        var element = contentFactories[item.type](groupElement, item, options);                
+        var element = createElement(groupElement, item, options);                
         var y = item.y + element.offsetHeight;
         if(y > maxY)
           maxY = y;
       }
 
-      var link = contentLinks.length;
-      contentLinks.push(definition);
-      groupElement.setAttribute('ng-click', 'clicked(' + link + ')');
-      $compile(groupElement)($scope);
-
-      var style = 'height: ' + maxY + 'px;';
-      if(definition.subgroup !== undefined)
-        style += ' cursor:pointer;';
+      var style = 'height: ' + maxY + 'px;';      
       if(isLast !== true && (options === undefined || options.groupBoarder !== false))
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
+      return groupElement;
     };
 
     var showErrorPage = function() {
       contentDiv.innerHTML = 'content not found	';
+    };
+
+    var createElement = function(parent, definition, options, parameter) {
+      var element = contentFactories[definition.type](parent, definition, options, parameter);  
+      if(definition.link !== undefined) {
+        var link = contentLinks.length;
+        contentLinks.push(definition);
+        element.setAttribute('ng-click', 'clicked(' + link + ')');
+        var style = element.getAttribute('style');
+        if(style === undefined)
+          style = 'cursor:pointer;';
+        else          
+          style += ' cursor:pointer;';
+        element.setAttribute('style', style);
+        $compile(element)($scope);
+      }
+      return element;
     };
 
     var showMenu = function(menu) {
@@ -180,7 +191,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
           continue;
         }
         var isLast = (i === items.length-1);
-        contentFactories['group'](contentDiv, definition, options, isLast);
+        createElement(contentDiv, definition, options, isLast);
       }
     };
 
@@ -205,14 +216,14 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         return;
       }
 
-      var subgroup = contentLinks[index].subgroup;
-      if(subgroup === undefined)
+      var link = contentLinks[index].link;
+      if(link === undefined)
         return;
 
-      if(subgroup.type === 'loadOnDemand')
-        sendRequest(subgroup.context, subgroup.query);        
+      if(link.type === 'loadOnDemand')
+        sendRequest(link.context, link.query);        
       else
-        showPage(subgroup);
+        showPage(link);
     };  
 
     $scope.back = function() {

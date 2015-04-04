@@ -32,10 +32,10 @@ public class TMDBLibraryPage implements UserContentPage {
 
 		series.put(new ContentText(5, 5, "Once upon a time"));
 		ContentGroup season = new ContentGroup();
-		series.appendSubGroup(season);
+		series.appendLink(season);
 		season.put(new ContentText(5, 5, "Season 01"));		
 		ContentGroup episode = new ContentGroup();
-		season.appendSubGroup(episode);
+		season.appendLink(episode);
 		ContentImage image = new ContentImage(0, 0, 100, 120, "http://image.tmdb.org/t/p/w500/6S8rM2Qq3B3g3dgAnJlilgUc2dE.jpg");
 		episode.put(image);
 

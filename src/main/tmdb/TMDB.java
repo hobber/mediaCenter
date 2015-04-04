@@ -41,7 +41,7 @@ public class TMDB extends Plugin {
 		this.config = config;
 	}
 	
-	public static TMDB create(ConfigElementGroup config) {
+	public static synchronized TMDB create(ConfigElementGroup config) {
 		INSTANCE = new TMDB(config);
 		return INSTANCE;
 	}
@@ -81,18 +81,22 @@ public class TMDB extends Plugin {
 			throw new RuntimeException("TMDB: could not create content pages!");
 	}
 	
-	private void signRequest(TMDBRequest request) {
-		request.addQuery("api_key", apiKey);
+	public static void signRequest(TMDBRequest request) {
+		request.addQuery("api_key", INSTANCE.apiKey);
 	}
 	
 	private boolean getRequestToken() {
 		TMDBRequest request = new TMDBRequest("authentication/token/new");
 		signRequest(request);
 		HTTPResponse response = request.sendRequest();
-		
-		if(response.getResponseBoolean("success", false) == false)
+		if(response.failed() || response.hasJSONBody() == false)
 			return false;
-		requestToken = response.getResponseString("request_token");
+		
+		JSONContainer container = response.getJSONBody();
+		if(container.getBoolean("success", false) == false)
+			return false;
+		
+		requestToken = container.getString("request_token", "");
 		if(requestToken.length() == 0)
 			return false;
 		return true;		
@@ -105,19 +109,26 @@ public class TMDB extends Plugin {
 		request.addQuery("password", password);
 		signRequest(request);
 		HTTPResponse response = request.sendRequest();
+		if(response.failed() || response.hasJSONBody() == false)
+			return false;
 		
-		return response.getResponseBoolean("success", false);		
+		JSONContainer container = response.getJSONBody();		
+		return container.getBoolean("success", false);		
 	}
 	
 	private boolean getSessionId() {
 		TMDBRequest request = new TMDBRequest("authentication/session/new");
 		request.addQuery("request_token", requestToken);
 		signRequest(request);
-		HTTPResponse response = request.sendRequest();		
-		
-		if(response.getResponseBoolean("success", false) == false)
+		HTTPResponse response = request.sendRequest();
+		if(response.failed() || response.hasJSONBody() == false)
 			return false;
-		sessionId = response.getResponseString("session_id");
+		
+		JSONContainer container = response.getJSONBody();				
+		if(container.getBoolean("success", false) == false)
+			return false;
+		
+		sessionId = container.getString("session_id", "");
 		if(sessionId.length() == 0)
 			return false;
 		return true;
@@ -128,8 +139,11 @@ public class TMDB extends Plugin {
 		request.addQuery("session_id", sessionId);
 		signRequest(request);
 		HTTPResponse response = request.sendRequest();
+		if(response.failed() || response.hasJSONBody() == false)
+			return false;
 		
-		accountId = response.getResponseInt("id", -1);
+		JSONContainer container = response.getJSONBody();		
+		accountId = container.getInt("id", -1);
 		if(accountId < 0)
 			return false;
 		return true;
@@ -138,12 +152,11 @@ public class TMDB extends Plugin {
 	private boolean getConfiguration() {
 		TMDBRequest request = new TMDBRequest("configuration");
 		signRequest(request);
-		HTTPResponse response = request.sendRequest();	
-		if(response.isValid() == false)
+		HTTPResponse response = request.sendRequest();
+		if(response.failed() || response.hasJSONBody() == false)
 			return false;
-
-		JSONContainer container = response.getJSONBody();
-		JSONArray posterSizes = container.getArray("images.poster_sizes");
+		
+		JSONArray posterSizes = response.getJSONBody().getArray("images.poster_sizes");
 		for(int i=0; i<posterSizes.length(); i++)			
 			this.posterSizes.add(posterSizes.getString(i, ""));
 		return true;
@@ -153,15 +166,15 @@ public class TMDB extends Plugin {
 		TMDBRequest requestMovie = TMDBGenreList.createRequestMovie();
 		signRequest(requestMovie);
 		HTTPResponse responseMovie = requestMovie.sendRequest();
-		if(responseMovie.isValid() == false)
-			return false;
+		if(responseMovie.failed() || responseMovie.hasJSONBody() == false)
+			return false;				
 		genres.add(responseMovie.getJSONBody().getArray("genres"));
 		
 		TMDBRequest requestSeries = TMDBGenreList.createRequestSeries();
 		signRequest(requestSeries);
 		HTTPResponse responseSeries = requestSeries.sendRequest();
-		if(responseSeries.isValid() == false)
-			return false;
+		if(responseSeries.failed() || responseSeries.hasJSONBody() == false)
+			return false;		
 		genres.add(responseSeries.getJSONBody().getArray("genres"));	
 		
 		return true;

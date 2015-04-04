@@ -8,29 +8,19 @@ import main.utils.JSONContainer;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HTTPResponse {
 
-	private  boolean isValid = false;
-	private JSONObject response;
+	private JSONContainer jsonBody;
 	private String htmlBody = "";
-	
-	public HTTPResponse(JSONObject body, boolean isValid) {
-		this.isValid = isValid;
-		response = body;
-	}
-	
+	private String error = "";
+
 	public HTTPResponse(HttpResponse response) {
 		int responseCode = response.getStatusLine().getStatusCode(); 
-		if(responseCode != 200)
-		{
-			System.err.println("Error: sending request failed (" + responseCode +
-					" - " + response.getStatusLine().getReasonPhrase() + ")!");
-			return;
-		}		
+		if(responseCode != 200)		
+			error = responseCode + " - " + response.getStatusLine().getReasonPhrase();					
 		
 		try {
 			InputStream inputstream = response.getEntity().getContent();
@@ -38,14 +28,13 @@ public class HTTPResponse {
 			Scanner s = scanner.useDelimiter("\\A");
 	    htmlBody =  s.hasNext() ? s.next() : "";
 	    scanner.close();
-	    this.response = new JSONObject(htmlBody);
-	    isValid = true;
+	    jsonBody = new JSONContainer(new JSONObject(htmlBody));	    
 		} catch(IOException | IllegalStateException | JSONException e) {			
 		}
 		
  		try {
-			this.response = new JSONObject(EntityUtils.toString(response.getEntity()));
-			isValid = true;
+ 			if(jsonBody == null)
+ 				jsonBody = new JSONContainer(new JSONObject(EntityUtils.toString(response.getEntity())));			
 		} catch(IOException | JSONException e) {			
 		}
 	}
@@ -58,98 +47,19 @@ public class HTTPResponse {
 		return htmlBody;
 	}
 	
-	public boolean isValid() {
-		return isValid;
+	public boolean hasJSONBody() {
+		return jsonBody != null;
 	}
 	
 	public JSONContainer getJSONBody() {
-		return new JSONContainer(response);
+		return jsonBody;
+	}
+
+	public boolean failed() {
+		return error.length() != 0;
 	}
 	
-	
-	
-	
-	//TODO: remove code below!!
-	public String getResponseString(String key) {
-		try {
-			Object value = response.get(key);
-			if(value == null)
-				return "";
-			return value.toString();				
-		} catch (JSONException e) {
-			return "";
-		}
-	}
-	
-	public String getResponseSubString(String key) {
-		try {
-			String []keys = key.split("\\.");
-			Object object = response.get(keys[0]);
-			for(int i=1; i<keys.length && object != null; i++)
-				object = ((JSONObject)object).get(keys[i]);			
-			if(object == null)
-				return "";			
-			return object.toString();				
-		} catch (JSONException e) {
-			return "";
-		}
-	}
-	
-	//TODO: use getSubstring to get value before parsing
-	public boolean getResponseBoolean(String key, boolean defaultValue) {
-		try {
-			Object value = response.get(key);
-			if(value == null)
-				return defaultValue;
-			return Boolean.parseBoolean(value.toString());		
-		} catch (JSONException e) {
-			return defaultValue;
-		}
-	}
-	
-	public int getResponseInt(String key, int defaultValue) {
-		try {
-			Object value = response.get(key);
-			if(value == null)
-				return defaultValue;
-			return Integer.parseInt(value.toString());		
-		} catch (JSONException e) {
-			return defaultValue;
-		}
-	}
-	
-	public float getResponseFloat(String key, float defaultValue) {
-		try {
-			Object value = response.get(key);
-			if(value == null)
-				return defaultValue;
-			return Float.parseFloat(value.toString());		
-		} catch (JSONException e) {
-			return defaultValue;
-		}
-	}
-	
-	public double getResponseDouble(String key, double defaultValue) {
-		try {
-			Object value = response.get(key);
-			if(value == null)
-				return defaultValue;
-			return Double.parseDouble(value.toString());		
-		} catch (JSONException e) {
-			return defaultValue;
-		}
-	}
-	
-	public JSONArray getJSONArray(String key) {
-		try {
-			return response.getJSONArray(key);
-		} catch(JSONException e) {
-			return new JSONArray();
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return response.toString();
-	}
+	public String getError() {
+		return error;
+	}	
 }
