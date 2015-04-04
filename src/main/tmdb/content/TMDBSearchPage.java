@@ -72,6 +72,8 @@ public class TMDBSearchPage implements UserContentPage {
 			return search(term);
 		if(task.equals("show") == true)
 			return show(term);
+		if(task.equals("cast") == true)
+			return credits(term);
 		
 		System.err.println("ERROR: " + query + " is not supported");
 		return new JSONObject();
@@ -116,9 +118,8 @@ public class TMDBSearchPage implements UserContentPage {
 		
 		int seriesId = Integer.parseInt(id);
 		TMDBSeries series = tmdb.getSeries(seriesId);
-		TMDBCredits credits = tmdb.getSeriesCredits(seriesId);
 		
-		// tv/{id}/similar, videos, credits
+		// tv/{id}/similar, videos
 		
 		JSONObject page = new JSONObject();			
 		try {						
@@ -128,8 +129,39 @@ public class TMDBSearchPage implements UserContentPage {
 			
 			JSONArray content = new JSONArray();
 			page.put("content", content);					
-		  content.put(series.getContentGroup());			
-		  content.put(credits.getContentGroup());
+		  content.put(series.getContentGroup());
+		  
+		  ContentGroup infos = new ContentGroup();
+			content.put(infos);			
+			infos.put(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));			
+		  
+			ContentGroup cast = new ContentGroup();
+			content.put(cast);			
+			cast.put(new ContentText(20, 10, "&bull;Besetzung"));				
+			cast.putContentGroupOnDemand(new ContentGroupOnDemand(context, "cast="+id));
+		} catch(JSONException e) {
+			System.err.println("ERROR: " + e.getMessage());
+		}
+		return page;
+	}
+	
+	private JSONObject credits(String id) {
+		if(id.length() == 0) {
+			System.err.println("ERROR: empty id is not allowed");
+			return new JSONObject(); 
+		}
+		
+		TMDBCredits credits = tmdb.getSeriesCredits(Integer.parseInt(id));		
+		
+		JSONObject page = new JSONObject();			
+		try {						
+			JSONObject options = new JSONObject();
+			page.put("options", options);
+			options.put("groupBoarder", false);
+			
+			JSONArray content = new JSONArray();
+			page.put("content", content);					
+		  content.put(credits.getContentGroup());					 
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

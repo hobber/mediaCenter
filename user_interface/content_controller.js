@@ -14,8 +14,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
     contentFactories = {};
 
-    contentFactories.img = function(definition) {
+    contentFactories.img = function(groupElement, definition) {
       var element = document.createElement('img');
+      groupElement.appendChild(element);
       element.setAttribute('id', 'contentItem');
       element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
       element.setAttribute('width', definition.width);
@@ -25,8 +26,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.text = function(definition) {
+    contentFactories.text = function(groupElement, definition) {
       var element = document.createElement('span');
+      groupElement.appendChild(element);
       element.setAttribute('id', 'contentItem');
       if(definition.style === undefined)
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
@@ -46,31 +48,37 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.table = function(definition) {
+    contentFactories.table = function(groupElement, definition) {
       var element = document.createElement('table');
+      groupElement.appendChild(element);
       console.log('TABLE:', definition);
       element.setAttribute('id', 'contentItem');
-      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      element.setAttribute('border', '1');
+      element.setAttribute('cellpadding', '0');
+      element.setAttribute('cellspacing', '0');
+      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px; border-collapse: collapse;');
       
       for(var i=0; i<definition.rows.length; i++) {
         var row = document.createElement('tr');
         element.appendChild(row);
-        row.setAttribute('style', 'position: relative; height: ' + definition.rowHeight + 'px;');
+        row.setAttribute('style', 'position: relative; height: ' + (definition.rowHeight+2) + 'px;');
 
         for(var j=0; j<definition.columns; j++) {
           var column = document.createElement('td');
           row.appendChild(column);
-          column.setAttribute('style', 'position: relative; width: ' + definition.widths[j] + 'px;');
-
+          //column width first must be set on maximum, that no line breaks in texts happen
+          column.setAttribute('style', 'position: relative; width: 100%;');         
           var item = definition.rows[i][j];
-          column.appendChild(contentFactories[item.type](item));
+          var createdItem = contentFactories[item.type](column, item);
+          column.setAttribute('style', 'position: relative; width: ' + (createdItem.offsetWidth+2) + 'px;');
         }
       }
       return element;
     };
 
-    contentFactories.backButton = function(definition) {
+    contentFactories.backButton = function(groupElement, definition) {
       var element = document.createElement('img');
+      groupElement.appendChild(element);
       element.setAttribute('id', 'contentItem');
       element.setAttribute('style', 'right: ' + definition.x + 'px; top: 0px;');
       element.setAttribute('width', 38);
@@ -82,8 +90,9 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.searchField = function(definition) {
+    contentFactories.searchField = function(groupElement, definition) {
       var element = document.createElement('input');
+      groupElement.appendChild(element);
       element.setAttribute('type', 'text');
       element.setAttribute('id', 'searchBox');
       element.setAttribute('style', 'right: ' + definition.x + 'px; top: 2px;');
@@ -96,39 +105,34 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
     var createGroup = function(group, groupBoarder, isLastGroup) {
       var groupElement = document.createElement('div');
-      var elements = [];
-
+      contentDiv.appendChild(groupElement);
       groupElement.setAttribute('id', 'contentContainer');      
+
+      var maxY = 0;
       for(var j = 0; j < group.items.length; j++) {
         var definition = group.items[j];
         if(contentFactories[definition.type] === undefined) {
           console.error('ERROR: unsupported content type ' + definition.type);
           continue;
         }
-        var element = contentFactories[definition.type](definition);
-        elements.push({element: element, y: definition.y});
-        groupElement.appendChild(element);
+
+        var element = contentFactories[definition.type](groupElement, definition);                
+        var y = definition.y + element.offsetHeight;
+        if(y > maxY)
+          maxY = y;
       }
 
       var link = contentLinks.length;
       contentLinks.push(group);
       groupElement.setAttribute('ng-click', 'clicked(' + link + ')');
-      $compile(groupElement)($scope); 
+      $compile(groupElement)($scope);
 
-      contentDiv.appendChild(groupElement);
-
-      // calculation of dimensions of group must be done after adding to contentDiv
-      var maxY = 0;
-      for(var j=0; j<elements.length; j++) {
-        var y = elements[j].y + elements[j].element.offsetHeight;
-        if(y > maxY)
-          maxY = y;
-      }
-
-      if(isLastGroup || groupBoarder === false)
-        groupElement.setAttribute('style', 'height: ' + maxY + 'px;');
-      else
-        groupElement.setAttribute('style', 'height: ' + maxY + 'px; border-bottom: 1px solid #000000; ');
+      var style = 'height: ' + maxY + 'px;';
+      if(group.subgroup !== undefined)
+        style += ' cursor:pointer;';
+      if(isLastGroup === false && groupBoarder === true)
+        style +='border-bottom: 1px solid #000000; ';
+      groupElement.setAttribute('style', style);
     };
 
     var showErrorPage = function() {
@@ -146,7 +150,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
 
       for(var i = 0; i < menu.length; i++) {
         var element = menu[i];
-        menuBar.appendChild(contentFactories[element.type](element));
+        contentFactories[element.type](menuBar, element);
       }
     }
 
@@ -155,7 +159,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         showErrorPage();
         return;
       }
-console.log('OPTIONS:', options);
+
       contentStack.push(content);
       contentDiv.innerHTML = '';
       contentLinks = [];

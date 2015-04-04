@@ -108,7 +108,7 @@ public class TMDBSeries extends DataObject implements ContentObject {
 				                            " in " + numberOfSeasons + " Staffel" + (numberOfSeasons > 0 ? "n" : "")));
 		y += stepY;
 		
-		group.put(new ContentText(x, y, "Popularity: " + Math.round(schema.getFloat("popularity")*10.0)/10.0));
+		group.put(new ContentText(x, y, "Bewertung: " + Math.round(schema.getFloat("popularity")*10.0)/10.0));
 		y += stepY;
 	  
 	  String homepage = schema.getString("homepage");

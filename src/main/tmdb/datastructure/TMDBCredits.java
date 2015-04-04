@@ -40,18 +40,15 @@ public class TMDBCredits implements ContentObject {
 	@Override
   public ContentGroup getContentGroup() {	  
 	  ContentGroup group = new ContentGroup();
-	  group.put(new ContentText(10, 5, "Besetzung:", ContentText.TextType.SUBTITLE));
+	  group.put(new ContentText(10, 5, "Besetzung:", ContentText.TextType.SUBTITLE));	  
 	  
-	  LinkedList<Integer> columnWidths = new LinkedList<Integer>();
-	  columnWidths.add(40);
-	  columnWidths.add(800);
-	  
-	  ContentTable table = new ContentTable(10, 35, 2, 60, columnWidths);
+	  ContentTable table = new ContentTable(10, 35, 3, 60);
 	  group.put(table);
 	  for(TMDBCharacter character : characters) {
 	  	LinkedList<ContentItem> columns = new LinkedList<ContentItem>();
 	  	columns.add(new ContentImage(0, 0, 40, 60, TMDB.getPosterURL(character.getProfilePath(), true)));
-	  	columns.add(new ContentText(0, 20, character.getCharacterName() + " (" + character.getActorName() + ")"));	
+	  	columns.add(new ContentText(0, 20, character.getCharacterName()));
+	  	columns.add(new ContentText(0, 20, character.getActorName()));
 	  	table.addRow(columns);
 	  }
 	  return group;

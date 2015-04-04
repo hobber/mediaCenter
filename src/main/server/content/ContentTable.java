@@ -9,10 +9,7 @@ public class ContentTable extends ContentItem {
 
 	private int columns;
 	
-	public ContentTable(int x, int y, int columns, int rowHeight, List<Integer> columnWidths) {
-		if(columnWidths.size() != columns)
-			throw new RuntimeException("wrong number of columns (" + columnWidths.size() + " instead of " + this.columns);
-		
+	public ContentTable(int x, int y, int columns, int rowHeight) {
 		this.columns = columns;
 		
 		try {
@@ -20,12 +17,7 @@ public class ContentTable extends ContentItem {
 			put("x", x);
 			put("y", y);
 			put("columns", columns);	
-			put("rowHeight", rowHeight);
-						
-			JSONArray widths = new JSONArray();
-			for(Integer width : columnWidths)
-				widths.put(width);
-			put("widths", widths);
+			put("rowHeight", rowHeight);			
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
