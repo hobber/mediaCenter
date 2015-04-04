@@ -3,7 +3,6 @@ package main.tmdb;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.List;
 
 import main.Plugin;
 import main.http.HTTPResponse;
@@ -13,7 +12,6 @@ import main.server.content.UserContentGroup;
 import main.tmdb.content.TMDBSearchPage;
 import main.tmdb.datastructure.TMDBCredits;
 import main.tmdb.datastructure.TMDBGenreList;
-import main.tmdb.datastructure.TMDBSearchResult;
 import main.tmdb.datastructure.TMDBSearchResultList;
 import main.tmdb.datastructure.TMDBSeries;
 import main.utils.ConfigElementGroup;
@@ -247,6 +245,13 @@ public class TMDB extends Plugin {
 		signRequest(request);		
 		HTTPResponse response = request.sendRequest();		
 		return new TMDBCredits(response.getJSONBody());
+	}
+	
+	public TMDBSearchResultList getSimilarSeries(int id) {
+		TMDBRequest request = new TMDBRequest("tv/"+id+"/similar");		
+		signRequest(request);		
+		HTTPResponse response = request.sendRequest();		
+		return new TMDBSearchResultList(response.getJSONBody().getArray("results"));
 	}
 	
 	/*

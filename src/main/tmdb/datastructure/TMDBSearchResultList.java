@@ -36,6 +36,9 @@ public class TMDBSearchResultList implements ContentObject {
 	
 	@Override
   public ContentPage getPage(String context) {
+		if(context == null || context.length() == 0)
+			throw new RuntimeException("no valid context provided");
+		
 		ContentPage page = new ContentPage();
 		for(TMDBSearchResult result : resultList) {		
 			ContentGroup group = new ContentGroup();

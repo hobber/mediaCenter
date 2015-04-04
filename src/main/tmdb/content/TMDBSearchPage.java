@@ -71,6 +71,8 @@ public class TMDBSearchPage implements UserContentPage {
 			return show(term);
 		if(task.equals("cast") == true)
 			return credits(term);
+		if(task.equals("similar") == true)
+			return similar(term);
 		
 		return new ContentErrorPage(query + " is not supported");
 	}
@@ -95,7 +97,7 @@ public class TMDBSearchPage implements UserContentPage {
 		
 		// tv/{id}/similar, videos
 		
-		ContentPage page = series.getPage("");		
+		ContentPage page = series.getPage(null);		
 		try {						
 			JSONObject options = new JSONObject();
 			page.setOptions(options);
@@ -109,6 +111,11 @@ public class TMDBSearchPage implements UserContentPage {
 			page.addContentGroup(cast);			
 			cast.put(new ContentText(20, 10, "&bull;Besetzung"));				
 			cast.putContentGroupOnDemand(new ContentGroupOnDemand(context, "cast="+id));
+			
+			ContentGroup similar = new ContentGroup();
+			page.addContentGroup(similar);			
+			similar.put(new ContentText(20, 5, "&bull;Ähnliche Serien"));				
+			similar.putContentGroupOnDemand(new ContentGroupOnDemand(context, "similar="+id));			
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
@@ -120,6 +127,14 @@ public class TMDBSearchPage implements UserContentPage {
 			return new ContentErrorPage("empty id is not allowed");		
 		
 		TMDBCredits credits = tmdb.getSeriesCredits(Integer.parseInt(id));	
-		return credits.getPage("");					
+		return credits.getPage(null);					
+	}
+	
+	private ContentPage similar(String id) {
+		if(id.length() == 0)
+			return new ContentErrorPage("empty id is not allowed");		
+		
+		TMDBSearchResultList similarSeries = tmdb.getSimilarSeries(Integer.parseInt(id));	
+		return similarSeries.getPage(context);					
 	}
 }
