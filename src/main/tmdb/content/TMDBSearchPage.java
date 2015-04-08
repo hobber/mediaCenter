@@ -12,6 +12,7 @@ import main.server.content.UserContentPage;
 import main.tmdb.TMDB;
 import main.tmdb.datastructure.TMDBEpisodeList;
 import main.tmdb.datastructure.TMDBPerson;
+import main.tmdb.datastructure.TMDBPersonCredits;
 import main.tmdb.datastructure.TMDBSearchResultList;
 import main.tmdb.datastructure.TMDBSeries;
 
@@ -72,6 +73,8 @@ public class TMDBSearchPage implements UserContentPage {
 			return episodes(term);
 		if(task.equals("person") == true)
 			return person(term);
+		if(task.equals("personCredits") == true)
+			return personCredits(term);
 		
 		return new ContentErrorPage(query + " is not supported");
 	}
@@ -159,5 +162,11 @@ public class TMDBSearchPage implements UserContentPage {
 		if(id.length() == 0)
 			return new ContentErrorPage("empty id is not allowed");				
 		return new TMDBPerson(Integer.parseInt(id)).getPage(context); 				
+	}
+	
+	private ContentPage personCredits(String id) {
+		if(id.length() == 0)
+			return new ContentErrorPage("empty id is not allowed");				
+		return new TMDBPersonCredits(Integer.parseInt(id)).getPage(context); 				
 	}
 }

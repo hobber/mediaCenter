@@ -287,17 +287,31 @@ public class TMDB extends Plugin {
 		return INSTANCE.genres.get(id);
 	}
 	
-	public static String getYear(String date) {
+	public static Integer getYear(String date) {
 		if(date == null)
-			return "?";
+			return null;
 				
 		try {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(DATE_FORMAT.parse(date));
-			return Integer.toString(calendar.get(Calendar.YEAR));
+			return calendar.get(Calendar.YEAR);
+		} catch(Exception e) {
+			System.err.println("ERROR: " + e);
+			return null;
+		}		
+	}
+	
+	public static String getDate(String date) {
+		if(date == null)
+			return "?";
+		
+		try {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(DATE_FORMAT.parse(date));
+			return calendar.get(Calendar.DAY_OF_MONTH) + "." + calendar.get(Calendar.MONTH) + "." + calendar.get(Calendar.YEAR);
 		} catch(Exception e) {
 			System.err.println("ERROR: " + e);
 			return "?";
-		}		
+		}	
 	}
 }
