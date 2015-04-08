@@ -4,7 +4,7 @@ import main.server.content.ContentGroup;
 import main.server.content.ContentText;
 import main.utils.JSONContainer;
 
-public class TMDBSimpleEpisode {
+public class TMDBEpisode {
 
 	private String name;
 	private int episodeNumber;
@@ -12,7 +12,7 @@ public class TMDBSimpleEpisode {
 	private String overview;
 	private double averageVote;
 	
-	public TMDBSimpleEpisode(JSONContainer episode) {
+	public TMDBEpisode(JSONContainer episode) {
 		name = episode.getString("name", "");	
 		episodeNumber = episode.getInt("episode_number", 0);
 		airDate = episode.getString("air_date", "");    	

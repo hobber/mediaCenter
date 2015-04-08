@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import main.server.content.ContentGroup;
+import main.server.content.ContentGroupOnDemand;
 import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentObject;
@@ -39,7 +40,7 @@ public class TMDBCredits implements ContentObject {
 	}
 
 	@Override
-  public ContentPage getPage(String options) {	
+  public ContentPage getPage(String context) {	
 		ContentPage page = new ContentPage();
 	  ContentGroup group = new ContentGroup();
 	  page.addContentGroup(group);
@@ -52,7 +53,9 @@ public class TMDBCredits implements ContentObject {
 	  	LinkedList<ContentItem> columns = new LinkedList<ContentItem>();
 	  	columns.add(new ContentImage(0, 0, 40, 60, TMDB.getPosterURL(character.getProfilePath(), true)));
 	  	columns.add(new ContentText(0, 20, character.getCharacterName()));
-	  	columns.add(new ContentText(0, 20, character.getActorName()));
+	  	ContentText actor = new ContentText(0, 20, character.getActorName());	  	
+	  	columns.add(actor);
+	  	actor.appendLink(new ContentGroupOnDemand(context, "person=" + character.getActorId()));
 	  	table.addRow(columns);
 	  }
 	  return page;

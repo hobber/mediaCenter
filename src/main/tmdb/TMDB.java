@@ -89,8 +89,9 @@ public class TMDB extends Plugin {
 		TMDBRequest request = new TMDBRequest("authentication/token/new");
 		signRequest(request);
 		HTTPResponse response = request.sendRequest();
-		if(response.failed() || response.hasJSONBody() == false)
+		if(response.failed() || response.hasJSONBody() == false) {
 			return false;
+		}
 		
 		JSONContainer container = response.getJSONBody();
 		if(container.getBoolean("success", false) == false)

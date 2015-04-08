@@ -48,7 +48,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    contentFactories.table = function(parent, definition) {
+    contentFactories.table = function(parent, definition, options) {
       var element = document.createElement('table');
       parent.appendChild(element);
 
@@ -57,7 +57,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       element.setAttribute('cellpadding', '0');
       element.setAttribute('cellspacing', '0');
       element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px; border-collapse: collapse;');
-      
+
       for(var i=0; i<definition.rows.length; i++) {
         var row = document.createElement('tr');
         element.appendChild(row);
@@ -68,8 +68,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
           row.appendChild(column);
           //column width first must be set on maximum, that no line breaks in texts happen
           column.setAttribute('style', 'position: relative; width: 100%;');         
-          var item = definition.rows[i][j];
-          var createdItem = contentFactories[item.type](column, item);
+          var createdItem = createElement(column, definition.rows[i][j], options);
           column.setAttribute('style', 'position: relative; width: ' + (createdItem.offsetWidth+2) + 'px;');
         }
       }
@@ -150,7 +149,7 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       return element;
     };
 
-    var showMenu = function(menu) {
+    var showMenu = function(menu, options) {
       menuDiv.innerHTML = '';
       if(menu === undefined)
         return;
@@ -159,10 +158,8 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       menuBar.setAttribute('id', 'contentMenu');
       menuDiv.appendChild(menuBar);
 
-      for(var i = 0; i < menu.length; i++) {
-        var element = menu[i];
-        contentFactories[element.type](menuBar, element);
-      }
+      for(var i = 0; i < menu.length; i++)
+        createElement(menuBar, menu[i], options);
     }
 
     var showPage = function(content) {
@@ -171,8 +168,10 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
         return;
       }
 
+      var options = content.options;
+
       if(content.menu !== undefined)
-        showMenu(content.menu);
+        showMenu(content.menu, options);
 
       contentStack.push(content);
       contentDiv.innerHTML = '';
@@ -182,7 +181,6 @@ app.controller('ContentController', ['$scope','$rootScope', '$compile',
       if(options !== undefined && options.groupBoarder === false)
         groupBoarder = false;
 
-      var options = content.options;
       var items = content.items;
       for(var i = 0; i < items.length; i++) {
         var definition = items[i];

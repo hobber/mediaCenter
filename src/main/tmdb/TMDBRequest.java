@@ -30,4 +30,9 @@ public class TMDBRequest {
 		
 		return HTTPUtils.sendHTTPGetRequest(request);		
 	}
+	
+	@Override
+	public String toString() {
+		return API_URL + path + query;
+	}
 }

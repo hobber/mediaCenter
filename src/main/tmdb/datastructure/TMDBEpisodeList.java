@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 import main.http.HTTPResponse;
 import main.server.content.ContentGroup;
-import main.server.content.ContentImage;
 import main.server.content.ContentObject;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
@@ -15,7 +14,7 @@ import main.utils.JSONContainer;
 
 public class TMDBEpisodeList implements ContentObject {
 	
-	private LinkedList<LinkedList<TMDBSimpleEpisode>> episodes = new LinkedList<LinkedList<TMDBSimpleEpisode>>(); 
+	private LinkedList<LinkedList<TMDBEpisode>> episodes = new LinkedList<LinkedList<TMDBEpisode>>(); 
 
 	public TMDBEpisodeList(int id) {		
 		for(int season=1; ; season++) {
@@ -26,12 +25,12 @@ public class TMDBEpisodeList implements ContentObject {
 			if(response.failed() || response.hasJSONBody() == false)
 				break;
 			
-			LinkedList<TMDBSimpleEpisode> list = new LinkedList<TMDBSimpleEpisode>();
+			LinkedList<TMDBEpisode> list = new LinkedList<TMDBEpisode>();
 			episodes.add(list);
 			JSONContainer container = response.getJSONBody();
 			JSONArray episodes = container.getArray("episodes");
 			for(int i=0; i<episodes.length(); i++)
-				list.add(new TMDBSimpleEpisode(episodes.getContainer(i)));			
+				list.add(new TMDBEpisode(episodes.getContainer(i)));			
 		}
 	}
 	
@@ -39,7 +38,7 @@ public class TMDBEpisodeList implements ContentObject {
   public ContentPage getPage(String context) {
 	  ContentPage page = new ContentPage();
 	  for(int i=0; i<episodes.size(); i++) {
-	  	LinkedList<TMDBSimpleEpisode> season = episodes.get(i);
+	  	LinkedList<TMDBEpisode> season = episodes.get(i);
 	  	ContentGroup group = new ContentGroup();
 	  	page.addContentGroup(group);
 	  	group.put(new ContentText(5, 5, "Staffel " + (i+1), ContentText.TextType.SUBTITLE));

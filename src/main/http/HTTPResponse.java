@@ -17,6 +17,10 @@ public class HTTPResponse {
 	private String htmlBody = "";
 	private String error = "";
 
+	public HTTPResponse(String error) {
+		this.error = error;
+	}
+	
 	public HTTPResponse(HttpResponse response) {
 		int responseCode = response.getStatusLine().getStatusCode(); 
 		if(responseCode != 200)		

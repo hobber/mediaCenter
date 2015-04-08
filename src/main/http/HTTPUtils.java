@@ -26,7 +26,7 @@ public class HTTPUtils {
 			return new HTTPResponse(client.execute(request));			
 		} catch (IOException e) {
 			System.err.println("ERROR: Could not send the request!");
-			return null;
+			return new HTTPResponse(e.getMessage());
 		}
 	}
 	
@@ -34,9 +34,9 @@ public class HTTPUtils {
 		try {
 			return new HTTPResponse(client.execute(request));			
 		} catch (IOException e) {
-			System.err.println("ERROR: Could not send the request!");
+			System.err.println("ERROR: Could not send the request (" + e.getMessage() + ")");
 			e.printStackTrace();
-			return null;
+			return new HTTPResponse(e.getMessage());
 		}
 	}
 	
