@@ -1,5 +1,9 @@
 <?xml version="1.0" ?>
 <config>
+  <logger>
+    <logFile>log.txt</logFile>
+  </logger>
+
   <server>
     <port>11011</port>
   </server>

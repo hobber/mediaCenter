@@ -3,6 +3,7 @@ import main.data.DataController;
 import main.server.Server;
 import main.tmdb.TMDB;
 import main.utils.ConfigFile;
+import main.utils.Logger;
 
 public class Main {
 
@@ -56,19 +57,31 @@ public class Main {
 		if(config.read() == false) {
 			return;
 		}
+		
+		Logger.setup(config.getElement("config.logger"));
+		
+		try {
+		
+			//TODO: add code here
+			
+		} catch(Throwable e) {
+			Logger.error(e);
+		}
+		
+		Logger.closeLogFile();
 						
-		DataController dataController = new DataController(config.getElement("config.data"));		
-		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				
+//		DataController dataController = new DataController(config.getElement("config.data"));		
+//		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				
 		
 //		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
 //		for(TMDBSearchResult series : seriesList)
 //			System.out.println(series);
 		
-		if(Server.run(config.getElement("config.server")) == false)
-			return;		
-		
-		PluginController.startPlugins();
-		System.out.println("server started...");
+//		if(Server.run(config.getElement("config.server")) == false)
+//			return;		
+//		
+//		PluginController.startPlugins();
+//		System.out.println("server started...");
 		
 //		TMDBSeries series = tmdb.getSeries(39272);
 //		System.out.println(series);
