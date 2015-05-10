@@ -1,4 +1,5 @@
 package main;
+import main.converter.YouTubeConverter;
 import main.data.DataController;
 import main.htmlParser.AustrianCharts;
 import main.server.Server;
@@ -31,8 +32,10 @@ public class Main {
 		
 		try {
 		
-			AustrianCharts charts = new AustrianCharts(2015, 5, 1);
-			charts.print();
+//			AustrianCharts charts = new AustrianCharts();
+//			charts.print();
+			
+			YouTubeConverter.convert("https://www.youtube.com/watch?v=lBvpUk6RmvE");
 			
 		} catch(Throwable e) {
 			Logger.error(e);
