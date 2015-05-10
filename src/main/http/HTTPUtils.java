@@ -2,6 +2,7 @@ package main.http;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
 import org.apache.http.client.HttpClient;

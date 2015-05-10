@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import main.utils.JSONContainer;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -16,6 +17,7 @@ public class HTTPResponse {
 	private JSONContainer jsonBody;
 	private String htmlBody = "";
 	private String error = "";
+	private String htmlEncoding = null;
 
 	public HTTPResponse(String error) {
 		this.error = error;
@@ -27,11 +29,16 @@ public class HTTPResponse {
 			error = responseCode + " - " + response.getStatusLine().getReasonPhrase();					
 		
 		try {
-			InputStream inputstream = response.getEntity().getContent();
-			Scanner scanner = new java.util.Scanner(inputstream);
-			Scanner s = scanner.useDelimiter("\\A");
-	    htmlBody =  s.hasNext() ? s.next() : "";
-	    scanner.close();
+			for(Header header : response.getAllHeaders()) {
+				if(header.getName().equals("Content-Type")) {
+					int index = header.getValue().indexOf("harset=");
+					if(index >= 0) {
+						htmlEncoding = header.getValue().substring(index+7);
+						break;		
+					}
+				}			
+			}
+			htmlBody = EntityUtils.toString(response.getEntity(), htmlEncoding);
 	    jsonBody = new JSONContainer(new JSONObject(htmlBody));	    
 		} catch(IOException | IllegalStateException | JSONException e) {			
 		}

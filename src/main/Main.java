@@ -1,5 +1,6 @@
 package main;
 import main.data.DataController;
+import main.htmlParser.AustrianCharts;
 import main.server.Server;
 import main.tmdb.TMDB;
 import main.utils.ConfigFile;
@@ -7,38 +8,6 @@ import main.utils.Logger;
 
 public class Main {
 
-//	private static void readAustrianCharts() {
-//		HTTPResponse response = HTTPUtils.sendHTTPGetRequest("http://www.austriancharts.at/weekchart.asp?cat=s");
-//		String body = response.getBody();
-//		body = body.substring(body.indexOf("<tr><td class=\"text\""));
-//		body = body.substring(0, body.indexOf("<!--"));
-//		while(true) {
-//			int indexStart = body.indexOf("<tr>");
-//			if(indexStart < 0)
-//				break;
-//			
-//			int indexEnd = body.indexOf("</tr>", indexStart);
-//			if(indexEnd < 0)
-//				break;
-//			
-//			String entry = body.substring(indexStart, indexEnd);
-//			body = body.substring(indexEnd);
-//			
-//			int indexInterpret = entry.indexOf("interpret=");
-//			if(indexInterpret < 0)
-//				continue;
-//			int indexTitle = entry.indexOf("&titel=", indexInterpret);
-//			if(indexTitle < 0)
-//				continue;
-//			int indexCategory = entry.indexOf("&cat=", indexTitle);
-//			if(indexCategory < 0)
-//				continue;
-//			
-//			String artist = entry.substring(indexInterpret+10, indexTitle);
-//			String title = entry.substring(indexTitle+7, indexCategory);
-//			System.out.println(artist + " - " + title);						
-//		}
-//	}
 	
 	private static void printUsage() {
 		System.out.println("usage: [configFile=config.xml]");
@@ -62,7 +31,8 @@ public class Main {
 		
 		try {
 		
-			//TODO: add code here
+			AustrianCharts charts = new AustrianCharts(2015, 5, 1);
+			charts.print();
 			
 		} catch(Throwable e) {
 			Logger.error(e);
