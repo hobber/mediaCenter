@@ -32,10 +32,10 @@ public class Main {
 		
 		try {
 		
-//			AustrianCharts charts = new AustrianCharts();
-//			charts.print();
+			AustrianCharts charts = new AustrianCharts(2015, 5, 8);
+			charts.print();
 			
-			YouTubeConverter.convert("https://www.youtube.com/watch?v=lBvpUk6RmvE");
+//			YouTubeConverter.convert("https://www.youtube.com/watch?v=lBvpUk6RmvE");
 			
 		} catch(Throwable e) {
 			Logger.error(e);
