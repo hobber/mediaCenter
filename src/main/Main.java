@@ -1,20 +1,15 @@
 package main;
-import main.converter.YouTubeConverter;
-import main.data.DataController;
-import main.htmlParser.AustrianCharts;
-import main.server.Server;
-import main.tmdb.TMDB;
+import main.plugins.AustrianCharts;
 import main.utils.ConfigFile;
 import main.utils.Logger;
 
 public class Main {
-
 	
 	private static void printUsage() {
 		System.out.println("usage: [configFile=config.xml]");
 	}
 	
-	public static void main(String[] args) {					
+	public static void main(String[] args) {  
 		String configFile = "config.xml";		
 		if(args.length == 1)
 			configFile = args[0];
@@ -32,11 +27,14 @@ public class Main {
 		
 		try {
 		
-			AustrianCharts charts = new AustrianCharts(2015, 5, 8);
+//		  AustrianCharts.readFromDB();
+		  
+			AustrianCharts charts = new AustrianCharts();//Calendar.getInstance());
+//			charts.print();
+//			charts.updateDatabase();
+//			charts.writeToDB();
+			charts.readFromDB();
 			charts.print();
-			
-//			YouTubeConverter.convert("https://www.youtube.com/watch?v=lBvpUk6RmvE");
-			
 		} catch(Throwable e) {
 			Logger.error(e);
 		}

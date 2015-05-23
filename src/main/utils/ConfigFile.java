@@ -3,6 +3,8 @@ package main.utils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -11,6 +13,8 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 public class ConfigFile {
+  
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
 
 	public static interface ConfigElementBase {
 		public void write(XMLStreamWriter writer, int intend) throws XMLStreamException;		
@@ -139,6 +143,10 @@ public class ConfigFile {
 	
 	public void clear() {
 		list.clear();
+	}
+	
+	public static String dateToString(Calendar date) {
+	  return DATE_FORMAT.format(date.getTime());
 	}
 	
 	@Override

@@ -68,6 +68,35 @@ public class XMLElement {
     return children;
   }
   
+  public String getAttribute(String name) {
+    if(startTag == null)
+      return null;
+    
+    int index = startTag.indexOf(" " + name + "=");
+    if(index < 0) {
+      index = startTag.indexOf(" " + name);
+      if(index < 0 || index + name.length() >= name.length())
+        return null;
+      
+      char c = startTag.charAt(index + name.length());
+      if(c == ' ' || c == '>' || c == '/')
+        return "";
+    }
+    
+    index += name.length() + 2;
+    if(startTag.charAt(index) == '"') {
+      index++;
+      return startTag.substring(index, startTag.indexOf('"', index + 1));
+    }
+    else if(startTag.charAt(index) == '\'') {
+      index++;
+      return startTag.substring(index, startTag.indexOf('\'', index + 1));
+    }
+    else {
+      throw new RuntimeException("attributes without quotes are currently not supported!");
+    }
+  }
+  
   public List<XMLElement> searchTags(String regex) {
     List<XMLElement> list = new LinkedList<XMLElement>();
     Pattern pattern = Pattern.compile(regex);      

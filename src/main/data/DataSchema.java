@@ -1,382 +1,211 @@
 package main.data;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import main.data.DataQuery.Query;
+import main.data.datatypes.MCByte;
+import main.data.datatypes.MCFloat;
+import main.data.datatypes.MCInteger;
+import main.data.datatypes.MCList;
+import main.data.datatypes.MCLong;
+import main.data.datatypes.MCShort;
+import main.data.datatypes.MCString;
+import main.utils.FileReader;
+import main.utils.FileWriter;
 
 public class DataSchema {
 	
-	private class DataSchemaByte extends DataSchemaObject<Byte> {					
-		public DataSchemaByte(int index, String name) {			
-			super(index, name);
+	private class DataSchemaByte extends DataSchemaObject<Byte> {		  
+		public DataSchemaByte(MCByte valueContainer) {			
+			super(valueContainer);
 		}		
-		public int getNumberOfHeaderBytes() {
-			return 1;
+		public void readValue(FileReader file) throws IOException {
+			valueContainer.set(file.readByte());
 		}
-		public int getObjectTotalSize() {
-			return 1;
-		}
-		public void readValue(DataBuffer buffer) {
-			value = buffer.getByte(index);
-		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putByte(index, value);
-			return 0;
-		}
-		public boolean match(String mask) {
-			return Byte.parseByte(mask) == value;
-		}
-		public String toString() {
-			return value.toString();
+		public void writeValue(FileWriter file) throws IOException {
+			file.writeByte(valueContainer.get());
 		}
 	}
 	
-	private class DataSchemaShort extends DataSchemaObject<Short> {					
-		public DataSchemaShort(int index, String name) {			
-			super(index, name);
+	private class DataSchemaShort extends DataSchemaObject<Short> {
+		public DataSchemaShort(MCShort valueContainer) {			
+			super(valueContainer);
 		}
-		public int getNumberOfHeaderBytes() {
-			return 2;
+		public void readValue(FileReader file) throws IOException {
+		  valueContainer.set(file.readShort());
 		}
-
-		public int getObjectTotalSize() {
-			return 2;
-		}
-		public void readValue(DataBuffer buffer) {
-			value = buffer.getShort(index);
-		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putShort(index, value);
-			return 0;
-		}
-		public boolean match(String mask) {
-			return Short.parseShort(mask) == value;
-		}
-		public String toString() {
-			return value.toString();
+		public void writeValue(FileWriter file) throws IOException {
+			file.writeShort(valueContainer.get());
 		}
 	}
 	
-	private class DataSchemaInt extends DataSchemaObject<Integer> {					
-		public DataSchemaInt(int index, String name) {			
-			super(index, name);
+	private class DataSchemaInt extends DataSchemaObject<Integer> {
+		public DataSchemaInt(MCInteger valueContainer) {			
+			super(valueContainer);
 		}
-		public int getNumberOfHeaderBytes() {
-			return 4;
+		public void readValue(FileReader file) throws IOException {
+		  valueContainer.set(file.readInt());
 		}
-		public int getObjectTotalSize() {
-			return 4;
-		}
-		public void readValue(DataBuffer buffer) {
-			value = buffer.getInt(index);
-		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putInt(index, value);
-			return 0;
-		}
-		public boolean match(String mask) {
-			return Integer.parseInt(mask) == value;
-		}
-		public String toString() {
-			return value.toString();
+		public void writeValue(FileWriter file) throws IOException {
+			file.writeInt(valueContainer.get());
 		}
 	}
 	
-	private class DataSchemaFloat extends DataSchemaObject<Float> {					
-		public DataSchemaFloat(int index, String name) {			
-			super(index, name);
+	private class DataSchemaLong extends DataSchemaObject<Long> { 
+    public DataSchemaLong(MCLong valueContainer) {      
+      super(valueContainer);
+    }
+    public void readValue(FileReader file) throws IOException {
+      valueContainer.set(file.readLong());
+    }
+    public void writeValue(FileWriter file) throws IOException {
+      file.writeLong(valueContainer.get());
+    }
+  }
+	
+	private class DataSchemaFloat extends DataSchemaObject<Float> {	
+		public DataSchemaFloat( MCFloat valueContainer) {			
+			super(valueContainer);
 		}
-		public int getNumberOfHeaderBytes() {
-			return 4;
+		public void readValue(FileReader file) throws IOException {
+		  valueContainer.set(file.readFloat());
 		}
-		public int getObjectTotalSize() {
-			return 4;
-		}
-		public void readValue(DataBuffer buffer) {
-			value = buffer.getFloat(index);
-		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putFloat(index, value);
-			return 0;
-		}
-		public boolean match(String mask) {
-			return Float.parseFloat(mask) == value;
-		}
-		public String toString() {
-			return value.toString();
+		public void writeValue(FileWriter file) throws IOException {
+			file.writeFloat(valueContainer.get());
 		}
 	}
 	
 	private class DataSchemaString extends DataSchemaObject<String> {					
-		public DataSchemaString(int index, String name) {			
-			super(index, name);
+		public DataSchemaString(MCString valueContainer) {			
+			super(valueContainer);
 		}
-		public int getNumberOfHeaderBytes() {
-			return 4;
+		public void readValue(FileReader file) throws IOException {
+		  int length = file.readInt();
+			valueContainer.set(file.readString(length));
 		}
-		public int getObjectTotalSize() {
-			return 8 + value.length();
-		}
-		public void readValue(DataBuffer buffer) {
-			int offset = buffer.getInt(index);
-			int length = buffer.getInt(offset);
-			value = buffer.getString(offset + 4, length);
-		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putInt(index, offset);
-			buffer.putInt(offset, value.length());
-			buffer.putString(offset + 4, value);
-			return value.length() + 4;
-		}
-		public boolean match(String mask) {
-			return mask.equals(value);
-		}
-		public String toString() {
-			return value;
+		public void writeValue(FileWriter file) throws IOException {
+		  int length =  ((MCString)valueContainer).length();
+			file.writeInt(length);
+			file.writeString(valueContainer.get());
 		}
 	}
 	
 	private class DataSchemaIdList extends DataSchemaObject<List<Integer>> {					
-		public DataSchemaIdList(int index, String name) {			
-			super(index, name);
+		public DataSchemaIdList(MCList<Integer> valueContainer) {			
+			super(valueContainer);
 		}
-		public int getNumberOfHeaderBytes() {
-			return 4;
-		}
-		public int getObjectTotalSize() {
-			return 8 + value.size() * 4;
-		}
-		public void readValue(DataBuffer buffer) {
-			int offset = buffer.getInt(index);
-			int length = buffer.getInt(offset);
-			value = new LinkedList<Integer>();
+		public void readValue(FileReader file) throws IOException {
+			int length = file.readInt();
+			((MCList<Integer>)valueContainer).clear();
 			for(int i=0; i<length; i++)
-			  value.add(buffer.getInt(offset + 4 + i * 4));
+			  ((MCList<Integer>)valueContainer).add(file.readInt());
 		}
-		public int writeValue(DataBuffer buffer, int offset) {
-			buffer.putInt(index, offset);
-			buffer.putInt(offset, value.size());
-			for(int i=0; i<value.size(); i++)
-			  buffer.putInt(offset + 4 + i * 4, value.get(i));
-			return value.size() * 4 + 4;
-		}
-		public boolean match(String mask) {
-			return mask.equals(value);
-		}
-		public String toString() {
-			String s = "[";
-			for(int i=0; i<value.size(); i++)
-				s += (i > 0 ? ", " : "") + value.get(i);
-			return s + "]";
+		public void writeValue(FileWriter file) throws IOException {
+		  List<Integer> list = valueContainer.get();
+		  int length = list.size();
+			file.writeInt(length);
+			for(int i=0; i<length; i++)
+			  file.writeInt(list.get(i));
 		}
 	}
 	
-	private String className;
-	private Map<String, DataSchemaObject<?>> schemas = new HashMap<String, DataSchemaObject<?>>();
-	private short nextIndex = 0;
+	private Map<String, DataSchemaObject<?>> schema = new HashMap<String, DataSchemaObject<?>>();	
 	
-	public DataSchema(String className) {
-		this.className = className;
+	public DataSchema() {
 	}
 	
-	public void createSchemaByte(String fieldName) {
-		DataSchemaByte object = new DataSchemaByte(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
+	public void addByte(String fieldName, MCByte valueContainer) {
+	  if(fieldName == null || fieldName == "")
+	    throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaByte object = new DataSchemaByte(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 	
-	public void createSchemaShort(String fieldName) {
-		DataSchemaShort object = new DataSchemaShort(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
+	public void addShort(String fieldName, MCShort valueContainer) {
+	  if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaShort object = new DataSchemaShort(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 
-	public void createSchemaInt(String fieldName) {
-		DataSchemaInt object = new DataSchemaInt(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
+	public void addInt(String fieldName, MCInteger valueContainer) {
+	  if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaInt object = new DataSchemaInt(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 
-	public void createSchemaFloat(String fieldName) {
-		DataSchemaFloat object = new DataSchemaFloat(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
-	}
-	
-	public void createSchemaString(String fieldName) {
-		DataSchemaString object = new DataSchemaString(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
-	}
-	
-	public void createSchemaIdList(String fieldName) {
-		DataSchemaIdList object = new DataSchemaIdList(nextIndex, fieldName);
-		nextIndex += object.getNumberOfHeaderBytes();
-		schemas.put(fieldName,  object);		
-	}
-	
-	public void setValue(String fieldName, byte value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaByte == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of byte");
-		((DataSchemaByte)schemaObject).set(value);
-	}
-	
-	public byte getByte(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaByte == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of byte");
-		return ((DataSchemaByte)schemaObject).get();
-	}
+  public void addLong(String fieldName, MCLong valueContainer) {
+    if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+    DataSchemaLong object = new DataSchemaLong(valueContainer);
+    schema.put(fieldName,  object);    
+  }
 
-	public void setValue(String fieldName, short value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaShort == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of short");
-		((DataSchemaShort)schemaObject).set(value);
+	public void addFloat(String fieldName, MCFloat valueContainer) {
+	  if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaFloat object = new DataSchemaFloat(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 	
-	public short getShort(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaShort == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of short");
-		return ((DataSchemaShort)schemaObject).get();
-	}
-
-	public void setValue(String fieldName, int value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaInt == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of int");
-		((DataSchemaInt)schemaObject).set(value);
+	public void addString(String fieldName, MCString valueContainer) {
+	  if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaString object = new DataSchemaString(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 	
-	public int getInt(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaInt == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of int");
-		return ((DataSchemaInt)schemaObject).get();
+	public void addIntegerList(String fieldName, MCList<Integer> valueContainer) {
+	  if(fieldName == null || fieldName == "")
+      throw new RuntimeException("ERROR: invalid field name " + fieldName);
+		DataSchemaIdList object = new DataSchemaIdList(valueContainer);
+		schema.put(fieldName,  object);		
 	}
 	
-	public void setValue(String fieldName, float value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaFloat == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of float");
-		((DataSchemaFloat)schemaObject).set(value);
+	public void readValues(FileReader file) throws IOException {
+    for(DataSchemaObject<?> schema : schema.values())
+      schema.readValue(file);     
+  }
+	
+	public void writeValues(FileWriter file) throws IOException {		
+		for(DataSchemaObject<?> schema : schema.values())
+			schema.writeValue(file);
 	}
 	
-	public float getFloat(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaFloat == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of float");
-		return ((DataSchemaFloat)schemaObject).get();
-	}
-	
-	public void setValue(String fieldName, String value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaString == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of string");
-		((DataSchemaString)schemaObject).set(value);
-	}
-	
-	public String getString(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaString == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of string");
-		return ((DataSchemaString)schemaObject).get();
-	}
-	
-	public void setValue(String fieldName, List<Integer> value) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaIdList == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of ID list");
-		((DataSchemaIdList)schemaObject).set(value);
-	}
-	
-	public List<Integer> getIdList(String fieldName) {
-		DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-		if(schemaObject == null)
-			throw new RuntimeException(className + " has no attribute with name " + fieldName);
-		if(schemaObject instanceof DataSchemaIdList == false)
-			throw new RuntimeException("attribute " + fieldName + " of " + className + " is not type of ID list");
-		return ((DataSchemaIdList)schemaObject).get();
-	}
-	
-	public void readValues(DataBuffer buffer) {
-		for(DataSchemaObject<?> schema : schemas.values())
-			schema.readValue(buffer);			
-	}
-	
-	public DataBuffer writeValues() {		
-		DataBuffer buffer = new DataBuffer(getBufferSize());
-		short offset = nextIndex;
-		for(DataSchemaObject<?> schema : schemas.values())
-			offset += schema.writeValue(buffer, offset);
-		return buffer;
-	}
-	
-	public short getBufferSize() {
-		short size = 0;
-		for(DataSchemaObject<?> schema : schemas.values())
-			size += schema.getObjectTotalSize();
-		return size;
-	}
-	
-	public DataSelector getSelector(List<String> fieldNames) {
-		DataSelector selector = new DataSelector(className);
-		for(String fieldName : fieldNames) {
-			DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-			if(schemaObject == null) {
-				System.out.println("ERROR: " + className + " has no field " + fieldName);
-				continue;
-			}
-			selector.addSchemaObject(schemaObject);
-		}
-		return selector;
-	}
-	
-	public boolean match(DataQuery dataQuery) {
-		for(Query query : dataQuery.getQueries()) {
-			String fieldName = query.getFieldName();
-			DataSchemaObject<?> schemaObject = schemas.get(fieldName);
-			if(schemaObject == null)
-				continue;
-			if(schemaObject.match(query.getMask()) == false)
-				return false;			
-		}
-		return true;
-	}
+//	public DataSelector getSelector(List<String> fieldNames) {
+//		DataSelector selector = new DataSelector(className);
+//		for(String fieldName : fieldNames) {
+//			DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+//			if(schemaObject == null) {
+//				System.out.println("ERROR: " + className + " has no field " + fieldName);
+//				continue;
+//			}
+//			selector.addSchemaObject(schemaObject);
+//		}
+//		return selector;
+//	}
+//	
+//	public boolean match(DataQuery dataQuery) {
+//		for(Query query : dataQuery.getQueries()) {
+//			String fieldName = query.getFieldName();
+//			DataSchemaObject<?> schemaObject = schemas.get(fieldName);
+//			if(schemaObject == null)
+//				continue;
+//			if(schemaObject.match(query.getMask()) == false)
+//				return false;			
+//		}
+//		return true;
+//	}
 	
 	@Override 
 	public String toString() {
 		String s = "";
 		boolean first = true;
-		for(String fieldName : schemas.keySet()) {
-			s += (first ? "" : ", ") + fieldName + ": " + schemas.get(fieldName);
+		for(String fieldName : schema.keySet()) {
+			s += (first ? "" : ", ") + fieldName + ": " + schema.get(fieldName);
 			first = false;
 		}
 		return s;

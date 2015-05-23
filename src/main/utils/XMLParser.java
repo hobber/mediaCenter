@@ -103,7 +103,7 @@ public class XMLParser {
         //check for stray end tag
         if(stack.contains(new XMLElement(tag, tagName)) == false) {
           if(printErrors)
-            System.err.println("ERROR: found stray tag " + tag + " at index " + startIndex);
+            Logger.error("XMLParser: found stray tag " + tag + " at index " + startIndex);
           continue;
         }
         
