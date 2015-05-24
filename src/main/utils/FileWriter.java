@@ -3,6 +3,7 @@ package main.utils;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 
 public class FileWriter {
 
@@ -73,5 +74,9 @@ public class FileWriter {
   
   public void writeString(String value) throws IOException {
     stream.write(value.getBytes());
+  }
+  
+  public void writeTime(Calendar calendar) throws IOException {
+    writeLong(calendar.getTimeInMillis());
   }
 }

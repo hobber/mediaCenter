@@ -6,7 +6,7 @@ import main.data.datatypes.MCDatatype;
 import main.utils.FileReader;
 import main.utils.FileWriter;
 
-public abstract class DataSchemaObject<Type> {
+public abstract class DataSchemaObject<Type> implements DataSchemaObjectInterface {
 
   protected MCDatatype<Type> valueContainer;
 	

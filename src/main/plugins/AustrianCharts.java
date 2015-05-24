@@ -12,7 +12,10 @@ import java.util.List;
 import main.data.DataCollection;
 import main.data.DataObject;
 import main.data.DataSchema;
+import main.data.DataSchemaObjectInterface;
+import main.data.datatypes.MCDatatype;
 import main.data.datatypes.MCInteger;
+import main.data.datatypes.MCList;
 import main.data.datatypes.MCString;
 import main.http.HTTPResponse;
 import main.http.HTTPUtils;
@@ -25,13 +28,16 @@ import main.utils.XMLParser;
 
 public class AustrianCharts implements DataCollection {  
   
-  private static class Ranking {
+  private static class RankingEntry implements DataSchemaObjectInterface {
     
     private Calendar date;
     private String currentRanking;
     private String previousRanking;
     
-    public Ranking(Calendar date, String currentRanking, String previousRanking) {
+    private RankingEntry() {      
+    }
+    
+    public RankingEntry(Calendar date, String currentRanking, String previousRanking) {
       this.date = (Calendar)date.clone();
       this.currentRanking = currentRanking;
       this.previousRanking = previousRanking;
@@ -53,6 +59,45 @@ public class AustrianCharts implements DataCollection {
     public String toString() {
       return String.format("%s %2s (%3s)", ConfigFile.dateToString(date), currentRanking, previousRanking);
     }
+
+    @Override
+    public void readValue(FileReader file) throws IOException {
+      date = file.readTime();
+      currentRanking = file.readString(file.readInt());
+      previousRanking = file.readString(file.readInt());
+    }
+    
+    @Override
+    public void writeValue(FileWriter file) throws IOException {
+      file.writeTime(date);
+      file.writeInt(currentRanking.length());
+      file.writeString(currentRanking);
+      file.writeInt(previousRanking.length());
+      file.writeString(previousRanking);
+    }
+    
+    public static RankingEntry createFromFile(FileReader file) throws IOException {
+      RankingEntry entry = new RankingEntry();
+      entry.readValue(file);
+      return entry;
+    }
+  }
+  
+  private static class Ranking extends MCList<RankingEntry> implements DataSchemaObjectInterface {
+
+    @Override
+    public void readValue(FileReader file) throws IOException {
+      int size = file.readInt();
+      for(int i=0; i<size; i++)
+        value.add(RankingEntry.createFromFile(file));
+    }
+
+    @Override
+    public void writeValue(FileWriter file) throws IOException {
+      file.writeInt(value.size());
+      for(RankingEntry entry : value)
+        entry.writeValue(file);
+    }
   }
   
 	private static class Entry extends DataObject {
@@ -62,7 +107,7 @@ public class AustrianCharts implements DataCollection {
 		private MCString title;
 		private MCString detailUrl;
 		private MCInteger score;
-		private LinkedList<Ranking> ranking = new LinkedList<Ranking>();
+		private Ranking ranking;
 		
 		private String videoUrl;
 		
@@ -72,7 +117,7 @@ public class AustrianCharts implements DataCollection {
       String previousRanking = columns.get(1).getChild(0).getValue();
       if(previousRanking == null)
         previousRanking = "NEW";
-      ranking.add(new Ranking(date, currentRanking, previousRanking));
+      ranking.add(new RankingEntry(date, currentRanking, previousRanking));
       XMLElement caption = columns.get(4).getChild(0);
       detailUrl.set("http://austriancharts.at" + caption.getAttribute("href"));
       interpret.set(caption.getChild(0).getChild(0).getValue());
@@ -93,7 +138,7 @@ public class AustrianCharts implements DataCollection {
 		  schema.writeValues(file);
 		}
 		
-		public void addRanking(Ranking ranking) {
+		public void addRanking(RankingEntry ranking) {
 		  if(this.ranking.getFirst().getDate().compareTo(ranking.getDate()) < 0)
 		    this.ranking.addFirst(ranking);
 		  else if(this.ranking.getLast().getDate().compareTo(ranking.getDate()) > 0)
@@ -118,7 +163,7 @@ public class AustrianCharts implements DataCollection {
 		  return score.get();
 		}
 		
-		public Ranking getLatestRanking() {
+		public RankingEntry getLatestRanking() {
 		  return ranking.getFirst();
 		}
 		
@@ -137,7 +182,7 @@ public class AustrianCharts implements DataCollection {
 		}		
 		
 		void printRankingHistory() {
-		  for(Ranking rank : ranking)
+		  for(RankingEntry rank : ranking)
 		    System.out.println(rank);
 		}
 		
@@ -145,7 +190,7 @@ public class AustrianCharts implements DataCollection {
     public String toString() {
 		  if(ranking.isEmpty())
 		    return "? (  ?): " + interpret + " - " + title;
-      Ranking currentRanking = ranking.getLast();
+      RankingEntry currentRanking = ranking.getLast();
       return currentRanking.getCurrentRanking() + " (" + currentRanking.getPreviousRanking() + "): " + interpret + " - " + title;
     }
     
@@ -155,9 +200,9 @@ public class AustrianCharts implements DataCollection {
 		}
 		
 		private void sortRanking() {
-		  Collections.sort(ranking, new Comparator<Ranking>() {
+		  ranking.sort(new Comparator<RankingEntry>() {
         @Override
-        public int compare(Ranking  lhs, Ranking  rhs) {
+        public int compare(RankingEntry  lhs, RankingEntry  rhs) {
             return  lhs.date.compareTo(rhs.date);
         }
 		  });
@@ -169,19 +214,21 @@ public class AustrianCharts implements DataCollection {
 	    title = new MCString();
 	    detailUrl = new MCString();
 	    score = new MCInteger();
+	    ranking = new Ranking();
 		  
 	    DataSchema schema = new DataSchema();
 	    schema.addString("interpret", interpret);
 	    schema.addString("title", title);
 	    schema.addString("detailUrl", detailUrl);
 	    schema.addInt("score", score);
+	    schema.addDataSchemaObject("ranking", ranking);
 	    return schema;
 	  }
 	}
 	
 	private LinkedList<Entry> charts = new LinkedList<Entry>();
 	
-	public AustrianCharts() {	  
+	public AustrianCharts() {
 	}
 	
 	public AustrianCharts(Calendar date) {	  
@@ -252,6 +299,25 @@ public class AustrianCharts implements DataCollection {
 	    System.out.println(String.format("%4d: %s - %s", entry.getScore(), entry.getInterpret(), entry.getTitle()));	  
 	}
 	
+
+  @Override
+  public boolean readFromDB() {
+    try {
+      FileReader reader = new FileReader("AustrianCharts.db");
+      int size = reader.readInt();
+      charts = new LinkedList<Entry>();
+      for(int i=0; i<size; i++)
+        charts.add(new Entry(reader));
+      return true;
+    } catch(FileNotFoundException e) {
+      Logger.error(e);
+    } catch(IOException e) {
+      Logger.error(e);
+    }
+    return false;
+  }
+	
+  @Override
 	public boolean writeToDB() {
 	  try {
 	    FileWriter writer = new FileWriter("AustrianCharts.db");
@@ -264,23 +330,6 @@ public class AustrianCharts implements DataCollection {
 	  } catch(IOException e) {
 	    Logger.error(e);
 	  }
-	  return false;
-	}
-	
-	public boolean readFromDB() {
-	  try {
-	    FileReader reader = new FileReader("AustrianCharts.db");
-	    int size = reader.readInt();
-	    System.out.println("size: " + size);
-	    charts = new LinkedList<Entry>();
-	    for(int i=0; i<size; i++)
-	      charts.add(new Entry(reader));
-	    return true;
-	  } catch(FileNotFoundException e) {
-      Logger.error(e);
-    } catch(IOException e) {
-      Logger.error(e);
-    }
 	  return false;
 	}
 	

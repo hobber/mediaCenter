@@ -2,13 +2,11 @@ package main.data;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import main.data.datatypes.MCByte;
 import main.data.datatypes.MCFloat;
 import main.data.datatypes.MCInteger;
-import main.data.datatypes.MCList;
 import main.data.datatypes.MCLong;
 import main.data.datatypes.MCShort;
 import main.data.datatypes.MCString;
@@ -92,26 +90,7 @@ public class DataSchema {
 		}
 	}
 	
-	private class DataSchemaIdList extends DataSchemaObject<List<Integer>> {					
-		public DataSchemaIdList(MCList<Integer> valueContainer) {			
-			super(valueContainer);
-		}
-		public void readValue(FileReader file) throws IOException {
-			int length = file.readInt();
-			((MCList<Integer>)valueContainer).clear();
-			for(int i=0; i<length; i++)
-			  ((MCList<Integer>)valueContainer).add(file.readInt());
-		}
-		public void writeValue(FileWriter file) throws IOException {
-		  List<Integer> list = valueContainer.get();
-		  int length = list.size();
-			file.writeInt(length);
-			for(int i=0; i<length; i++)
-			  file.writeInt(list.get(i));
-		}
-	}
-	
-	private Map<String, DataSchemaObject<?>> schema = new HashMap<String, DataSchemaObject<?>>();	
+	private Map<String, DataSchemaObjectInterface> schema = new HashMap<String, DataSchemaObjectInterface>();	
 	
 	public DataSchema() {
 	}
@@ -158,20 +137,19 @@ public class DataSchema {
 		schema.put(fieldName,  object);		
 	}
 	
-	public void addIntegerList(String fieldName, MCList<Integer> valueContainer) {
+	public void addDataSchemaObject(String fieldName, DataSchemaObjectInterface object) {
 	  if(fieldName == null || fieldName == "")
       throw new RuntimeException("ERROR: invalid field name " + fieldName);
-		DataSchemaIdList object = new DataSchemaIdList(valueContainer);
 		schema.put(fieldName,  object);		
 	}
 	
 	public void readValues(FileReader file) throws IOException {
-    for(DataSchemaObject<?> schema : schema.values())
+    for(DataSchemaObjectInterface schema : schema.values())
       schema.readValue(file);     
   }
 	
 	public void writeValues(FileWriter file) throws IOException {		
-		for(DataSchemaObject<?> schema : schema.values())
+		for(DataSchemaObjectInterface schema : schema.values())
 			schema.writeValue(file);
 	}
 	

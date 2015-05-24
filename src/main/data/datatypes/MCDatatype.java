@@ -2,7 +2,7 @@ package main.data.datatypes;
 
 public abstract class MCDatatype<Type> {
   
-  Type value;
+  protected Type value;
 
   public MCDatatype(Type value) {    
     this.value = value;

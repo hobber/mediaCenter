@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 
 public class FileReader {
 
@@ -75,6 +76,12 @@ public class FileReader {
     byte[] buffer = new byte[length];
     stream.read(buffer);
     return new String(buffer);
+  }
+  
+  public Calendar readTime() throws IOException {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeInMillis(readLong());
+    return calendar;
   }
   
   private int shiftByteToInt(byte value, int shiftValue) {
