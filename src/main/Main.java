@@ -1,5 +1,5 @@
 package main;
-import main.plugins.AustrianCharts;
+import main.plugins.austrianCharts.AustrianCharts;
 import main.utils.ConfigFile;
 import main.utils.Logger;
 
