@@ -1,47 +1,41 @@
 package main.server.content;
 
+import java.util.LinkedList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ContentPage extends JSONObject {
+public class ContentPage {
 
-	private JSONArray items = new JSONArray();
+	private LinkedList<ContentGroup> groups = new LinkedList<ContentGroup>();
+	private ContentOptions options;
+	private ContentMenu menu;
 	
 	public ContentPage() {	
-		try {			
-			put("items", items);
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
 	}	
 	
 	public void addContentGroup(ContentGroup group) {				
-		items.put(group);
+		groups.add(group);
 	}
 	
 	public void merge(ContentPage page) {
-		try {
-			for(int i=0; i<page.items.length(); i++)
-				items.put(page.items.get(i));
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
+	  for(int i=0; i<page.groups.size(); i++)
+	    groups.add(page.groups.get(i));
 	}
 	
 	public void setOptions(ContentOptions options) {
-		try {
-			put("options", options);
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
+		this.options = options;
 	}
 	
 	public void setMenu(ContentMenu menu) {
-		try {
-			put("menu", menu);
-		} catch(JSONException e) {
-			System.err.println("ERROR: " + e.getMessage());
-		}
+		this.menu = menu;
+	}
+	
+	public String getContentString() {
+	  String s = "{\"options\": " + options + ", \"menu\": " + menu + ", \"page\": [";
+	  for(int i=0; i<groups.size(); i++)
+	    s += (i > 0 ? ", " : "") + groups.get(i); 
+	  return s + "]}";
 	}
 }

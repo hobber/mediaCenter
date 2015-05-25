@@ -3,6 +3,7 @@ package main.server.menu;
 import org.json.JSONObject;
 
 import main.plugins.Plugin;
+import main.server.content.ContentPage;
 
 public abstract class ContentMenuSubEntry {
 
@@ -20,5 +21,5 @@ public abstract class ContentMenuSubEntry {
     return container;
   }
   
-  public abstract JSONObject handleAPIRequest(String parameter);
+  public abstract ContentPage handleAPIRequest(String parameter);
 }

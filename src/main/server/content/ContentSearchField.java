@@ -6,9 +6,9 @@ public class ContentSearchField extends ContentItem {
 	
 	public ContentSearchField(String context, int x) {
 		try {
-			put("type", "searchField");
-			put("context", context);
-			put("x", x);
+		  data.put("type", "searchField");
+		  data.put("context", context);
+		  data.put("x", x);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

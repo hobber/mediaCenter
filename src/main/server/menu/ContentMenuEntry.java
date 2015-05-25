@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import org.json.JSONObject;
 
 import main.plugins.Plugin;
+import main.server.content.ContentErrorPage;
+import main.server.content.ContentPage;
 import main.utils.Logger;
 
 public class ContentMenuEntry {
@@ -40,10 +42,10 @@ public class ContentMenuEntry {
     return container;
   }
   
-  public JSONObject handleAPIRequest(int subId, String parameter) {
+  public ContentPage handleAPIRequest(int subId, String parameter) {
     if(subId < 0 || subId >= subEntries.size()) {
       Logger.error("invalid subID " + subId + " for plug in " + getName());
-      return new JSONObject();
+      return new ContentErrorPage("invalid subID " + subId + " for plug in " + getName());
     }
     return subEntries.get(subId).handleAPIRequest(parameter);
   }

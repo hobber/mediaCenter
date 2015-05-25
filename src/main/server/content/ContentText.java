@@ -22,19 +22,19 @@ public class ContentText extends ContentItem {
 	
 	private void create(int x, int y, String text, String link, TextType type) {
 		try {
-			put("type", "text");
-			put("x", x);
-			put("y", y);		
-			put("text", text);
+			data.put("type", "text");
+			data.put("x", x);
+			data.put("y", y);		
+			data.put("text", text);
 			if(link != null && link.length() > 0)
-				put("url", link);
+			  data.put("url", link);
 
 			if(type == TextType.TITLE)
-				put("style", "font-size: 24px; font-weight: 900;");
+			  data.put("style", "font-size: 24px; font-weight: 900;");
 			else if(type == TextType.SUBTITLE)
-				put("style", "font-size: 21px; font-weight: 700;");
+			  data.put("style", "font-size: 21px; font-weight: 700;");
 			else if(type == TextType.BLOCK)
-				put("style", "text-align: justify; margin-right: 50px;");
+			  data.put("style", "text-align: justify; margin-right: 50px;");
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

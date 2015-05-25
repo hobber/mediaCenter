@@ -20,6 +20,8 @@ app.controller('Controller', ['$scope', '$compile',
       }
 	};
 	
+	//========================================================================= MENU
+	
 	var loadMenu = function() {
 	  var xmlHttp = new XMLHttpRequest();
       xmlHttp.open('GET', 'http://localhost:11011/menu', true);
@@ -80,8 +82,80 @@ app.controller('Controller', ['$scope', '$compile',
       }
 	};
 	
+	//========================================================================= CONTENT
+	
+	var contentFactories = {};
+	
+	contentFactories.text = function(parent, definition) {
+      var element = document.createElement('span');
+      parent.appendChild(element);
+      element.setAttribute('id', 'contentItem');
+      if(definition.style === undefined)
+        element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      else
+        element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;' + definition.style);
+      if(definition.url === undefined)
+        element.innerHTML = definition.text;
+      else {
+        var text = document.createElement('span');
+        element.appendChild(text);
+        text.innerHTML = definition.text;
+        var url = document.createElement('a');
+        element.appendChild(url);
+        url.setAttribute('href', definition.url);
+        url.innerHTML = definition.url;
+      }
+      return element;
+    };
+	
+	contentFactories.group = function(parent, definition, options, isLast) {
+      var groupElement = document.createElement('div');
+      parent.appendChild(groupElement);
+      groupElement.setAttribute('id', 'contentContainer');      
+
+      var maxY = 0;
+      for(var j = 0; j < definition.items.length; j++) {
+        var item = definition.items[j];
+        if(contentFactories[item.type] === undefined) {
+          console.error('ERROR: unsupported content type ' + item.type);
+          continue;
+        }
+
+        var element = createElement(groupElement, item, options);                
+        var y = item.y + element.offsetHeight;
+        if(y > maxY)
+          maxY = y;
+      }
+
+      var style = 'height: ' + maxY + 'px;';      
+      if(isLast !== true && (options === undefined || options.groupBoarder !== false))
+        style +='border-bottom: 1px solid #000000; ';
+      groupElement.setAttribute('style', style);
+      return groupElement;
+    };
+	
+	var createElement = function(parent, definition, options, parameter) {
+      return contentFactories[definition.type](parent, definition, options, parameter);  
+    };
+	
 	var showContent = function(content) {
 	  console.log('CONTENT:', content);
+	  
+	  var contentDiv = document.getElementById('contentBody');
+	  contentDiv.innerHTML = '';
+	  
+	  var options = content.options;
+	  var items = content.page;
+      for(var i = 0; i < items.length; i++) {
+        var definition = items[i];
+        if(definition.type !== 'group') {
+          console.error('ERROR: content can contain only groups instances of ' + definition.type);
+          continue;
+        }
+		
+		var isLast = (i === items.length-1);
+        contentFactories.group(contentDiv, definition, options, isLast);
+      }
 	};
   }
 ]);

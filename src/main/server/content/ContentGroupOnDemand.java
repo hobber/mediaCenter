@@ -1,15 +1,14 @@
 package main.server.content;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-public class ContentGroupOnDemand extends JSONObject {
+public class ContentGroupOnDemand extends ContentItem {
 
 	public ContentGroupOnDemand(String context, String query) {		
 		try {
-			put("type", "loadOnDemand");
-			put("context", context);
-			put("query", query);				
+			data.put("type", "loadOnDemand");
+			data.put("context", context);
+			data.put("query", query);				
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

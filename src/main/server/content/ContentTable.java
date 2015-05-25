@@ -13,11 +13,11 @@ public class ContentTable extends ContentItem {
 		this.columns = columns;
 		
 		try {
-			put("type", "table");
-			put("x", x);
-			put("y", y);
-			put("columns", columns);	
-			put("rowHeight", rowHeight);			
+		  data.put("type", "table");
+		  data.put("x", x);
+		  data.put("y", y);
+		  data.put("columns", columns);	
+		  data.put("rowHeight", rowHeight);			
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
@@ -30,7 +30,7 @@ public class ContentTable extends ContentItem {
 		for(int i=0; i<this.columns; i++)
 			array.put(columns.get(i));
 		try {
-		append("rows", array);
+		  data.append("rows", array);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e);
 		}

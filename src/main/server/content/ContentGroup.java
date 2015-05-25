@@ -6,7 +6,7 @@ public class ContentGroup extends ContentItem {
 	
 	public ContentGroup() {
 		try {
-			put("type", "group");
+		  data.put("type", "group");
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}	  
@@ -14,9 +14,14 @@ public class ContentGroup extends ContentItem {
 	
 	public void put(ContentItem item) {		
 		try {
-			append("items", item);
+		  data.append("items", item.data);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}	
+	}
+	
+	@Override
+	public String toString() {
+	  return data.toString();
 	}
 }

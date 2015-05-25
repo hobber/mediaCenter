@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import main.server.content.ContentErrorPage;
+import main.server.content.ContentPage;
 import main.server.menu.ContentMenuEntry;
 
 public class PluginController {
@@ -35,10 +37,10 @@ public class PluginController {
 	  return menuList;
 	}
 	
-	public static JSONObject handleAPIRequest(int id, int subId, String parameter) {
+	public static ContentPage handleAPIRequest(int id, int subId, String parameter) {
 	  ContentMenuEntry entry = menuMap.get(id);
 	  if(entry == null)
-	    return new JSONObject();
+	    return new ContentErrorPage("invalid id " + id);
 	  return entry.handleAPIRequest(subId, parameter);
 	}
 }

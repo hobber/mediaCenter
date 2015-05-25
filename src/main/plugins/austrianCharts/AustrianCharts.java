@@ -23,18 +23,6 @@ import main.utils.XMLElement;
 import main.utils.XMLParser;
 
 public class AustrianCharts implements Plugin {  
-	
-  private static class AustrianChartsHomeEntry extends ContentMenuSubEntry {
-
-    public AustrianChartsHomeEntry(Plugin plugin) {
-      super(plugin, "Home");
-    }
-
-    @Override
-    public JSONObject handleAPIRequest(String parameter) {
-      return new JSONObject();
-    }
-  }
   
 	private LinkedList<ChartEntry> charts = new LinkedList<ChartEntry>();
 	private Calendar lastUpdate;
@@ -82,7 +70,8 @@ public class AustrianCharts implements Plugin {
   @Override
   public ContentMenuEntry getMenuEntry() {
     ContentMenuEntry entry = new ContentMenuEntry(this, ICON_PATH + "music.png");    
-    entry.addSubMenuEntry(new AustrianChartsHomeEntry(this));
+    entry.addSubMenuEntry(new AustrianChartsHome(this));
+    entry.addSubMenuEntry(new AustrianChartsHistory(this));
     return entry;
   }
 	

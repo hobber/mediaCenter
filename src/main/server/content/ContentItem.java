@@ -3,10 +3,13 @@ package main.server.content;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public abstract class ContentItem extends JSONObject {
+public abstract class ContentItem {
+  
+  protected JSONObject data = new JSONObject();
+  
 	public void appendLink(ContentGroup group) {
 		try {
-			put("link", group);
+			data.put("link", group.data);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
@@ -14,9 +17,14 @@ public abstract class ContentItem extends JSONObject {
 	
 	public void appendLink(ContentGroupOnDemand group) {
 		try {
-			put("link", group);
+			data.put("link", group.data);
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
+	}
+	
+	@Override
+	public String toString() {
+	  return data.toString();
 	}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import main.Main;
 import main.http.HTTPUtils;
 import main.plugins.PluginController;
+import main.server.content.ContentPage;
 import main.server.content.UserContentGroup;
 import main.server.menu.ContentMenuEntry;
 import main.utils.ConfigElementGroup;
@@ -172,28 +173,28 @@ public class Server implements HttpHandler {
 //		String query = request.substring(indexParameter + 1); 
 //		return contentGroup.handle(pageName, query);		
 //	}
-	
-	private byte[] convert(String response) {		
-		ArrayList<Byte> bytes = new ArrayList<Byte>(response.length());
-		for(int i=0; i<response.length(); i++) {
-			char c = response.charAt(i);
-			if(c <= 127)
-				bytes.add((byte)c);
-			else { 				
-				byte[] tmp = Charset.forName("UTF-8").encode("" + c).array();
-				for(int j=0; j<2; j++) {
-					String s = String.format("%%%02X", tmp[j] < 0 ? (int)(tmp[j]+256) : (int)tmp[j]);
-					for(int l=0; l<3; l++)
-						bytes.add((byte)s.charAt(l));
-				}
-			}
-		}
-		
-		byte[] buffer = new byte[bytes.size()];
-		for(int i=0; i< bytes.size(); i++)
-			buffer[i] = bytes.get(i);
-		return buffer;		
-	}
+//	
+//	private byte[] convert(String response) {		
+//		ArrayList<Byte> bytes = new ArrayList<Byte>(response.length());
+//		for(int i=0; i<response.length(); i++) {
+//			char c = response.charAt(i);
+//			if(c <= 127)
+//				bytes.add((byte)c);
+//			else { 				
+//				byte[] tmp = Charset.forName("UTF-8").encode("" + c).array();
+//				for(int j=0; j<2; j++) {
+//					String s = String.format("%%%02X", tmp[j] < 0 ? (int)(tmp[j]+256) : (int)tmp[j]);
+//					for(int l=0; l<3; l++)
+//						bytes.add((byte)s.charAt(l));
+//				}
+//			}
+//		}
+//		
+//		byte[] buffer = new byte[bytes.size()];
+//		for(int i=0; i< bytes.size(); i++)
+//			buffer[i] = bytes.get(i);
+//		return buffer;		
+//	}
 	
 	private void handleMenuRequest(HttpExchange exchange) throws IOException {
 	  List<ContentMenuEntry> list = PluginController.getMenuEntries();
@@ -205,7 +206,7 @@ public class Server implements HttpHandler {
 	  for(ContentMenuEntry entry : list)
 	    buffer.put(entry.getName(), entry.toJSON());
 	  
-    byte[] response = convert(buffer.toString());
+    byte[] response = buffer.toString().getBytes();
     exchange.sendResponseHeaders(200, response.length);
     OutputStream os = exchange.getResponseBody();
     os.write(response);   
@@ -225,9 +226,9 @@ public class Server implements HttpHandler {
 		Headers headers = exchange.getResponseHeaders();
 		headers.add("Content-Type", "application/jsonp; charset=UTF-8");
 		
-		JSONObject buffer = PluginController.handleAPIRequest(id, subId, "");
+		ContentPage page = PluginController.handleAPIRequest(id, subId, "");
 		
-		byte[] response = convert(buffer.toString());
+		byte[] response = page.getContentString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);
 		OutputStream os = exchange.getResponseBody();
 		os.write(response);		
