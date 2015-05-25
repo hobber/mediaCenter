@@ -9,22 +9,82 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import main.data.DataCollection;
+import org.json.JSONObject;
+
 import main.http.HTTPResponse;
 import main.http.HTTPUtils;
+import main.plugins.Plugin;
+import main.server.menu.ContentMenuEntry;
+import main.server.menu.ContentMenuSubEntry;
 import main.utils.FileReader;
 import main.utils.FileWriter;
 import main.utils.Logger;
 import main.utils.XMLElement;
 import main.utils.XMLParser;
 
-public class AustrianCharts implements DataCollection {  
+public class AustrianCharts implements Plugin {  
 	
+  private static class AustrianChartsHomeEntry extends ContentMenuSubEntry {
+
+    public AustrianChartsHomeEntry(Plugin plugin) {
+      super(plugin, "Home");
+    }
+
+    @Override
+    public JSONObject handleAPIRequest(String parameter) {
+      return new JSONObject();
+    }
+  }
+  
 	private LinkedList<ChartEntry> charts = new LinkedList<ChartEntry>();
 	private Calendar lastUpdate;
 	
-	public AustrianCharts() {	  
+	public AustrianCharts() {
+	  try {
+      FileReader reader = new FileReader("AustrianCharts.db");
+      lastUpdate = reader.readTime();
+      int size = reader.readInt();
+      charts = new LinkedList<ChartEntry>();
+      for(int i=0; i<size; i++)
+        charts.add(new ChartEntry(reader));
+    } catch(FileNotFoundException e) {
+      Logger.error(e);
+    } catch(IOException e) {
+      Logger.error(e);
+    }
 	}
+	
+	@Override
+	public String getName() {
+	  return "Austrian Charts";
+	}
+	
+	@Override
+	public void saveState() {
+    if(lastUpdate == null) {
+      Logger.error("AustrianCharts have not been loaded or updated -> will not write to DB");
+      return;
+    }
+    
+    try {
+      FileWriter writer = new FileWriter("AustrianCharts.db");
+      writer.writeTime(lastUpdate);
+      writer.writeInt(charts.size());
+      for(ChartEntry entry : charts)
+        entry.write(writer);
+    } catch(FileNotFoundException e) {
+      Logger.error(e);
+    } catch(IOException e) {
+      Logger.error(e);
+    }
+  }
+	
+  @Override
+  public ContentMenuEntry getMenuEntry() {
+    ContentMenuEntry entry = new ContentMenuEntry(this, ICON_PATH + "music.png");    
+    entry.addSubMenuEntry(new AustrianChartsHomeEntry(this));
+    return entry;
+  }
 	
 	public void updateDatabase() {
 	  HashMap<Integer, ChartEntry> singleMap = new HashMap<Integer, ChartEntry>();
@@ -69,47 +129,6 @@ public class AustrianCharts implements DataCollection {
     });
 	  
 	   lastUpdate = Calendar.getInstance();
-	}
-	
-
-  @Override
-  public boolean readFromDB() {
-    try {
-      FileReader reader = new FileReader("AustrianCharts.db");
-      lastUpdate = reader.readTime();
-      int size = reader.readInt();
-      charts = new LinkedList<ChartEntry>();
-      for(int i=0; i<size; i++)
-        charts.add(new ChartEntry(reader));
-      return true;
-    } catch(FileNotFoundException e) {
-      Logger.error(e);
-    } catch(IOException e) {
-      Logger.error(e);
-    }
-    return false;
-  }
-	
-  @Override
-	public boolean writeToDB() {
-    if(lastUpdate == null) {
-      Logger.error("AustrianCharts have not been loaded or updated -> will not write to DB");
-      return false;
-    }
-    
-	  try {
-	    FileWriter writer = new FileWriter("AustrianCharts.db");
-	    writer.writeTime(lastUpdate);
-	    writer.writeInt(charts.size());
-	    for(ChartEntry entry : charts)
-	      entry.write(writer);
-	    return true;
-	  } catch(FileNotFoundException e) {
-	    Logger.error(e);
-	  } catch(IOException e) {
-	    Logger.error(e);
-	  }
-	  return false;
 	}
 	
 	public void print() {

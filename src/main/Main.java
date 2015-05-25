@@ -1,5 +1,8 @@
 package main;
+import main.plugins.Plugin;
+import main.plugins.PluginController;
 import main.plugins.austrianCharts.AustrianCharts;
+import main.server.Server;
 import main.utils.ConfigFile;
 import main.utils.Logger;
 
@@ -7,6 +10,10 @@ public class Main {
 	
 	private static void printUsage() {
 		System.out.println("usage: [configFile=config.xml]");
+	}
+	
+	public static void shutdown() {
+	  Logger.closeLogFile();
 	}
 	
 	public static void main(String[] args) {  
@@ -25,21 +32,18 @@ public class Main {
 		
 		Logger.setup(config.getElement("config.logger"));
 		
-		try {
+		if(Server.run(config.getElement("config.server")) == false)
+		  return;   
 		
-//		  AustrianCharts.readFromDB();
+		try {
 		  
-			AustrianCharts charts = new AustrianCharts();//Calendar.getInstance());
-//			charts.print();
-//			charts.updateDatabase();
-//			charts.writeToDB();
-			charts.readFromDB();
-			charts.print();
+		  PluginController.register(new AustrianCharts());
+		  
 		} catch(Throwable e) {
 			Logger.error(e);
 		}
 		
-		Logger.closeLogFile();
+		
 						
 //		DataController dataController = new DataController(config.getElement("config.data"));		
 //		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				
@@ -47,12 +51,6 @@ public class Main {
 //		List<TMDBSearchResult> seriesList = tmdb.searchSeries("Once upon a time");
 //		for(TMDBSearchResult series : seriesList)
 //			System.out.println(series);
-		
-//		if(Server.run(config.getElement("config.server")) == false)
-//			return;		
-//		
-//		PluginController.startPlugins();
-//		System.out.println("server started...");
 		
 //		TMDBSeries series = tmdb.getSeries(39272);
 //		System.out.println(series);

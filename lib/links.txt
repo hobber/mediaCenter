@@ -1,0 +1,5 @@
+httpclient:      http://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient/4.4.1
+httpcore:        http://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore/4.4.1
+commons-logging: http://mvnrepository.com/artifact/commons-logging/commons-logging/1.2
+commons-io:      http://mvnrepository.com/artifact/commons-io/commons-io/2.4
+json:            http://mvnrepository.com/artifact/org.json/json/20140107

@@ -3,13 +3,13 @@
   <logger>
     <logFile>log.txt</logFile>
   </logger>
-
+  <dataController>
+    <path>./data</path>
+  </dataController>
   <server>
     <port>11011</port>
   </server>
-  <data>
-    <path>./data/</path>
-  </data>
+  
   <spotify>
     <clientID></clientID>
     <clientSecret></clientSecret>
