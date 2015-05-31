@@ -3,35 +3,69 @@ var app = angular.module('MediaCenter', []);
 app.controller('Controller', ['$scope', '$compile', 
   function($scope, $compile) {
   
+	var URL = '';
+  
     $scope.init = function() {
-	  loadMenu();
+	  try {
+        readURL();
+	    loadMenu();		
+	  } catch(error) {
+	    handleError(error);
+	  }
     };
-	
+
 	$scope.clicked = function(entryId, subEntryId) {
+	  try {	  
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.open('GET', URL + 'api?id=' + entryId + '.' + subEntryId, true);
+        xmlHttp.send();  
+        xmlHttp.onloadend = function() {
+		  try {
+            if(xmlHttp.status === 200) {
+  		      showContent(JSON.parse(xmlHttp.response));
+            } else {
+              console.log('request failed');
+            }
+          } catch(error) {
+	        handleError(error);
+	      }
+		}
+	  } catch(error) {
+	    handleError(error);
+	  }
+	};
+	
+	var readURL = function() {
+	  URL = document.URL.substring(7);
+	  var end = URL.indexOf('/');
+	  if(end >= 0)
+	    URL = URL.substring(0, end);
+      URL = 'http://' + URL + '/';
+	};
+	
+	var handleError = function(error) {
 	  var xmlHttp = new XMLHttpRequest();
-	  xmlHttp.open('GET', 'http://localhost:11011/api?id=' + entryId + '.' + subEntryId, true);
-      xmlHttp.send();          
-      xmlHttp.onloadend = function() {
-        if(xmlHttp.status === 200) {
-		  showContent(JSON.parse(xmlHttp.response));
-        } else {
-          console.log('request failed');
-        }
-      }
+	  xmlHttp.open('POST', URL + 'error?file=' + error.fileName + '&line=' + error.lineNumber, true);
+      xmlHttp.send(error.message);  
+	  console.error('ERROR: ' + error.fileName + ':' + error.lineNumber + ' - ' + error.message);
 	};
 	
 	//========================================================================= MENU
 	
 	var loadMenu = function() {
 	  var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', 'http://localhost:11011/menu', true);
-      xmlHttp.send();          
-      xmlHttp.onloadend = function() {
-        if(xmlHttp.status === 200) {
-		  buildMenu(JSON.parse(xmlHttp.response));
-        } else {
-          console.log('request failed');
-        }
+      xmlHttp.open('GET', URL + 'menu', true);
+      xmlHttp.send();     	  
+      xmlHttp.onloadend = function() {	  
+	    try {
+          if(xmlHttp.status === 200) {
+		    buildMenu(JSON.parse(xmlHttp.response));
+          } else {
+            console.log('request failed');
+          }
+		} catch(error) {
+	      handleError(error);
+	    }
       }
 	};
 	
@@ -39,8 +73,12 @@ app.controller('Controller', ['$scope', '$compile',
 	  var menuDiv = document.getElementById('menu');
       menuDiv.innerHTML = '';
 
+	  var firstEntryId;
       for(var entryName in response) {
         var entry = response[entryName];
+		
+		if(firstEntryId === undefined)
+		  firstEntryId = entry.id;
         
         var node = document.createElement('div');
 		menuDiv.appendChild(node);
@@ -80,11 +118,14 @@ app.controller('Controller', ['$scope', '$compile',
           span.innerHTML = '&nbsp;&nbsp;&#8227;&nbsp;&nbsp;' + subentry.name;
 		}
       }
+	  
+	  $scope.clicked(firstEntryId, 0);
 	};
 	
 	//========================================================================= CONTENT
 	
 	var contentFactories = {};
+	var contentWidth = 0;
 	
 	contentFactories.text = function(parent, definition) {
       var element = document.createElement('span');
@@ -134,17 +175,69 @@ app.controller('Controller', ['$scope', '$compile',
       return groupElement;
     };
 	
+	/**
+     * TABLE
+	 *  - x: x-offset [int]
+	 *  - y: y-offset [int]
+	 *  - rows: content [array arrays of content items]
+     *  - ?options: 
+	 *      - ?fullWidth [true, fals] ... table fill full content width
+	 *  - ?widths: defines widths of columns [array of strings]
+     */
+	contentFactories.table = function(parent, definition, options) {
+      var element = document.createElement('table');
+      parent.appendChild(element);
+
+      element.setAttribute('id', 'contentItem');
+      element.setAttribute('border', '1');
+      element.setAttribute('cellpadding', '0');
+      element.setAttribute('cellspacing', '0');
+	  if(definition.options && definition.options.fullWidth)
+        element.setAttribute('style', 'width: ' + (contentWidth - definition.x) + 'px; left: ' + definition.x + 'px; top: ' + definition.y + 'px; border-collapse: collapse;');
+      else
+	    element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px; border-collapse: collapse;');
+
+	  if(definition.widths) {
+	    for(var i=0; i<definition.widths.length; i++) {
+		  var width = document.createElement('col');
+		  element.appendChild(width);
+		  width.setAttribute('width', definition.widths[i]);
+		}
+	  }
+	  
+      for(var i=0; i<definition.rows.length; i++) {
+        var row = document.createElement('tr');
+        element.appendChild(row);
+        row.setAttribute('style', 'position: relative; height: ' + (definition.rowHeight+2) + 'px;');
+
+        for(var j=0; j<definition.columns; j++) {
+          var column = document.createElement('td');
+          row.appendChild(column);
+          var createdItem = createElement(column, definition.rows[i][j], options);
+          column.setAttribute('style', 'position: relative; width: ' + (createdItem.offsetWidth+2) + 'px;');
+        }
+      }
+      return element;
+    };
+	
 	var createElement = function(parent, definition, options, parameter) {
       return contentFactories[definition.type](parent, definition, options, parameter);  
     };
 	
 	var showContent = function(content) {
-	  console.log('CONTENT:', content);
+	  var options = content.options;
+	  
+	  var titleDiv = document.getElementById('contentTitle');
+	  titleDiv.innerHTML = '';
+	  var titlebar = content.titlebar || [];
+	  for(var i = 0; i < titlebar.length; i++) {
+        var definition = titlebar[i];		
+        createElement(titleDiv, definition);
+      }
+	  contentWidth = titleDiv.offsetWidth - 2;
 	  
 	  var contentDiv = document.getElementById('contentBody');
 	  contentDiv.innerHTML = '';
-	  
-	  var options = content.options;
 	  var items = content.page;
       for(var i = 0; i < items.length; i++) {
         var definition = items[i];

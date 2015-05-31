@@ -9,7 +9,7 @@ import org.json.JSONObject;
 class AustrianChartsHistory extends ContentMenuSubEntry {
 
   public AustrianChartsHistory(Plugin plugin) {
-    super(plugin, "History");
+    super("History");
   }
 
   @Override

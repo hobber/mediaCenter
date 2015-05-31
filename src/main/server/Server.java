@@ -269,6 +269,11 @@ public class Server implements HttpHandler {
 					Main.shutdown();
 					server.stop(0);
 				}
+				else if(uri.startsWith("/error")) {
+				  System.err.print("ERROR: " + uri.substring(6) + " ");
+				  copy(exchange.getRequestBody(), System.out);
+				  System.err.println("");
+				}
 				else {
 					System.out.print("post ");
 					copy(exchange.getRequestBody(), System.out);

@@ -13,5 +13,4 @@ public class ContentSearchField extends ContentItem {
 			System.err.println("ERROR: " + e.getMessage());
 		}
 	}
-
 }

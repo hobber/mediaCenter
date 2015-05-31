@@ -3,7 +3,7 @@ package main.tmdb.content;
 import main.server.content.ContentBackButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
-import main.server.content.ContentMenu;
+import main.server.content.ContentTitleBar;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.UserContentGroup;
@@ -23,8 +23,8 @@ public class TMDBLibraryPage implements UserContentPage {
 	@Override
   public ContentPage getPage() {
 		ContentPage page = new ContentPage();			
-		ContentMenu menu = new ContentMenu();
-		page.setMenu(menu);
+		ContentTitleBar menu = new ContentTitleBar();
+		page.setTitleBar(menu);
 		menu.put(new ContentBackButton(0));
 
 		ContentGroup series = new ContentGroup();		

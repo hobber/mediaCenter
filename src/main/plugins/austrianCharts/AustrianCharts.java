@@ -70,7 +70,7 @@ public class AustrianCharts implements Plugin {
   @Override
   public ContentMenuEntry getMenuEntry() {
     ContentMenuEntry entry = new ContentMenuEntry(this, ICON_PATH + "music.png");    
-    entry.addSubMenuEntry(new AustrianChartsHome(this));
+    entry.addSubMenuEntry(new AustrianChartsCurrent(this));
     entry.addSubMenuEntry(new AustrianChartsHistory(this));
     return entry;
   }

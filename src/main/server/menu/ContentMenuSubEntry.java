@@ -7,11 +7,9 @@ import main.server.content.ContentPage;
 
 public abstract class ContentMenuSubEntry {
 
-  private Plugin plugin;
   private String name;
   
-  public ContentMenuSubEntry(Plugin plugin, String name) {
-    this.plugin = plugin;
+  public ContentMenuSubEntry(String name) {
     this.name = name;
   }
   

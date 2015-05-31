@@ -10,7 +10,7 @@ public class ContentPage {
 
 	private LinkedList<ContentGroup> groups = new LinkedList<ContentGroup>();
 	private ContentOptions options;
-	private ContentMenu menu;
+	private ContentTitleBar titleBar;
 	
 	public ContentPage() {	
 	}	
@@ -28,14 +28,14 @@ public class ContentPage {
 		this.options = options;
 	}
 	
-	public void setMenu(ContentMenu menu) {
-		this.menu = menu;
+	public void setTitleBar(ContentTitleBar menu) {
+		this.titleBar = menu;
 	}
 	
 	public String getContentString() {
-	  String s = "{\"options\": " + options + ", \"menu\": " + menu + ", \"page\": [";
+	  String s = "{\"options\": " + options + ", \"titlebar\": " + titleBar + ", \"page\": [";
 	  for(int i=0; i<groups.size(); i++)
-	    s += (i > 0 ? ", " : "") + groups.get(i); 
+	    s += (i > 0 ? ", " : "") + groups.get(i).getContentString(); 
 	  return s + "]}";
 	}
 }

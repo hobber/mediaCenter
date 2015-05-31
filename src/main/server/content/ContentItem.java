@@ -23,8 +23,7 @@ public abstract class ContentItem {
 		}
 	}
 	
-	@Override
-	public String toString() {
+	public String getContentString() {
 	  return data.toString();
 	}
 }

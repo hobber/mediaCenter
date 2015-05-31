@@ -12,5 +12,4 @@ public class ContentBackButton extends ContentItem {
 			System.err.println("ERROR: " + e.getMessage());
 		}
 	}
-
 }

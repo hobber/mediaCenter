@@ -3,7 +3,7 @@ package main.tmdb.content;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentGroup;
 import main.server.content.ContentGroupOnDemand;
-import main.server.content.ContentMenu;
+import main.server.content.ContentTitleBar;
 import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
@@ -39,7 +39,7 @@ public class TMDBSearchPage implements UserContentPage {
 	@Override
   public ContentPage getPage() {
 		ContentPage page = new ContentPage();			
-		page.setMenu(ContentMenu.createSearchMenu(context));		
+		page.setTitleBar(ContentTitleBar.addSearchMenu(context));		
 		return page;
   }
 	
@@ -88,7 +88,7 @@ public class TMDBSearchPage implements UserContentPage {
 		
 		TMDBSearchResultList results = tmdb.searchSeries(searchTerm);
 		ContentPage page = results.getPage(context);
-		page.setMenu(ContentMenu.createSearchMenu(context));
+		page.setTitleBar(ContentTitleBar.addSearchMenu(context));
 		return page;		
 	}
 	
@@ -101,7 +101,7 @@ public class TMDBSearchPage implements UserContentPage {
 		
 		ContentPage page = series.getPage(null);		
 		try {						
-			page.setMenu(ContentMenu.createBackMenu());
+			page.setTitleBar(ContentTitleBar.addBackMenu());
 			
 			ContentOptions options = new ContentOptions();
 			page.setOptions(options);

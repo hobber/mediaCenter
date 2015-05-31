@@ -41,7 +41,7 @@
   background-color: #eeeeee;
   margin-left: 1px;
 }
-#contentMenu {
+#contentTitle {
   position: relative;
   background-color: #606060;
   height: 38px;
@@ -67,5 +67,4 @@
 #searchBox, textarea {
   background-color: #eeeeee; 
 }
-
 
