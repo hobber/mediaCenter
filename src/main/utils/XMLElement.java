@@ -93,7 +93,10 @@ public class XMLElement {
       return startTag.substring(index, startTag.indexOf('\'', index + 1));
     }
     else {
-      throw new RuntimeException("attributes without quotes are currently not supported!");
+      int index2 = index + 1;
+      while(index2 < startTag.length() && startTag.charAt(index2) != ' ')
+        index2++;
+      return startTag.substring(index, index2);
     }
   }
   

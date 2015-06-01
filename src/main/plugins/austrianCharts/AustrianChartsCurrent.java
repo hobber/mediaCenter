@@ -3,6 +3,7 @@ package main.plugins.austrianCharts;
 import java.util.LinkedList;
 
 import main.server.content.ContentGroup;
+import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
@@ -30,24 +31,28 @@ class AustrianChartsCurrent extends ContentMenuSubEntry {
     
     ContentGroup group = new ContentGroup();
     page.addContentGroup(group);
-    ContentTable table = new ContentTable(0, 0, 5, 50);
+    ContentTable table = new ContentTable(0, 0, 3, 50);
     group.put(table);
     table.setOption(new ContentOptions("fullWidth", "true"));
     LinkedList<String> widths = new LinkedList<String>();
-    widths.add("10%");
-    widths.add("30%");
-    widths.add("10%");
-    widths.add("30%");
-    widths.add("20%");
+    widths.add("5%");
+    widths.add("40%");
+    widths.add("47%");
     table.setWidths(widths);
     
-    LinkedList<ContentItem> columns = new LinkedList<ContentItem>();    
-    columns.add(new ContentText(0, 0, "a"));
-    columns.add(new ContentText(0, 0, "b"));
-    columns.add(new ContentText(0, 0, "c"));
-    columns.add(new ContentText(0, 0, "d"));
-    columns.add(new ContentText(0, 0, "e"));
-    table.addRow(columns);
+    int i = 0;
+    for(ChartEntry entry : charts.getCurrentCharts()) {
+      LinkedList<ContentItem> columns = new LinkedList<ContentItem>();   
+      ContentGroup interpret = new ContentGroup();
+      if(entry.getImage().length() > 0)
+        interpret.put(new ContentImage(0, 0, 50, 50, entry.getImage()));
+      interpret.put(new ContentText(55, 12, entry.getInterpret()));
+      interpret.setOptions(new ContentOptions("groupBoarder", "false"));
+      columns.add(new ContentText(0, 12, "" + ++i));
+      columns.add(interpret);
+      columns.add(new ContentText(0, 12, entry.getTitle()));
+      table.addRow(columns);
+    }
     
     System.out.println("response: " + page.getContentString());
     

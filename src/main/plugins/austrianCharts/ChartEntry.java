@@ -19,6 +19,7 @@ import main.utils.XMLParser;
 class ChartEntry extends DataObject {
   
   private int hashCode;
+  private MCString image;
   private MCString interpret;
   private MCString title;
   private MCString detailUrl;
@@ -27,12 +28,16 @@ class ChartEntry extends DataObject {
   
   private String videoUrl;
   
-  public ChartEntry(Calendar date, XMLElement tag) {      
+  public ChartEntry(Calendar date, XMLElement tag) {    
+//    tag.printHierarchy();
     List<XMLElement> columns = tag.getChildren();
     String currentRanking = columns.get(0).getChild(0).getValue();
     String previousRanking = columns.get(1).getChild(0).getValue();
     if(previousRanking == null)
       previousRanking = "NEW";
+    XMLElement image = columns.get(3);
+    if(image.getChildren().size() != 0)
+      this.image.set(image.getChild(0).getAttribute("src"));
     ranking.add(new RankingEntry(date, currentRanking, previousRanking));
     XMLElement caption = columns.get(4).getChild(0);
     detailUrl.set("http://austriancharts.at" + caption.getAttribute("href"));
@@ -73,6 +78,10 @@ class ChartEntry extends DataObject {
   
   public String getTitle() {
     return title.get();
+  }
+  
+  public String getImage() {
+    return image.get();
   }
   
   public int getScore() {
@@ -128,6 +137,7 @@ class ChartEntry extends DataObject {
   protected DataSchema createDataSchema() {
     interpret = new MCString();
     title = new MCString();
+    image = new MCString();
     detailUrl = new MCString();
     score = new MCInteger();
     ranking = new Ranking();
@@ -135,6 +145,7 @@ class ChartEntry extends DataObject {
     DataSchema schema = new DataSchema();
     schema.addString("interpret", interpret);
     schema.addString("title", title);
+    schema.addString("image", image);
     schema.addString("detailUrl", detailUrl);
     schema.addInt("score", score);
     schema.addDataSchemaObject("ranking", ranking);

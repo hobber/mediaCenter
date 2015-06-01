@@ -9,13 +9,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import main.http.HTTPResponse;
 import main.http.HTTPUtils;
 import main.plugins.Plugin;
 import main.server.menu.ContentMenuEntry;
-import main.server.menu.ContentMenuSubEntry;
 import main.utils.FileReader;
 import main.utils.FileWriter;
 import main.utils.Logger;
@@ -28,18 +25,18 @@ public class AustrianCharts implements Plugin {
 	private Calendar lastUpdate;
 	
 	public AustrianCharts() {
-	  try {
-      FileReader reader = new FileReader("AustrianCharts.db");
-      lastUpdate = reader.readTime();
-      int size = reader.readInt();
-      charts = new LinkedList<ChartEntry>();
-      for(int i=0; i<size; i++)
-        charts.add(new ChartEntry(reader));
-    } catch(FileNotFoundException e) {
-      Logger.error(e);
-    } catch(IOException e) {
-      Logger.error(e);
-    }
+//	  try {
+//      FileReader reader = new FileReader("AustrianCharts.db");
+//      lastUpdate = reader.readTime();
+//      int size = reader.readInt();
+//      charts = new LinkedList<ChartEntry>();
+//      for(int i=0; i<size; i++)
+//        charts.add(new ChartEntry(reader));
+//    } catch(FileNotFoundException e) {
+//      Logger.error(e);
+//    } catch(IOException e) {
+//      Logger.error(e);
+//    }
 	}
 	
 	@Override
@@ -86,7 +83,6 @@ public class AustrianCharts implements Plugin {
 	    int month = date.get(Calendar.MONTH) + 1;
 	    int year = date.get(Calendar.YEAR);
 	    String url = String.format("http://austriancharts.at/charts/singles/%02d-%02d-%04d", day, month, year);
-	    System.out.println(url);
 	    
 	    HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
 	    String body = response.getHTMLBody();
@@ -118,6 +114,25 @@ public class AustrianCharts implements Plugin {
     });
 	  
 	   lastUpdate = Calendar.getInstance();
+	}
+	
+	public List<ChartEntry> getCurrentCharts() {
+	  Calendar date = Calendar.getInstance();
+	  int day = date.get(Calendar.DATE);
+    int month = date.get(Calendar.MONTH) + 1;
+    int year = date.get(Calendar.YEAR);
+    String url = String.format("http://austriancharts.at/charts/singles/%02d-%02d-%04d", day, month, year);
+    
+    HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
+    String body = response.getHTMLBody();
+    XMLElement rootElement = XMLParser.parse(body, false);    
+    
+    LinkedList<ChartEntry> charts = new LinkedList<ChartEntry>();
+    List<XMLElement> list = rootElement.searchTags("<tr.+class=\"charts( new)?\".*>");
+    for(XMLElement tag : list)
+      charts.add(new ChartEntry(date, tag));
+    
+    return charts;
 	}
 	
 	public void print() {

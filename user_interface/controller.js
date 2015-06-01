@@ -127,6 +127,18 @@ app.controller('Controller', ['$scope', '$compile',
 	var contentFactories = {};
 	var contentWidth = 0;
 	
+	contentFactories.img = function(parent, definition) {
+      var element = document.createElement('img');
+      parent.appendChild(element);
+      element.setAttribute('id', 'contentItem');
+      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      element.setAttribute('width', definition.width);
+      element.setAttribute('height', definition.height);
+      element.setAttribute('src', definition.src);
+      element.setAttribute('alt', ' ');
+      return element;
+    };
+	
 	contentFactories.text = function(parent, definition) {
       var element = document.createElement('span');
       parent.appendChild(element);
@@ -149,7 +161,7 @@ app.controller('Controller', ['$scope', '$compile',
       return element;
     };
 	
-	contentFactories.group = function(parent, definition, options, isLast) {
+	contentFactories.group = function(parent, definition, isLast) {
       var groupElement = document.createElement('div');
       parent.appendChild(groupElement);
       groupElement.setAttribute('id', 'contentContainer');      
@@ -162,14 +174,14 @@ app.controller('Controller', ['$scope', '$compile',
           continue;
         }
 
-        var element = createElement(groupElement, item, options);                
+        var element = createElement(groupElement, item);                
         var y = item.y + element.offsetHeight;
         if(y > maxY)
           maxY = y;
       }
 
-      var style = 'height: ' + maxY + 'px;';      
-      if(isLast !== true && (options === undefined || options.groupBoarder !== false))
+      var style = 'height: ' + maxY + 'px;'; 	  
+      if(isLast !== true && (definition.options && definition.options.groupBoarder !== false))
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
       return groupElement;
@@ -184,7 +196,7 @@ app.controller('Controller', ['$scope', '$compile',
 	 *      - ?fullWidth [true, fals] ... table fill full content width
 	 *  - ?widths: defines widths of columns [array of strings]
      */
-	contentFactories.table = function(parent, definition, options) {
+	contentFactories.table = function(parent, definition) {
       var element = document.createElement('table');
       parent.appendChild(element);
 
@@ -213,15 +225,15 @@ app.controller('Controller', ['$scope', '$compile',
         for(var j=0; j<definition.columns; j++) {
           var column = document.createElement('td');
           row.appendChild(column);
-          var createdItem = createElement(column, definition.rows[i][j], options);
+          var createdItem = createElement(column, definition.rows[i][j]);
           column.setAttribute('style', 'position: relative; width: ' + (createdItem.offsetWidth+2) + 'px;');
         }
       }
       return element;
     };
 	
-	var createElement = function(parent, definition, options, parameter) {
-      return contentFactories[definition.type](parent, definition, options, parameter);  
+	var createElement = function(parent, definition) {
+      return contentFactories[definition.type](parent, definition);  
     };
 	
 	var showContent = function(content) {
@@ -234,7 +246,7 @@ app.controller('Controller', ['$scope', '$compile',
         var definition = titlebar[i];		
         createElement(titleDiv, definition);
       }
-	  contentWidth = titleDiv.offsetWidth - 2;
+	  contentWidth = titleDiv.offsetWidth - 2 - 15;
 	  
 	  var contentDiv = document.getElementById('contentBody');
 	  contentDiv.innerHTML = '';
