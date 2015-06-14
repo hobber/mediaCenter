@@ -2,7 +2,7 @@ package main.tmdb.content;
 
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentGroup;
-import main.server.content.ContentGroupOnDemand;
+import main.server.content.ContentOnClick;
 import main.server.content.ContentTitleBar;
 import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
@@ -113,15 +113,15 @@ public class TMDBSearchPage implements UserContentPage {
 		  	
 			ContentText cast = new ContentText(20, 43, "&bull;Besetzung");
 			infos.put(cast);
-			cast.appendLink(new ContentGroupOnDemand(context, "cast="+id));
+			cast.appendLink(new ContentOnClick(context, "cast="+id));
 						
 			ContentText similar = new ContentText(20, 66, "&bull;Ähnliche Serien");
 			infos.put(similar);
-			similar.appendLink(new ContentGroupOnDemand(context, "similar="+id));
+			similar.appendLink(new ContentOnClick(context, "similar="+id));
 			
 			ContentText episodes = new ContentText(20, 89, "&bull;Episoden");
 			infos.put(episodes);
-			episodes.appendLink(new ContentGroupOnDemand(context, "episodes="+id));			
+			episodes.appendLink(new ContentOnClick(context, "episodes="+id));			
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

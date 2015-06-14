@@ -200,7 +200,7 @@ public class Server implements HttpHandler {
 	  List<ContentMenuEntry> list = PluginController.getMenuEntries();
 	  
 	  Headers headers = exchange.getResponseHeaders();
-    headers.add("Content-Type", "application/jsonp; charset=UTF-8");
+    headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
     
 	  JSONObject buffer = new JSONObject();
 	  for(ContentMenuEntry entry : list)
@@ -219,14 +219,16 @@ public class Server implements HttpHandler {
 		
 		int index = request.indexOf('.');
 		int id = Integer.parseInt(request.substring(3, index));
-		int subId = Integer.parseInt(request.substring(index+1));
+		int index2 = request.indexOf('&');
+		int subId = index2 < 0 ? Integer.parseInt(request.substring(index+1)) : Integer.parseInt(request.substring(index+1, index2));
+		String parameter = index2 < 0 ? "" : request.substring(index2 + 1);
 		
-		System.out.println("api: " + uri + " -> " + request + ", " + id + ", " + subId);		
+		System.out.println("api: " + uri + " -> " + request + ", " + id + ", " + subId + ", " + parameter);		
 		
 		Headers headers = exchange.getResponseHeaders();
-		headers.add("Content-Type", "application/jsonp; charset=UTF-8");
+		headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
 		
-		ContentPage page = PluginController.handleAPIRequest(id, subId, "");
+		ContentPage page = PluginController.handleAPIRequest(id, subId, parameter);
 		
 		byte[] response = page.getContentString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);

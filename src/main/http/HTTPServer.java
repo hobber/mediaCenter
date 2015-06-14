@@ -50,20 +50,8 @@ public class HTTPServer {
 					System.err.println("unknown path: " + path);
 					return;
 				}
-				String response = listeners.get(path).handleHTTPGetRequest(parameters);
 				
-				/*
-				String response = "<html>";
-				response += "  <head><title>MediaCenter</title></head>";
-				response += "  <body><h1>MediaCenter</h1>";
-				response += "    <ul>";
-				for (Map.Entry<String, String> entry : parameters.entrySet())				
-					response += "      <li>"+entry.getKey() + " = " + entry.getValue() + "</li>";				
-				response += "    </ul>";
-				response += "  </body>";
-				response += "</html>";
-				*/
-				
+				String response = listeners.get(path).handleHTTPGetRequest(parameters);				
 				exchange.sendResponseHeaders(200, response.length());
 				OutputStream os = exchange.getResponseBody();
 				os.write(response.getBytes());

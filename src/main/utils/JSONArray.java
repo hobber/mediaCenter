@@ -7,6 +7,10 @@ public class JSONArray {
 
 	private org.json.JSONArray body;
 	
+	public JSONArray() {
+	  body = new org.json.JSONArray();
+	}
+	
 	public JSONArray(org.json.JSONArray array) {
 		body = array;
 	}

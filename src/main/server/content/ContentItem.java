@@ -15,9 +15,9 @@ public abstract class ContentItem {
 		}
 	}
 	
-	public void appendLink(ContentGroupOnDemand group) {
+	public void appendLink(ContentOnClick onClick) {
 		try {
-			data.put("link", group.data);
+			data.put("onClick", onClick.getParameter());
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}

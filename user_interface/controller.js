@@ -4,6 +4,10 @@ app.controller('Controller', ['$scope', '$compile',
   function($scope, $compile) {
   
 	var URL = '';
+	var currentMenu = {
+	  entryId: 0,
+	  subEntryId: 0
+	}
   
     $scope.init = function() {
 	  try {
@@ -14,10 +18,10 @@ app.controller('Controller', ['$scope', '$compile',
 	  }
     };
 
-	$scope.clicked = function(entryId, subEntryId) {
+	var clicked = function(request) {
 	  try {	  
 	    var xmlHttp = new XMLHttpRequest();
-	    xmlHttp.open('GET', URL + 'api?id=' + entryId + '.' + subEntryId, true);
+	    xmlHttp.open('GET', request, true);
         xmlHttp.send();  
         xmlHttp.onloadend = function() {
 		  try {
@@ -33,6 +37,16 @@ app.controller('Controller', ['$scope', '$compile',
 	  } catch(error) {
 	    handleError(error);
 	  }
+	};
+	
+	$scope.clickedMenu = function(entryId, subEntryId) {
+	  currentMenu.entryId = entryId;
+	  currentMenu.subEntryId = subEntryId;
+	  clicked(URL + 'api?id=' + entryId + '.' + subEntryId);
+	};
+	
+	$scope.clickedElement = function(parameter) {
+	  clicked(URL + 'api?id=' + currentMenu.entryId + '.' + currentMenu.subEntryId + '&' + parameter);
 	};
 	
 	var readURL = function() {
@@ -84,7 +98,7 @@ app.controller('Controller', ['$scope', '$compile',
 		menuDiv.appendChild(node);
         node.setAttribute('id', 'menuEntry');
 		var name = 'AustrianCharts';
-		node.setAttribute('ng-click', 'clicked(' + entry.id + ', 0)');
+		node.setAttribute('ng-click', 'clickedMenu(' + entry.id + ', 0)');
 		$compile(node)($scope);
         
 		var image = document.createElement('img');
@@ -109,7 +123,7 @@ app.controller('Controller', ['$scope', '$compile',
 		  var subnode = document.createElement('div');
 		  menuDiv.appendChild(subnode);
           subnode.setAttribute('id', 'menuSubEntry');          
-          subnode.setAttribute('ng-click', 'clicked(' + entry.id + ', ' + i + ')');
+          subnode.setAttribute('ng-click', 'clickedMenu(' + entry.id + ', ' + i + ')');
           subnode.setAttribute('class', 'ng-show');
           $compile(subnode)($scope);
 
@@ -119,7 +133,7 @@ app.controller('Controller', ['$scope', '$compile',
 		}
       }
 	  
-	  $scope.clicked(firstEntryId, 0);
+	  $scope.clickedMenu(firstEntryId, 0);
 	};
 	
 	//========================================================================= CONTENT
@@ -232,13 +246,18 @@ app.controller('Controller', ['$scope', '$compile',
       return element;
     };
 	
-	var createElement = function(parent, definition) {
-      return contentFactories[definition.type](parent, definition);  
+	var createElement = function(parent, definition) {	
+      var element = contentFactories[definition.type](parent, definition);
+	  if(definition.onClick) {
+		element.setAttribute('ng-click', 'clickedElement("' + definition.onClick + '")');
+        $compile(element)($scope);
+      }
+	  return element;
     };
 	
 	var showContent = function(content) {
 	  var options = content.options;
-	  
+
 	  var titleDiv = document.getElementById('contentTitle');
 	  titleDiv.innerHTML = '';
 	  var titlebar = content.titlebar || [];
@@ -259,7 +278,7 @@ app.controller('Controller', ['$scope', '$compile',
         }
 		
 		var isLast = (i === items.length-1);
-        contentFactories.group(contentDiv, definition, options, isLast);
+        createElement(contentDiv, definition);
       }
 	};
   }

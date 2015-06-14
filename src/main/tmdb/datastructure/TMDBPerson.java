@@ -4,7 +4,7 @@ import org.json.JSONException;
 
 import main.http.HTTPResponse;
 import main.server.content.ContentGroup;
-import main.server.content.ContentGroupOnDemand;
+import main.server.content.ContentOnClick;
 import main.server.content.ContentImage;
 import main.server.content.ContentObject;
 import main.server.content.ContentOptions;
@@ -97,7 +97,7 @@ public class TMDBPerson implements ContentObject {
 		
 		ContentText films = new ContentText(20, 43, "&bull;Filmografie");
 		infos.put(films);
-		films.appendLink(new ContentGroupOnDemand(context, "personCredits="+id));
+		films.appendLink(new ContentOnClick(context, "personCredits="+id));
 	  return page;
   }
 

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import main.server.content.ContentGroup;
-import main.server.content.ContentGroupOnDemand;
+import main.server.content.ContentOnClick;
 import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentObject;
@@ -55,7 +55,7 @@ public class TMDBCredits implements ContentObject {
 	  	columns.add(new ContentText(0, 20, character.getCharacterName()));
 	  	ContentText actor = new ContentText(0, 20, character.getActorName());	  	
 	  	columns.add(actor);
-	  	actor.appendLink(new ContentGroupOnDemand(context, "person=" + character.getActorId()));
+	  	actor.appendLink(new ContentOnClick(context, "person=" + character.getActorId()));
 	  	table.addRow(columns);
 	  }
 	  return page;

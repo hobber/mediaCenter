@@ -1,5 +1,6 @@
 package main.plugins;
 
+import main.server.content.ContentOnClick;
 import main.server.menu.ContentMenuEntry;
 
 public interface Plugin {

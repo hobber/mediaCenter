@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import main.server.content.ContentGroup;
-import main.server.content.ContentGroupOnDemand;
+import main.server.content.ContentOnClick;
 import main.server.content.ContentImage;
 import main.server.content.ContentObject;
 import main.server.content.ContentPage;
@@ -45,7 +45,7 @@ public class TMDBSearchResultList implements ContentObject {
 			page.addContentGroup(group);
 			group.put(new ContentImage(0, 0, 100, 150, TMDB.getPosterURL(result.getPosterPath(), true)));
 			group.put(new ContentText(120, 20, result.getDescription()));	
-			group.appendLink(new ContentGroupOnDemand(context, "show="+result.getId()));
+			group.appendLink(new ContentOnClick(context, "show="+result.getId()));
 		}
 		return page;
   }

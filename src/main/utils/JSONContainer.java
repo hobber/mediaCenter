@@ -80,6 +80,19 @@ public class JSONContainer {
 		return new JSONArray(new org.json.JSONArray());
 	}
 	
+	public boolean containsObject(String key) {
+	  String []keys = key.split("\\.");
+	  Object object = body.opt(keys[0]);
+	  if(object == null)
+	    return false;
+	  for(int i=1; i<keys.length && object != null; i++) {
+	    object = ((JSONObject)object).opt(keys[i]);
+	    if(object == null)
+	      return false;
+	  }
+	  return true;        
+	}
+	
 	public String toString() {
 		return body.toString();
 	}

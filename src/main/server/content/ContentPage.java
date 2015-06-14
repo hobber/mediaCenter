@@ -2,10 +2,6 @@ package main.server.content;
 
 import java.util.LinkedList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class ContentPage {
 
 	private LinkedList<ContentGroup> groups = new LinkedList<ContentGroup>();

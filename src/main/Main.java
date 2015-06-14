@@ -2,6 +2,7 @@ package main;
 import main.plugins.Plugin;
 import main.plugins.PluginController;
 import main.plugins.austrianCharts.AustrianCharts;
+import main.plugins.ebay.EbayReporter;
 import main.server.Server;
 import main.utils.ConfigFile;
 import main.utils.Logger;
@@ -37,7 +38,8 @@ public class Main {
 		
 		try {
 		  
-		  PluginController.register(new AustrianCharts());
+//		  PluginController.register(new AustrianCharts());
+		  PluginController.register(new EbayReporter(config.getElement("config.plugins.ebay")));
 		  
 		} catch(Throwable e) {
 			Logger.error(e);

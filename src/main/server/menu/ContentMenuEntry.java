@@ -22,6 +22,7 @@ public class ContentMenuEntry {
   }
   
   public void addSubMenuEntry(ContentMenuSubEntry entry) {
+    entry.setIds(id, subEntries.size());
     subEntries.add(entry);
   }
   

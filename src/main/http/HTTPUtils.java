@@ -46,7 +46,7 @@ public class HTTPUtils {
 		String s = "";
 		byte[] bytes = Charset.forName("UTF-8").encode(term).array();
 		for(int i=0; i<bytes.length; i++) {
-			byte c = bytes[i];
+			byte c = bytes[i];			
 			if(c == 0)
 				continue;
 			if(Character.isLetterOrDigit(c) && (int)c <= 127)
@@ -55,8 +55,10 @@ public class HTTPUtils {
 				s += '.';
 			else if(c == ' ')
 				s += '+';
-			else
-				s += String.format("%%%02X", c < 0 ? (int)(c+256) : (int)c);			
+			else {
+			  
+				s += String.format("%%%02X", c < 0 ? (int)(c+256) : (int)c);
+			}
 		}
 		return s;
 	}
