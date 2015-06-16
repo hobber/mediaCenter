@@ -83,119 +83,6 @@ public class Server implements HttpHandler {
 		return total;
 	}
 	
-//	private JSONObject getContent(String name) {
-//		int index = name.indexOf(".");
-//		if(index < 0) {
-//			System.err.println("ERROR: invalid name " + name);
-//		}
-//		
-//		String groupName = name.substring(0, index);
-//		String pageName = name.substring(index + 1);		
-//		
-//		UserContentGroup group = contentGroups.get(groupName);		
-//		if(group == null) {
-//			System.out.println("ERROR: group " + groupName + " not found");			 
-//			return new JSONObject();
-//		}
-//		
-//		UserContentPage page = group.getContentPage(pageName);
-//		if(page == null) {
-//			System.out.println("ERROR: page " + pageName + " not found");			
-//			return new JSONObject();
-//		}
-//		
-//		return page.getPage();		
-//	}
-//	
-//	private JSONObject getMenu() {
-//		JSONObject response = new JSONObject();
-//		/*
-//		try {		
-//			for(String groupName : contentGroups.keySet()) {
-//				UserContentGroup group = contentGroups.get(groupName);
-//				JSONObject groupElement = new JSONObject();
-//				groupElement.put("name", groupName);
-//				groupElement.put("icon", group.getIconPath());
-//				groupElement.put("type", "menuEntry");
-//				groupElement.put("id",  groupName);
-//				response.append("entries", groupElement);
-//								
-//				List<UserContentPage> list = group.getContentPages();
-//				for(UserContentPage page : list) {
-//					JSONObject element = new JSONObject();
-//					element.put("name", page.getName());
-//					element.put("type",  "menuSubEntry");
-//					element.put("id",  groupName + "." + page.getName());
-//					response.append("entries", element);
-//				}
-//			}
-//			
-//			/*
-//			JSONObject movies = new JSONObject();
-//			movies.put("name", "Movies");
-//			moviesHome.put("name", "Home");
-//			moviesLibrary.put("name", "Library");
-//			moviesFavourites.put("name", "Favourites");
-//			moviesSearch.put("name", "Search");
-//
-//			series.put("name", "Series");
-//			seriesHome.put("name", "Home");
-//			seriesLibrary.put("name", "Library");
-//			seriesFavourites.put("name", "Favourites");
-//			seriesSearch.put("name", "Search");
-//			music.put("name", "Music");
-//			
-//			images.put("name", "Images");
-//			
-//			settings.put("name", "Settings");
-//			
-//		} catch(JSONException e) {
-//			e.printStackTrace();
-//		}*/
-//		return response;
-//	}
-//	
-//	private ContentPage handleContextSpecificRequest(String request) {		
-//		int indexPoint = request.indexOf(".");
-//		int indexParameter = request.indexOf("&");
-//		if(indexParameter < 0)
-//			indexParameter = request.length() - 1;
-//		
-//		if(indexPoint < 0 || indexPoint > indexParameter)
-//			return new ContentErrorPage(request + " contains no valid context");		
-//		
-//		String groupName = request.substring(0, indexPoint);
-//		UserContentGroup contentGroup = contentGroups.get(groupName);
-//		if(contentGroup == null)
-//			return new ContentErrorPage("content group " + groupName + " not found");		
-//		
-//		String pageName = request.substring(indexPoint + 1, indexParameter);
-//		String query = request.substring(indexParameter + 1); 
-//		return contentGroup.handle(pageName, query);		
-//	}
-//	
-//	private byte[] convert(String response) {		
-//		ArrayList<Byte> bytes = new ArrayList<Byte>(response.length());
-//		for(int i=0; i<response.length(); i++) {
-//			char c = response.charAt(i);
-//			if(c <= 127)
-//				bytes.add((byte)c);
-//			else { 				
-//				byte[] tmp = Charset.forName("UTF-8").encode("" + c).array();
-//				for(int j=0; j<2; j++) {
-//					String s = String.format("%%%02X", tmp[j] < 0 ? (int)(tmp[j]+256) : (int)tmp[j]);
-//					for(int l=0; l<3; l++)
-//						bytes.add((byte)s.charAt(l));
-//				}
-//			}
-//		}
-//		
-//		byte[] buffer = new byte[bytes.size()];
-//		for(int i=0; i< bytes.size(); i++)
-//			buffer[i] = bytes.get(i);
-//		return buffer;		
-//	}
-	
 	private void handleMenuRequest(HttpExchange exchange) throws IOException {
 	  List<ContentMenuEntry> list = PluginController.getMenuEntries();
 	  
@@ -256,6 +143,7 @@ public class Server implements HttpHandler {
 		try {
 			String method = exchange.getRequestMethod();
 			String uri = exchange.getRequestURI().toString();
+			System.out.println("URI: " + uri);
 
 			if(method.equals("GET")) {
 			  if(uri.startsWith("/menu"))

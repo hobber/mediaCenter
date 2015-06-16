@@ -16,9 +16,10 @@ public class ContentMenuEntry {
   private LinkedList<ContentMenuSubEntry> subEntries = new LinkedList<ContentMenuSubEntry>();
   private int id;
   
-  public ContentMenuEntry(Plugin plugin, String iconPath) {
+  public ContentMenuEntry(Plugin plugin, String iconPath, int id) {
     this.plugin = plugin;
     this.iconPath = iconPath;
+    this.id = id;
   }
   
   public void addSubMenuEntry(ContentMenuSubEntry entry) {
@@ -28,11 +29,7 @@ public class ContentMenuEntry {
   
   public String getName() {
     return plugin.getName();
-  }  
-  
-  public void setId(int id) {
-    this.id = id;
-  }
+  } 
   
   public JSONObject toJSON() {
     JSONObject container = new JSONObject();

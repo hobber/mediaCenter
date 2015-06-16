@@ -153,7 +153,17 @@ app.controller('Controller', ['$scope', '$compile',
       return element;
     };
 	
-	contentFactories.text = function(parent, definition) {
+	/**
+     * TEXT
+	 *  - text or url: text or text with url which will be displayed [string]
+	 *  - x: x-offset [int]
+	 *  - y: y-offset [int]
+	 *  - ?style: additional style parameters (bold,...) [string]
+     *  - ?options: 
+	 *      - ?fullWidth [true, fals] ... table fill full content width
+	 *  - ?widths: defines widths of columns [array of strings]
+     */
+	contentFactories.text = function(parent, definition) {	
       var element = document.createElement('span');
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
@@ -164,13 +174,10 @@ app.controller('Controller', ['$scope', '$compile',
       if(definition.url === undefined)
         element.innerHTML = definition.text;
       else {
-        var text = document.createElement('span');
+        var text = document.createElement('a');
         element.appendChild(text);
         text.innerHTML = definition.text;
-        var url = document.createElement('a');
-        element.appendChild(url);
-        url.setAttribute('href', definition.url);
-        url.innerHTML = definition.url;
+        text.setAttribute('href', definition.url);
       }
       return element;
     };

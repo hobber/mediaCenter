@@ -27,8 +27,7 @@ public class PluginController {
 		plugins.put(name, plugin);
 		
 		int id = MenuIdCounter++;
-		ContentMenuEntry entry = plugin.getMenuEntry();
-		entry.setId(id);
+		ContentMenuEntry entry = plugin.getMenuEntry(id);
 		menuMap.put(id, entry);
 		menuList.add(entry);
 	}

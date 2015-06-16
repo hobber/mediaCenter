@@ -7,6 +7,10 @@ public class JSONContainer {
 
 	private JSONObject body;
 
+	public JSONContainer() {
+	  body = new JSONObject();
+	}
+	
 	public JSONContainer(JSONObject object) {
 		body = object;
 	}

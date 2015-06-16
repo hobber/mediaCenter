@@ -1,6 +1,5 @@
 package main.plugins;
 
-import main.server.content.ContentOnClick;
 import main.server.menu.ContentMenuEntry;
 
 public interface Plugin {
@@ -10,5 +9,5 @@ public interface Plugin {
 	public String getName();
 	public void saveState();
 	
-	public ContentMenuEntry getMenuEntry();
+	public ContentMenuEntry getMenuEntry(int id);
 }
