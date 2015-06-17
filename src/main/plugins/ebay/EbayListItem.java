@@ -69,4 +69,8 @@ public class EbayListItem {
   public String getItemUrl() {
     return itemUrl;
   }
+  
+  public EbayMinimalItem toMinimalItem() {
+    return new EbayMinimalItem(itemId, type, endTime, price);
+  }
 }

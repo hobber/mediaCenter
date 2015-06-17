@@ -10,6 +10,8 @@ import main.server.content.ContentImage;
 import main.server.content.ContentText;
 import main.server.menu.ContentMenuEntry;
 import main.utils.ConfigElementGroup;
+import main.utils.FileReader;
+import main.utils.FileWriter;
 import main.utils.JSONArray;
 import main.utils.JSONContainer;
 import main.utils.Logger;
@@ -29,16 +31,31 @@ public class EbayReporter implements Plugin {
   private final static int API_VERSION = 897;
   private String appId; 
   private String globalId;
-  private int menuId;
+  private String databaseFileName;
   
   public EbayReporter(ConfigElementGroup config) {
     appId = config.getString("appID", null);
     globalId = config.getString("globalID", null);
+    databaseFileName = config.getString("file", null);
     
     if(appId == null)
       throw new RuntimeException("Please store your ebay appID in the config file");
     if(globalId == null)
       throw new RuntimeException("Please store your ebay globalID in the config file");
+    if(databaseFileName == null)
+      throw new RuntimeException("Please store your ebay database file name in the config file");
+    
+    try {
+      LinkedList<EbayListItem> list = findByKeywords("20+Euro+PP+Trias");
+      EbayItemStorage storage = new EbayItemStorage(new FileReader(databaseFileName));
+      for(EbayListItem item : list)
+        storage.add(item.toMinimalItem());
+      storage.writeValue(new FileWriter(databaseFileName));
+      new EbayItemStorage(new FileReader(databaseFileName));
+    } catch(Exception e) {
+      Logger.error(e);
+    }
+    
   }
   
   @Override
@@ -52,8 +69,7 @@ public class EbayReporter implements Plugin {
   }
 
   @Override
-  public ContentMenuEntry getMenuEntry(int id) {
-    this.menuId = id;
+  public ContentMenuEntry getMenuEntry(int id) {    
     ContentMenuEntry entry = new ContentMenuEntry(this, ICON_PATH + "ebay.svg", id);
     entry.addSubMenuEntry(new EbayReport(this));
     return entry;
@@ -97,15 +113,5 @@ public class EbayReporter implements Plugin {
     }
       
     return new EbayFullItem(container.getSubContainer("Item"));
-  }
-  
-  String getAuctionTypeString(AuctionType type) {
-    switch(type) {
-      case AUCTION:        return "Auction";
-      case AUCTIONWITHBIN: return "Fixed price or auction";
-      case FIXEDPRICE:     return "Fixed price";
-      case STOREINVENTORY: return "Fixed price or suggestion";
-      default:             return "Other";
-    }
   }
 }

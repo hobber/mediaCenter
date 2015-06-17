@@ -19,7 +19,7 @@ public abstract class DataObject {
 	  schema.readValues(file);
 	}
 	
-  protected void write(FileWriter file) throws IOException {
+  public void write(FileWriter file) throws IOException {
 		schema.writeValues(file);
   }
   
@@ -32,4 +32,6 @@ public abstract class DataObject {
 //	}
   
   protected abstract DataSchema createDataSchema();
+  
+  public abstract String toString();
 }

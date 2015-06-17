@@ -9,17 +9,23 @@
   <server>
     <port>11011</port>
   </server>
-  
-  <spotify>
-    <clientID></clientID>
-    <clientSecret></clientSecret>
-    <redirectURI>http://localhost:8080/mediaCenter/spotify</redirectURI>
-    <timeout>120000</timeout>
-  </spotify>
-  <tmdb>
-    <api_key></api_key>
-    <username></username>
-    <password></password>
-  </tmdb>
+  <plugins>
+    <ebay>
+      <appID></appID>
+	  <globalID>EBAY-AT</globalID>
+	  <file>Ebay.db</file>
+    </ebay>
+    <spotify>
+      <clientID></clientID>
+      <clientSecret></clientSecret>
+      <redirectURI>http://localhost:8080/mediaCenter/spotify</redirectURI>
+      <timeout>120000</timeout>
+    </spotify>
+    <tmdb>
+      <api_key></api_key>
+      <username></username>
+      <password></password>
+    </tmdb>
+  </plugins>
 </config>
 
