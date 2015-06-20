@@ -1,5 +1,6 @@
 package main.plugins.ebay;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import main.http.HTTPResponse;
@@ -32,6 +33,8 @@ public class EbayReporter implements Plugin {
   private String appId; 
   private String globalId;
   private String databaseFileName;
+  private int itemIdCounter = 0;
+  private EbayItemStorage storage = new EbayItemStorage();
   
   public EbayReporter(ConfigElementGroup config) {
     appId = config.getString("appID", null);
@@ -46,12 +49,20 @@ public class EbayReporter implements Plugin {
       throw new RuntimeException("Please store your ebay database file name in the config file");
     
     try {
-      LinkedList<EbayListItem> list = findByKeywords("20+Euro+PP+Trias");
-      EbayItemStorage storage = new EbayItemStorage(new FileReader(databaseFileName));
-      for(EbayListItem item : list)
-        storage.add(item.toMinimalItem());
-      storage.writeValue(new FileWriter(databaseFileName));
-      new EbayItemStorage(new FileReader(databaseFileName));
+      
+      //TODO: create storage using filereader
+      
+      EbaySearchTermHistory history = new EbaySearchTermHistory(this);
+      history.addSearchTerm(createSearchTerm("20+Euro+PP+Trias"));
+      history.update();
+      
+      FileWriter writer = new FileWriter(databaseFileName);
+      storage.writeValue(writer);
+      history.writeValue(writer);
+      
+      FileReader reader = new FileReader(databaseFileName);
+      new EbayItemStorage(reader);
+      new EbaySearchTermHistory(this, reader);
     } catch(Exception e) {
       Logger.error(e);
     }
@@ -113,5 +124,30 @@ public class EbayReporter implements Plugin {
     }
       
     return new EbayFullItem(container.getSubContainer("Item"));
+  }
+  
+  public EbaySearchTerm createSearchTerm(String searchTerm) {
+    return new EbaySearchTerm(this, searchTerm, itemIdCounter++);
+  }
+  
+  public EbaySearchTermGroup createSearchTermGroup() {
+    return new EbaySearchTermGroup(this);
+  }
+  
+  public EbaySearchTermBase readSearchTermBase(FileReader file) throws IOException {
+    byte type = file.readByte();
+    EbaySearchTermBase term;
+    if(type == 0) {
+      term = new EbaySearchTerm(this, file);
+      itemIdCounter = ((EbaySearchTerm)term).getId() + 1;
+    }
+    else
+      term = new EbaySearchTermGroup(this, file);
+    System.out.println("read " + term);
+    return term;
+  }
+  
+  public void registerSearchTermResult(EbaySearchTerm searchTerm, EbayMinimalItem item) {
+    storage.add(searchTerm, item);
   }
 }

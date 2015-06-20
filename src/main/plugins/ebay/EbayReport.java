@@ -78,7 +78,6 @@ public class EbayReport extends ContentMenuSubEntry {
     } catch(ParseException e) {
       Logger.error(e);
     }
-    System.out.println(date + " -> " + convertToPrintDate(calendar));
     return calendar;
   }
   
