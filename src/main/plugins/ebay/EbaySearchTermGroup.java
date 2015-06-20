@@ -8,14 +8,14 @@ import main.utils.FileWriter;
 
 public class EbaySearchTermGroup extends EbaySearchTermBase {
 
-  private EbayReporter reporter;
+  private EbayAPI reporter;
   private LinkedList<EbaySearchTermBase> terms = new LinkedList<EbaySearchTermBase>();
   
-  EbaySearchTermGroup(EbayReporter reporter) {
+  public EbaySearchTermGroup(EbayAPI reporter) {
     this.reporter = reporter;
   }
   
-  EbaySearchTermGroup(EbayReporter reporter, FileReader file) throws IOException {
+  EbaySearchTermGroup(EbayAPI reporter, FileReader file) throws IOException {
     this.reporter = reporter;
     if(file != null)
       readValue(file);

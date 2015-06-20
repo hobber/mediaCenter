@@ -6,7 +6,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Locale;
 
-import main.plugins.ebay.EbayReporter.AuctionType;
+import main.plugins.ebay.EbayAPI.AuctionType;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
 import main.server.content.ContentPage;
@@ -20,9 +20,9 @@ public class EbayReport extends ContentMenuSubEntry {
   static final SimpleDateFormat ITEM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   static final SimpleDateFormat PRINT_DATE_FORMAT = new SimpleDateFormat("dd.MM.YYYY HH:mm:ss");
   
-  private EbayReporter reporter;
+  private EbayAPI reporter;
   
-  public EbayReport(EbayReporter reporter) {
+  public EbayReport(EbayAPI reporter) {
     super("Report");
     this.reporter = reporter;
   }

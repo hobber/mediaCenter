@@ -8,16 +8,16 @@ import main.utils.FileWriter;
 
 public class EbaySearchTerm extends EbaySearchTermBase {
 
-  private EbayReporter reporter;
+  private EbayAPI reporter;
   private String searchTerm;
   private int id;
   
-  EbaySearchTerm(EbayReporter reporter, FileReader file) throws IOException {
+  public EbaySearchTerm(EbayAPI reporter, FileReader file) throws IOException {
     this.reporter = reporter;
     readValue(file);
   }
 
-  public EbaySearchTerm(EbayReporter reporter, String searchTerm, int id) {
+  public EbaySearchTerm(EbayAPI reporter, String searchTerm, int id) {
     this.reporter = reporter;
     this.searchTerm = searchTerm;
     this.id = id;
@@ -55,14 +55,14 @@ public class EbaySearchTerm extends EbaySearchTermBase {
     for(EbayListItem item : list) {
       reporter.registerSearchTermResult(this, item.toMinimalItem());
       float price = item.getPrice();
-      EbayReporter.AuctionType type = item.getAuctionType();
-      if(type == EbayReporter.AuctionType.FIXEDPRICE) {
+      EbayAPI.AuctionType type = item.getAuctionType();
+      if(type == EbayAPI.AuctionType.FIXEDPRICE) {
         sumFixed += price;
         if(minimumFixed == 0.0f || price < minimumFixed)
           minimumFixed = price;
         counterFixed++;
       }
-      else if(type == EbayReporter.AuctionType.AUCTION || type == EbayReporter.AuctionType.AUCTIONWITHBIN) {
+      else if(type == EbayAPI.AuctionType.AUCTION || type == EbayAPI.AuctionType.AUCTIONWITHBIN) {
         sumAuction += price;
         if(minimumAuction == 0.0f || price < minimumAuction)
           minimumAuction = price;

@@ -2,7 +2,7 @@ package main.plugins.ebay;
 
 import java.util.Calendar;
 
-import main.plugins.ebay.EbayReporter.AuctionType;
+import main.plugins.ebay.EbayAPI.AuctionType;
 import main.utils.JSONContainer;
 
 public class EbayListItem {

@@ -8,15 +8,15 @@ import main.utils.FileWriter;
 
 public class EbaySearchTermHistory implements DataSchemaObjectInterface {
 
-  private EbayReporter reporter;
+  private EbayAPI reporter;
   private EbaySearchTermGroup terms;
   
-  public EbaySearchTermHistory(EbayReporter reporter) {
+  public EbaySearchTermHistory(EbayAPI reporter) {
     this.reporter = reporter;
     terms = new EbaySearchTermGroup(reporter);
   }
   
-  public EbaySearchTermHistory(EbayReporter reporter, FileReader file) throws IOException {
+  public EbaySearchTermHistory(EbayAPI reporter, FileReader file) throws IOException {
     this.reporter = reporter;
     if(file != null)
       readValue(file);

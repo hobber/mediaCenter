@@ -8,7 +8,7 @@ import main.data.DataSchema;
 import main.data.datatypes.MCByte;
 import main.data.datatypes.MCFloat;
 import main.data.datatypes.MCLong;
-import main.plugins.ebay.EbayReporter.AuctionType;
+import main.plugins.ebay.EbayAPI.AuctionType;
 import main.utils.FileReader;
 
 public class EbayMinimalItem extends DataObject {

@@ -17,8 +17,8 @@ import main.utils.JSONArray;
 import main.utils.JSONContainer;
 import main.utils.Logger;
 
-public class EbayReporter implements Plugin {
-
+public class EbayAPI {
+  
   public enum AuctionType {
     AUCTION,        //classic competitive-bid online auction format
     AUCTIONWITHBIN, //auction, where also Buy It Now is enabled
@@ -34,9 +34,11 @@ public class EbayReporter implements Plugin {
   private String globalId;
   private String databaseFileName;
   private int itemIdCounter = 0;
-  private EbayItemStorage storage = new EbayItemStorage();
+  private EbayItemStorage storage;
+  private EbaySearchTermHistory history;
+  private EbayReport report;
   
-  public EbayReporter(ConfigElementGroup config) {
+  public EbayAPI(ConfigElementGroup config) {
     appId = config.getString("appID", null);
     globalId = config.getString("globalID", null);
     databaseFileName = config.getString("file", null);
@@ -49,41 +51,34 @@ public class EbayReporter implements Plugin {
       throw new RuntimeException("Please store your ebay database file name in the config file");
     
     try {
-      
-      //TODO: create storage using filereader
-      
-      EbaySearchTermHistory history = new EbaySearchTermHistory(this);
-      history.addSearchTerm(createSearchTerm("20+Euro+PP+Trias"));
-      history.update();
-      
-      FileWriter writer = new FileWriter(databaseFileName);
-      storage.writeValue(writer);
-      history.writeValue(writer);
-      
-      FileReader reader = new FileReader(databaseFileName);
-      new EbayItemStorage(reader);
-      new EbaySearchTermHistory(this, reader);
-    } catch(Exception e) {
+      FileReader file = new FileReader(databaseFileName);
+      storage = new EbayItemStorage(file);
+      history = new EbaySearchTermHistory(this, file);
+    } catch(IOException e) {
       Logger.error(e);
+      storage = new EbayItemStorage();
+      history = new EbaySearchTermHistory(this);
     }
     
+    report = new EbayReport(this);
   }
   
-  @Override
-  public String getName() {
-    return "eBay";
+  public void update() {
+    history.update();
   }
-
-  @Override
+  
   public void saveState() {
-    // TODO Auto-generated method stub
+    try {
+      FileWriter file = new FileWriter(databaseFileName);
+      storage.writeValue(file);
+      history.writeValue(file);
+    } catch(IOException e) {
+      Logger.error(e);
+    }
   }
-
-  @Override
-  public ContentMenuEntry getMenuEntry(int id) {    
-    ContentMenuEntry entry = new ContentMenuEntry(this, ICON_PATH + "ebay.svg", id);
-    entry.addSubMenuEntry(new EbayReport(this));
-    return entry;
+  
+  public EbayReport getReport() {
+    return report;
   }
   
   LinkedList<EbayListItem> findByKeywords(String keywords) {

@@ -7,6 +7,7 @@ public interface Plugin {
   public static final String ICON_PATH = "content/";
   
 	public String getName();
+	public void update();
 	public void saveState();
 	
 	public ContentMenuEntry getMenuEntry(int id);
