@@ -25,8 +25,8 @@ public class EbayFullItem {
     if(currency.equals("EUR"))
       currency = "€"; 
     itemId = definition.getString("ItemID", "");
-    endTime = EbayReport.convertItemDate(definition.getString("EndTime", ""));
-    type = EbayReport.getAuctionType(definition.getString("ListingType", ""));
+    endTime = EbayContentPageReport.convertItemDate(definition.getString("EndTime", ""));
+    type = EbayContentPageReport.getAuctionType(definition.getString("ListingType", ""));
     itemUrl = definition.getString("ViewItemURLForNaturalSearch", "");
   }
   
@@ -64,5 +64,10 @@ public class EbayFullItem {
   
   public EbayMinimalItem toMinimalItem() {
     return new EbayMinimalItem(itemId, type, endTime, price);
+  }
+  
+  @Override
+  public String toString() {
+    return title + ": " + price + currency + " until " + EbayContentPageReport.convertToPrintDate(endTime) + " (" + itemUrl + ")";
   }
 }

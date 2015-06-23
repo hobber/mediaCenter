@@ -1,15 +1,13 @@
 package main.plugins.ebay;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import main.http.HTTPResponse;
 import main.http.HTTPUtils;
-import main.plugins.Plugin;
-import main.server.content.ContentGroup;
-import main.server.content.ContentImage;
-import main.server.content.ContentText;
-import main.server.menu.ContentMenuEntry;
 import main.utils.ConfigElementGroup;
 import main.utils.FileReader;
 import main.utils.FileWriter;
@@ -36,13 +34,16 @@ public class EbayAPI {
   private int itemIdCounter = 0;
   private EbayItemStorage storage;
   private EbaySearchTermHistory history;
-  private EbayReport report;
   
   public EbayAPI(ConfigElementGroup config) {
     appId = config.getString("appID", null);
     globalId = config.getString("globalID", null);
     databaseFileName = config.getString("file", null);
     
+    buildCategoryTree();
+    System.exit(0);
+    
+    /*
     if(appId == null)
       throw new RuntimeException("Please store your ebay appID in the config file");
     if(globalId == null)
@@ -59,12 +60,29 @@ public class EbayAPI {
       storage = new EbayItemStorage();
       history = new EbaySearchTermHistory(this);
     }
-    
-    report = new EbayReport(this);
+    */
+    /*
+    history.addSearchTerm(new Path(), createSearchTermGroup("10 Euro Silbermünzen"));
+    history.addSearchTerm(new Path(), createSearchTermGroup("20 Euro Silbermünzen"));
+    history.addSearchTerm(new Path(), createSearchTermGroup("25 Euro Niobmünzen"));
+    history.addSearchTerm(new Path(), createSearchTermGroup("Philharmoniker"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen"), createSearchTermGroup("Schlösser"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen"), createSearchTermGroup("Republiksjubiläum 2005"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen"), createSearchTermGroup("Stifte und Klöster in Österreich"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen"), createSearchTermGroup("Sagen und Legenden in Österreich"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen"), createSearchTermGroup("Österreich aus Kinderhand"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Ambras"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Eggenberg"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Hof"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Schönbrunn"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Hellbrunn"));
+    history.addSearchTerm(new Path().add("10 Euro Silbermünzen").add("Schlösser"), createSearchTerm("Schloss Artstetten"));
+    /**/
   }
   
   public void update() {
     history.update();
+    storage.update();
   }
   
   public void saveState() {
@@ -77,22 +95,21 @@ public class EbayAPI {
     }
   }
   
-  public EbayReport getReport() {
-    return report;
-  }
-  
   LinkedList<EbayListItem> findByKeywords(String keywords) {
-    String url = String.format(SEARCH_URL + "?OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=" + appId + "&GLOBAL-ID=" + globalId + "&RESPONSE-DATA-FORMAT=JSON&keywords=" + keywords);
+    String keywordsEencoded = HTTPUtils.replaceSpaces(keywords);
+    Logger.log("Ebay: find by keywords " + keywordsEencoded);
+    String url = String.format(SEARCH_URL + "?OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=" + 
+                 appId + "&GLOBAL-ID=" + globalId + "&RESPONSE-DATA-FORMAT=JSON&keywords=" + keywordsEencoded);
     HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
     if(response.failed()) {
-      Logger.error("EbayReporter: failed to send request");
+      Logger.error("EbayAPI: failed to send request");
       return new LinkedList<EbayListItem>();
     }
     
     JSONContainer container = response.getJSONBody();
     container = container.getArray("findItemsByKeywordsResponse").getContainer(0);
     if(container.getArray("ack").getString(0, "").equals("Success") == false) {
-      Logger.error("EbayReporter: failed to send request");
+      Logger.error("EbayAPI: failed to send request");
       return new LinkedList<EbayListItem>();
     }
     
@@ -108,25 +125,79 @@ public class EbayAPI {
     String url = SHOP_URL + "?callname=GetSingleItem&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&ItemID=" + id + "&IncludeSelector=Details";
     HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
     if(response.failed()) {
-      Logger.error("EbayReporter: failed to send request");
+      Logger.error("EbayAPI: failed to send request");
       return null;
     }
     
     JSONContainer container = response.getJSONBody();
     if(container.getString("Ack", "").equals("Success") == false) {
-      Logger.error("EbayReporter: failed to send request");
+      Logger.error("EbayAPI: failed to send request");
       return null;
     }
       
     return new EbayFullItem(container.getSubContainer("Item"));
   }
   
+  boolean buildCategoryTree() {
+    Logger.log("EbayAPI: starting category update " + Calendar.getInstance());
+    int counter = 0;
+    LinkedList<Long> queue = new LinkedList<Long>();
+    HashMap<Long, EbayCategory> categories = new HashMap<Long, EbayCategory>();
+    queue.add(-1L); //root category ID
+    EbayCategory root = null;
+    do {
+      long categoryId = queue.removeFirst();
+      String url = SHOP_URL + "?callname=GetCategoryInfo&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&CategoryID=" + categoryId + "&IncludeSelector=ChildCategories";
+      HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
+      if(response.failed()) {
+        Logger.error("EbayAPI: failed to send request");
+        Logger.error(url);
+        return false;
+      }
+          
+      JSONContainer container = response.getJSONBody();
+      if(container.getString("Ack", "").equals("Failure")) {
+        Logger.error("EbayAPI: failed to send request");
+        Logger.error(url);
+        Logger.error(container.toString());
+        return false;
+      }
+      
+      JSONArray categoryArray = container.getSubContainer("CategoryArray").getArray("Category");
+      EbayCategory parent;
+      if(root == null) {
+        root = new EbayCategory(categoryArray.getContainer(0));
+        parent = root;
+        categories.put(root.getId(), root);
+        //System.out.println(root + " (" + counter++ + ")");
+      }
+      else
+        parent = categories.get(categoryId);
+      
+      for(int i = 1; i < categoryArray.length(); i++) {
+        EbayCategory category = new EbayCategory(categoryArray.getContainer(i));
+        parent.addChild(category);  
+        
+        EbayCategory previous = categories.put(category.getId(), category);
+        if(previous != null)
+          throw new RuntimeException("Duplicated category: " + previous + " = " + category + " (" + i + ")");
+        
+        if(category.isLeaf() == false)
+          queue.add(category.getId());
+        //System.out.println(category + " (" + counter++ + ")");
+      }
+    } while(queue.size() > 0);
+    
+    Logger.log("EbayAPI: category update complete, loaded " + counter + " categories " + Calendar.getInstance());
+    return true;
+  }
+  
   public EbaySearchTerm createSearchTerm(String searchTerm) {
     return new EbaySearchTerm(this, searchTerm, itemIdCounter++);
   }
   
-  public EbaySearchTermGroup createSearchTermGroup() {
-    return new EbaySearchTermGroup(this);
+  public EbaySearchTermGroup createSearchTermGroup(String groupName) {
+    return new EbaySearchTermGroup(this, groupName);
   }
   
   public EbaySearchTermBase readSearchTermBase(FileReader file) throws IOException {
@@ -144,5 +215,9 @@ public class EbayAPI {
   
   public void registerSearchTermResult(EbaySearchTerm searchTerm, EbayMinimalItem item) {
     storage.add(searchTerm, item);
+  }
+  
+  public List<Long> getStorageIdList() {
+    return storage.getIdList();
   }
 }

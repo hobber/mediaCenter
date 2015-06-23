@@ -6,10 +6,14 @@ import main.utils.ConfigElementGroup;
 
 public class EbayPlugin implements Plugin {
   
-  private EbayAPI reporter;
+  private EbayAPI api;
+  private EbayContentPageReport reportPage;
+  private EbayContentPageConfig configPage;
   
   public EbayPlugin(ConfigElementGroup config) {
-    reporter = new EbayAPI(config);
+    api = new EbayAPI(config);
+    reportPage = new EbayContentPageReport(api);
+    configPage = new EbayContentPageConfig(api);
   }
   
   @Override
@@ -19,18 +23,19 @@ public class EbayPlugin implements Plugin {
 
   @Override
   public void update() {
-    reporter.update();
+    api.update();
   }
   
   @Override
   public void saveState() {
-    reporter.saveState();
+    api.saveState();
   }
 
   @Override
   public ContentMenuEntry getMenuEntry(int id) {    
     ContentMenuEntry entry = new ContentMenuEntry(this, Plugin.ICON_PATH + "ebay.svg", id);
-    entry.addSubMenuEntry(reporter.getReport());
+    entry.addSubMenuEntry(reportPage);
+    entry.addSubMenuEntry(configPage);
     return entry;
   }
 }

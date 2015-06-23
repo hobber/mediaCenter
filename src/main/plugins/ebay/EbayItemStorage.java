@@ -1,16 +1,27 @@
 package main.plugins.ebay;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import main.data.DataSchemaObjectInterface;
 import main.utils.FileReader;
 import main.utils.FileWriter;
+import main.utils.SortedMap;
 
 public class EbayItemStorage implements DataSchemaObjectInterface {
   
-  private class Item implements DataSchemaObjectInterface {
+  private static class Item implements DataSchemaObjectInterface {
 
+    public static final Comparator<Item> comparator = new Comparator<Item>() {
+      @Override
+      public int compare(Item lhs, Item rhs) {
+        return lhs.item.getEndTime().compareTo(rhs.item.getEndTime());
+      }
+    };
+    
     private int searchTermId;
     private EbayMinimalItem item;
     
@@ -45,7 +56,10 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
     }
   }
   
-  private HashMap<Long, Item> items = new HashMap<Long, Item>();
+  
+  
+  
+  private SortedMap<Long, Item> items = new SortedMap<Long, Item>();
 
   public EbayItemStorage() {
   }
@@ -53,6 +67,10 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
   public EbayItemStorage(FileReader file) throws IOException {
     if(file != null)
       readValue(file);
+  }
+  
+  public void update() {
+    
   }
 
   @Override
@@ -67,14 +85,22 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
 
   @Override
   public void writeValue(FileWriter file) throws IOException {
+    items.sortForValues(Item.comparator);
     file.writeInt(items.size());
-    for(Item item : items.values()) {
-      item.writeValue(file);
-      System.out.println("write " + item);
+    for(Entry<Long, Item> entry : items.entrySet()) {
+      entry.getValue().writeValue(file);
+      System.out.println("write " + entry.getValue());
     }
   }
   
   public void add(EbaySearchTerm searchTerm, EbayMinimalItem item) {
     items.put(item.getId(), new Item(searchTerm.getId(), item));
+  }
+  
+  public List<Long> getIdList() {
+    List<Long> list = new LinkedList<Long>();
+    for(Entry<Long, Item> entry : items.entrySet())
+      list.add(entry.getValue().getItemId());
+    return list;
   }
 }

@@ -5,27 +5,25 @@ import java.io.IOException;
 import main.data.DataSchemaObjectInterface;
 import main.utils.FileReader;
 import main.utils.FileWriter;
+import main.utils.Path;
 
 public class EbaySearchTermHistory implements DataSchemaObjectInterface {
 
-  private EbayAPI reporter;
+  private EbayAPI api;
   private EbaySearchTermGroup terms;
   
-  public EbaySearchTermHistory(EbayAPI reporter) {
-    this.reporter = reporter;
-    terms = new EbaySearchTermGroup(reporter);
+  public EbaySearchTermHistory(EbayAPI api) {
+    this.api = api;
+    terms = new EbaySearchTermGroup(api, "");
   }
   
-  public EbaySearchTermHistory(EbayAPI reporter, FileReader file) throws IOException {
-    this.reporter = reporter;
-    if(file != null)
-      readValue(file);
-    else
-      terms = new EbaySearchTermGroup(reporter, null);
+  public EbaySearchTermHistory(EbayAPI api, FileReader file) throws IOException {
+    this.api = api;
+    readValue(file);    
   }
   
-  public void addSearchTerm(EbaySearchTermBase term) {
-    terms.add(term);
+  public void addSearchTerm(Path path, EbaySearchTermBase term) {
+    terms.add(path, term);
   }
   
   public void update() {
@@ -34,7 +32,7 @@ public class EbaySearchTermHistory implements DataSchemaObjectInterface {
 
   @Override
   public void readValue(FileReader file) throws IOException {
-    terms = new EbaySearchTermGroup(reporter, file);
+    terms = new EbaySearchTermGroup(api, file);
   }
 
   @Override

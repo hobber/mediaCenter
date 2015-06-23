@@ -41,6 +41,10 @@ public class HTTPUtils {
 		}
 	}
 	
+	public static String replaceSpaces(String term) {
+	  return term.replaceAll(" ", "+");
+	}
+	
 	//TODO: check with http://www.w3schools.com/tags/ref_urlencode.asp
 	public static String encodeTerm(String term) {
 		String s = "";

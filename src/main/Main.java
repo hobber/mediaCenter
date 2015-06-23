@@ -1,9 +1,18 @@
 package main;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import main.plugins.PluginController;
 import main.plugins.ebay.EbayPlugin;
 import main.server.Server;
 import main.utils.ConfigFile;
 import main.utils.Logger;
+import main.utils.SortedMap;
 
 public class Main {
 	
@@ -12,10 +21,11 @@ public class Main {
 	}
 	
 	public static void shutdown() {
+	  PluginController.shutdown();
 	  Logger.closeLogFile();
 	}
 	
-	public static void main(String[] args) {  
+	public static void main(String[] args) {
 		String configFile = "config.xml";		
 		if(args.length == 1)
 			configFile = args[0];
@@ -39,11 +49,12 @@ public class Main {
 //		  PluginController.register(new AustrianCharts());
 		  PluginController.register(new EbayPlugin(config.getElement("config.plugins.ebay")));
 		  
+		  
+		  PluginController.update();
+		  
 		} catch(Throwable e) {
 			Logger.error(e);
 		}
-		
-		
 						
 //		DataController dataController = new DataController(config.getElement("config.data"));		
 //		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				

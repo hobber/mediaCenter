@@ -35,8 +35,8 @@ public class EbayMinimalItem extends DataObject {
   private void createString() {
     Calendar date = Calendar.getInstance();
     date.setTimeInMillis(endTime.get());
-    string = id.get() + " until " + EbayReport.convertToPrintDate(date) + " costs " + price + 
-        " (" + EbayReport.getAuctionTypeString(AuctionType.values()[type.get()]) + ")";
+    string = id.get() + " until " + EbayContentPageReport.convertToPrintDate(date) + " costs " + price + 
+        " (" + EbayContentPageReport.getAuctionTypeString(AuctionType.values()[type.get()]) + ")";
   }
 
   @Override
@@ -54,8 +54,12 @@ public class EbayMinimalItem extends DataObject {
     return schema;
   }
 
-  public long getId() {
+  public Long getId() {
     return id.get();
+  }
+  
+  public Long getEndTime() {
+    return endTime.get();
   }
 
   @Override

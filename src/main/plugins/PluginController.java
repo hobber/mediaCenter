@@ -42,4 +42,14 @@ public class PluginController {
 	    return new ContentErrorPage("invalid id " + id);
 	  return entry.handleAPIRequest(subId, parameter);
 	}
+	
+	public static void update() {
+	  for(Plugin plugin : plugins.values())
+      plugin.update();
+	}
+	
+	public static void shutdown() {
+	  for(Plugin plugin : plugins.values())
+	    plugin.saveState();
+	}
 }

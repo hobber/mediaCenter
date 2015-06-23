@@ -33,8 +33,8 @@ public class EbayListItem {
       image = definition.getArray("galleryURL").getString(0, "");
     
     JSONContainer listingInfo = definition.getArray("listingInfo").getContainer(0);
-    endTime = EbayReport.convertItemDate(listingInfo.getArray("endTime").getString(0,  ""));
-    type = EbayReport.getAuctionType(listingInfo.getArray("listingType").getString(0, "").toUpperCase());
+    endTime = EbayContentPageReport.convertItemDate(listingInfo.getArray("endTime").getString(0,  ""));
+    type = EbayContentPageReport.getAuctionType(listingInfo.getArray("listingType").getString(0, "").toUpperCase());
     itemUrl = definition.getArray("viewItemURL").getString(0, "");
   }
   

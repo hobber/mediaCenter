@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.Locale;
 
 import main.plugins.ebay.EbayAPI.AuctionType;
 import main.server.content.ContentGroup;
@@ -15,16 +14,16 @@ import main.server.content.ContentTitleBar;
 import main.server.menu.ContentMenuSubEntry;
 import main.utils.Logger;
 
-public class EbayReport extends ContentMenuSubEntry {
+public class EbayContentPageReport extends ContentMenuSubEntry {
 
   static final SimpleDateFormat ITEM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   static final SimpleDateFormat PRINT_DATE_FORMAT = new SimpleDateFormat("dd.MM.YYYY HH:mm:ss");
   
-  private EbayAPI reporter;
+  private EbayAPI api;
   
-  public EbayReport(EbayAPI reporter) {
+  public EbayContentPageReport(EbayAPI api) {
     super("Report");
-    this.reporter = reporter;
+    this.api = api;
   }
 
   @Override
@@ -41,22 +40,26 @@ public class EbayReport extends ContentMenuSubEntry {
     page.setTitleBar(titleBar);
     titleBar.addContentItem(new ContentText(5, 5, "Ebay Report", ContentText.TextType.TITLE));
     
-    LinkedList<EbayListItem> list = reporter.findByKeywords("20+Euro+PP+Trias");
+    LinkedList<EbayListItem> list = api.findByKeywords("20+Euro+PP+Trias");
     for(EbayListItem item : list)
       page.addContentGroup(convertListItemToContentGroup(item));
     
     return page;
   }
   
-  private ContentPage getDetailPage(String id) {
-    EbayFullItem item = reporter.findByItemId(id);
-    ContentPage page = new ContentPage();
+  public static ContentGroup createItemGroup(EbayFullItem item) {
     ContentGroup group = new ContentGroup();
-    page.addContentGroup(group);
     group.put(new ContentText(5, 5, item.getItemId() + ", " + getAuctionTypeString(item.getAuctionType())));
     group.put(new ContentText(5, 45, item.getTitle() + ", " + item.getPrice() + item.getCurrency() + ", " + 
-      EbayReport.convertToPrintDate(item.getEndTime())));
+      EbayContentPageReport.convertToPrintDate(item.getEndTime())));
     group.put(new ContentText(5, 85, "click", item.getItemUrl()));
+    return group;
+  }
+  
+  private ContentPage getDetailPage(String id) {
+    EbayFullItem item = api.findByItemId(id);
+    ContentPage page = new ContentPage();
+    page.addContentGroup(createItemGroup(item));
     return page;
   }
   
@@ -66,7 +69,7 @@ public class EbayReport extends ContentMenuSubEntry {
     group.put(new ContentImage(0, 0, 80, 80, item.getImage()));
     group.put(new ContentText(95,  5, item.getTitle() + " - " + item.getPrice() + item.getCurrency() + ", " + 
       getAuctionTypeString(item.getAuctionType())));
-    group.put(new ContentText(95, 30, EbayReport.convertToPrintDate(item.getEndTime())));
+    group.put(new ContentText(95, 30, EbayContentPageReport.convertToPrintDate(item.getEndTime())));
     group.put(new ContentText(95, 55, "click", item.getItemUrl()));
     return group;
   }
