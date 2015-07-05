@@ -8,7 +8,7 @@ public class ContentPage {
 	private ContentOptions options;
 	private ContentTitleBar titleBar;
 	
-	public ContentPage() {	
+	public ContentPage() {
 	}	
 	
 	public void addContentGroup(ContentGroup group) {				

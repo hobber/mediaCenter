@@ -9,13 +9,13 @@ import org.json.JSONObject;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentPage;
 import main.server.menu.ContentMenuEntry;
+import main.utils.SortedMap;
 
 public class PluginController {
 
 	private static HashMap<String, Plugin> plugins = new HashMap<String, Plugin>();
-	private static HashMap<Integer, ContentMenuEntry> menuMap = new HashMap<Integer, ContentMenuEntry>();
+	private static HashMap<String, ContentMenuEntry> menuMap = new HashMap<String, ContentMenuEntry>();
 	private static LinkedList<ContentMenuEntry> menuList = new LinkedList<ContentMenuEntry>();
-	private static int MenuIdCounter = 0;
 	
 	private PluginController() {		
 	}
@@ -26,9 +26,8 @@ public class PluginController {
 			throw new RuntimeException("plugin " + name + " was registered more than once");
 		plugins.put(name, plugin);
 		
-		int id = MenuIdCounter++;
-		ContentMenuEntry entry = plugin.getMenuEntry(id);
-		menuMap.put(id, entry);
+		ContentMenuEntry entry = plugin.getMenuEntry();
+		menuMap.put(entry.getName(), entry);
 		menuList.add(entry);
 	}
 	
@@ -36,11 +35,11 @@ public class PluginController {
 	  return menuList;
 	}
 	
-	public static ContentPage handleAPIRequest(int id, int subId, String parameter) {
-	  ContentMenuEntry entry = menuMap.get(id);
+	public static ContentPage handleAPIRequest(String pluginName, String pageName, String parameter) {
+	  ContentMenuEntry entry = menuMap.get(pluginName);
 	  if(entry == null)
-	    return new ContentErrorPage("invalid id " + id);
-	  return entry.handleAPIRequest(subId, parameter);
+	    return new ContentErrorPage("unknown plugin " + pluginName);
+	  return entry.handleAPIRequest(pageName, parameter);
 	}
 	
 	public static void update() {

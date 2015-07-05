@@ -9,14 +9,12 @@ public class EbayCategory {
   private String name;
   private long id;
   private boolean leaf;
-  private int level;
   private LinkedList<EbayCategory> children = new LinkedList<EbayCategory>();
   
   public EbayCategory(JSONContainer definition) {
     name = definition.getString("CategoryName", null);
     id = Long.parseLong(definition.getString("CategoryID", null));
     leaf = definition.getBoolean("LeafCategory", false);
-    level = definition.getInt("CategoryLevel", 0);
   }
   
   public void addChild(EbayCategory child) {
@@ -33,6 +31,6 @@ public class EbayCategory {
   
   @Override
   public String toString() {
-    return name + " (" + id + ", " + level + ")";
+    return name + " (" + id + ")";
   }
 }

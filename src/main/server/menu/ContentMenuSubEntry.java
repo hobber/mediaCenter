@@ -2,7 +2,6 @@ package main.server.menu;
 
 import org.json.JSONObject;
 
-import main.plugins.Plugin;
 import main.server.content.ContentOnClick;
 import main.server.content.ContentPage;
 
@@ -14,6 +13,10 @@ public abstract class ContentMenuSubEntry {
   
   public ContentMenuSubEntry(String name) {
     this.name = name;
+  }
+  
+  public String getName() {
+    return name;
   }
   
   public JSONObject toJSON() {

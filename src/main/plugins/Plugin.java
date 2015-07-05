@@ -10,5 +10,5 @@ public interface Plugin {
 	public void update();
 	public void saveState();
 	
-	public ContentMenuEntry getMenuEntry(int id);
+	public ContentMenuEntry getMenuEntry();
 }

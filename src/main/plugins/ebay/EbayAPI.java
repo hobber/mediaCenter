@@ -40,10 +40,6 @@ public class EbayAPI {
     globalId = config.getString("globalID", null);
     databaseFileName = config.getString("file", null);
     
-    buildCategoryTree();
-    System.exit(0);
-    
-    /*
     if(appId == null)
       throw new RuntimeException("Please store your ebay appID in the config file");
     if(globalId == null)
@@ -60,7 +56,7 @@ public class EbayAPI {
       storage = new EbayItemStorage();
       history = new EbaySearchTermHistory(this);
     }
-    */
+    
     /*
     history.addSearchTerm(new Path(), createSearchTermGroup("10 Euro Silbermünzen"));
     history.addSearchTerm(new Path(), createSearchTermGroup("20 Euro Silbermünzen"));
@@ -138,58 +134,30 @@ public class EbayAPI {
     return new EbayFullItem(container.getSubContainer("Item"));
   }
   
-  boolean buildCategoryTree() {
-    Logger.log("EbayAPI: starting category update " + Calendar.getInstance());
-    int counter = 0;
-    LinkedList<Long> queue = new LinkedList<Long>();
-    HashMap<Long, EbayCategory> categories = new HashMap<Long, EbayCategory>();
-    queue.add(-1L); //root category ID
-    EbayCategory root = null;
-    do {
-      long categoryId = queue.removeFirst();
-      String url = SHOP_URL + "?callname=GetCategoryInfo&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&CategoryID=" + categoryId + "&IncludeSelector=ChildCategories";
-      HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
-      if(response.failed()) {
-        Logger.error("EbayAPI: failed to send request");
-        Logger.error(url);
-        return false;
-      }
-          
-      JSONContainer container = response.getJSONBody();
-      if(container.getString("Ack", "").equals("Failure")) {
-        Logger.error("EbayAPI: failed to send request");
-        Logger.error(url);
-        Logger.error(container.toString());
-        return false;
-      }
-      
-      JSONArray categoryArray = container.getSubContainer("CategoryArray").getArray("Category");
-      EbayCategory parent;
-      if(root == null) {
-        root = new EbayCategory(categoryArray.getContainer(0));
-        parent = root;
-        categories.put(root.getId(), root);
-        //System.out.println(root + " (" + counter++ + ")");
-      }
-      else
-        parent = categories.get(categoryId);
-      
-      for(int i = 1; i < categoryArray.length(); i++) {
-        EbayCategory category = new EbayCategory(categoryArray.getContainer(i));
-        parent.addChild(category);  
+  EbayCategory loadCategory(long categoryId) {
+    String url = SHOP_URL + "?callname=GetCategoryInfo&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&CategoryID=" + categoryId + "&IncludeSelector=ChildCategories";
+    HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
+    if(response.failed()) {
+      Logger.error("EbayAPI: failed to send request");
+      Logger.error(url);
+      return null;
+    }
+
+    JSONContainer container = response.getJSONBody();
+    if(container.getString("Ack", "").equals("Failure")) {
+      Logger.error("EbayAPI: failed to send request");
+      Logger.error(url);
+      Logger.error(container.toString());
+      return null;
+    }
+
+    JSONArray categoryArray = container.getSubContainer("CategoryArray").getArray("Category");
+    EbayCategory category = new EbayCategory(categoryArray.getContainer(0));
+
+    for(int i = 1; i < categoryArray.length(); i++)
+      category.addChild(new EbayCategory(categoryArray.getContainer(i)));  
         
-        EbayCategory previous = categories.put(category.getId(), category);
-        if(previous != null)
-          throw new RuntimeException("Duplicated category: " + previous + " = " + category + " (" + i + ")");
-        
-        if(category.isLeaf() == false)
-          queue.add(category.getId());
-        //System.out.println(category + " (" + counter++ + ")");
-      }
-    } while(queue.size() > 0);
-    
-    Logger.log("EbayAPI: category update complete, loaded " + counter + " categories " + Calendar.getInstance());
-    return true;
+    return category;
   }
   
   public EbaySearchTerm createSearchTerm(String searchTerm) {

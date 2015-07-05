@@ -1,5 +1,6 @@
 package main.server.menu;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.json.JSONObject;
@@ -13,18 +14,21 @@ public class ContentMenuEntry {
   
   private Plugin plugin;
   private String iconPath;
-  private LinkedList<ContentMenuSubEntry> subEntries = new LinkedList<ContentMenuSubEntry>();
-  private int id;
+  private HashMap<String, ContentMenuSubEntry> subEntryMap = new HashMap<String, ContentMenuSubEntry>();  
+  private LinkedList<ContentMenuSubEntry> subEntryList = new LinkedList<ContentMenuSubEntry>();
   
-  public ContentMenuEntry(Plugin plugin, String iconPath, int id) {
+  public ContentMenuEntry(Plugin plugin, String iconPath) {
     this.plugin = plugin;
     this.iconPath = iconPath;
-    this.id = id;
   }
   
   public void addSubMenuEntry(ContentMenuSubEntry entry) {
-    entry.setIds(id, subEntries.size());
-    subEntries.add(entry);
+    if(subEntryMap.containsKey(entry.getName())) {
+      Logger.error("Plugin " + plugin.getName() + " already contains a page with name " + entry.getName());
+      return;
+    }
+    subEntryMap.put(entry.getName(), entry);
+    subEntryList.add(entry);
   }
   
   public String getName() {
@@ -33,18 +37,18 @@ public class ContentMenuEntry {
   
   public JSONObject toJSON() {
     JSONObject container = new JSONObject();
-    container.put("id", id);
     container.put("icon", iconPath);
-    for(ContentMenuSubEntry subEntry : subEntries)
+    for(ContentMenuSubEntry subEntry : subEntryList)
       container.append("subentries", subEntry.toJSON());    
     return container;
   }
   
-  public ContentPage handleAPIRequest(int subId, String parameter) {
-    if(subId < 0 || subId >= subEntries.size()) {
-      Logger.error("invalid subID " + subId + " for plug in " + getName());
-      return new ContentErrorPage("invalid subID " + subId + " for plug in " + getName());
+  public ContentPage handleAPIRequest(String pageName, String parameter) {
+    ContentMenuSubEntry entry = subEntryMap.get(pageName);
+    if(entry == null) {
+      Logger.error("invalid page name " + pageName + " for plugin " + plugin.getName());
+      return new ContentErrorPage("invalid page name " + pageName + " for plugin " + plugin.getName());
     }
-    return subEntries.get(subId).handleAPIRequest(parameter);
+    return entry.handleAPIRequest(parameter);
   }
 }

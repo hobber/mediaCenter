@@ -1,18 +1,9 @@
 package main;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import main.plugins.PluginController;
 import main.plugins.ebay.EbayPlugin;
 import main.server.Server;
 import main.utils.ConfigFile;
 import main.utils.Logger;
-import main.utils.SortedMap;
 
 public class Main {
 	
@@ -55,7 +46,7 @@ public class Main {
 		} catch(Throwable e) {
 			Logger.error(e);
 		}
-						
+
 //		DataController dataController = new DataController(config.getElement("config.data"));		
 //		TMDB tmdb = TMDB.create(config.getElement("config.tmdb"));				
 		

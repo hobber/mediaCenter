@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import main.Main;
 import main.http.HTTPUtils;
@@ -100,22 +101,12 @@ public class Server implements HttpHandler {
     os.close();  
 	}
 	
-	private void handleAPIRequest(HttpExchange exchange) throws IOException {
-		String uri = exchange.getRequestURI().toString();
-		String request = uri.substring(5);
-		
-		int index = request.indexOf('.');
-		int id = Integer.parseInt(request.substring(3, index));
-		int index2 = request.indexOf('&');
-		int subId = index2 < 0 ? Integer.parseInt(request.substring(index+1)) : Integer.parseInt(request.substring(index+1, index2));
-		String parameter = index2 < 0 ? "" : request.substring(index2 + 1);
-		
-		System.out.println("api: " + uri + " -> " + request + ", " + id + ", " + subId + ", " + parameter);		
-		
+	private void handleAPIRequest(HttpExchange exchange, String pluginName, String pageName, List<String> parameter) throws IOException {
 		Headers headers = exchange.getResponseHeaders();
 		headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
 		
-		ContentPage page = PluginController.handleAPIRequest(id, subId, parameter);
+		String parameterValue = parameter != null ? parameter.get(0) : ""; 
+		ContentPage page = PluginController.handleAPIRequest(pluginName, pageName, parameterValue);
 		
 		byte[] response = page.getContentString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);
@@ -144,12 +135,25 @@ public class Server implements HttpHandler {
 			String method = exchange.getRequestMethod();
 			String uri = exchange.getRequestURI().toString();
 			System.out.println("URI: " + uri);
+			
+			if(uri.startsWith("error?")) {
+			  Logger.error(uri);
+			  return;
+			}
+			
+			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(1));
+			for(Entry<String, List<String>> entry : parameters.entrySet()) {
+			  System.out.print("parameter " + entry.getKey());
+			  for(String value : entry.getValue())
+			    System.out.print(" " + value);
+			  System.out.println("");
+			}
 
 			if(method.equals("GET")) {
 			  if(uri.startsWith("/menu"))
           handleMenuRequest(exchange);        
-			  else if(uri.startsWith("/api"))
-					handleAPIRequest(exchange);
+			  else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page"))
+					handleAPIRequest(exchange, parameters.get("plugin").get(0), parameters.get("page").get(0), parameters.get("parameters"));
 				else
 				  handleFileRequest(exchange, uri);
 			}
