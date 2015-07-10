@@ -49,6 +49,10 @@ public class EbaySearchTermGroup extends EbaySearchTermBase {
     }
   }
   
+  public LinkedList<EbaySearchTermBase> getTerms() {
+    return terms;
+  }
+  
   public void update() {
     for(EbaySearchTermBase term : terms)
       term.update();

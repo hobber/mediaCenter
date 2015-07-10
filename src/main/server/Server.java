@@ -107,7 +107,6 @@ public class Server implements HttpHandler {
 		headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
 		
 		String parameterValue = parameter != null ? parameter.get(0) : ""; 
-		System.out.println("PARAMETER:" + parameterValue + ", " + (parameter == null ? "" : parameter.get(0)));
 		ContentItem item = PluginController.handleAPIRequest(pluginName, pageName, parameterValue);
 		
 		byte[] response = item.getContentString().getBytes();
@@ -146,13 +145,7 @@ public class Server implements HttpHandler {
 			int parametersStart = uri.indexOf('?') + 1;
 			if(parametersStart <= 0)
 			  parametersStart = 1;
-			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));
-			for(Entry<String, List<String>> entry : parameters.entrySet()) {
-			  System.out.print("parameter " + entry.getKey());
-			  for(String value : entry.getValue())
-			    System.out.print(" " + value);
-			  System.out.println("");
-			}
+			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));			
 
 			if(method.equals("GET")) {
 			  if(uri.startsWith("/menu"))

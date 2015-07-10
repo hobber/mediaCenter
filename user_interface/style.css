@@ -67,4 +67,15 @@
 #searchBox, textarea {
   background-color: #eeeeee; 
 }
+#contentOverlay {
+  visibility: hidden;
+  position: absolute;
+  text-align:center;
+  border: 1px solid;
+  background: #ffffff;
+  left: 10px;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+}
 

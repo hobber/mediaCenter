@@ -3,23 +3,16 @@ var app = angular.module('MediaCenter', []);
 app.controller('Controller', ['$scope', '$compile', '$location',
   function($scope, $compile, $location) {
 
-    var URL = '';
-    var currentMenu = {
-      entryId: 0,
-      subEntryId: 0
-    }
-
     $scope.init = function() {
       try {
-        readURL();
         loadMenu();
-        $scope.data = {};
       } catch(error) {
         handleError(error);
       }
     };
 
     $scope.clickedMenu = function(pluginName, pageName) {
+	  $scope.closeOverlay();
 	  $location.path('mediacenter');
       $location.search({plugin: pluginName, page: pageName});
 	  load('plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
@@ -28,9 +21,18 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       });
     };
     
-    $scope.onClick = function(entry) {
-       entry.onClick();
+    $scope.onClick = function(index) {
+      $scope.pageElements[index].onClick();
     };
+	
+	$scope.closeOverlay = function() {
+	  var overlay = document.getElementById('contentOverlay');
+	  if(overlay.style.visibility === 'hidden')
+	    return;
+	  overlay.style.visibility = 'hidden';
+	  setDisabledRecursive(document.getElementById('contentTitle'), false);
+	  setDisabledRecursive(document.getElementById('contentBody'), false);
+	};
     
     var load = function(request, parameter, callback) {	
       try {
@@ -59,38 +61,28 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
     };
 
-    var readURL = function() {
-      URL = document.URL.substring(7);
-      var end = URL.indexOf('/');
-      if(end >= 0)
-        URL = URL.substring(0, end);
-      URL = 'http://' + URL + '/';
-    };
-
     var handleError = function(error) {
+	  var url = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/menu';
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('POST', URL + 'error?file=' + error.fileName + '&line=' + error.lineNumber, true);
+      xmlHttp.open('POST', url + 'error?file=' + error.fileName + '&line=' + error.lineNumber, true);
       xmlHttp.send(error.message);
       console.error('ERROR: ' + error.fileName + ':' + error.lineNumber + ' - ' + error.message);
     };
+	
+	var setDisabledRecursive = function(element, disabled) {
+	  if(element === undefined)
+	    return;
+
+	  for(var i = 0; i < element.children.length; i++)
+	    setDisabledRecursive(element.children[i], disabled);
+	  element.disabled = disabled;
+	};
 
     //========================================================================= MENU
 
     var loadMenu = function() {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', URL + 'menu', true);
-      xmlHttp.send();
-      xmlHttp.onloadend = function() {
-        try {
-          if(xmlHttp.status === 200) {
-            buildMenu(JSON.parse(xmlHttp.response));
-          } else {
-            console.log('request failed');
-          }
-        } catch(error) {
-          handleError(error);
-        }
-      }
+	  var url = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/menu';
+	  load(url, undefined, buildMenu);
     };
 
     var buildMenu = function(response) {
@@ -155,6 +147,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 
     var contentFactories = {};
     var contentWidth = 0;
+	var contentHeight = 0;
 
     contentFactories.img = function(parent, definition) {
       var element = document.createElement('img');
@@ -194,6 +187,54 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         text.innerHTML = definition.text;
         text.setAttribute('href', definition.url);
       }
+      return element;
+    };
+	
+	/**
+     * BUTTON
+     *  - text: text which will be displayed [string]
+     *  - x: x-offset [int]
+     *  - y: y-offset [int]
+     *  - parameter: parameter for callback on API [string]
+     */
+    contentFactories.button = function(parent, definition) {
+      var element = document.createElement('button');
+      parent.appendChild(element);
+      element.setAttribute('id', 'contentItem');
+      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
+	  element.innerHTML = definition.text;
+	  element.onClick = function() {
+	    //load($location.url(), definition.parameter, showContent);
+		var width = 500;
+		var height = 400;
+		var overlay = document.getElementById('contentOverlay');
+		//var overlayCover = document.getElementById('contentOverlayCover');
+		var overlayBody = document.getElementById('contentOverlay');
+		overlayBody.innerHTML = '';
+		overlay.style.visibility = 'visible';
+		overlayBody.style.width = width + 'px';
+		overlayBody.style.height = height + 'px';
+		//overlayCover.style.width = contentWidth + 'px';
+		//overlayCover.style.height = contentHeight + 'px';
+		overlayBody.style.left = ((contentWidth - width) / 2) + 'px';
+		overlayBody.style.top = ((contentHeight - height) / 2) + 'px';
+		console.log('HEIGHT:', contentHeight);
+		var text = document.createElement('span');
+		overlayBody.appendChild(text);
+		text.innerHTML = 'Content you want the user to see goes here.';
+		var button = document.createElement('button');
+		overlayBody.appendChild(button);
+		button.innerHTML = 'close';
+		button.setAttribute('ng-click', 'closeOverlay()');
+		$compile(button)($scope);
+		setDisabledRecursive(document.getElementById('contentTitle'), true);
+		setDisabledRecursive(document.getElementById('contentBody'), true);
+		var overlay = document.getElementById('contentOverlay');
+		
+	  };
+	  $compile(element)($scope);
+	  $scope.pageElements.push(element);
       return element;
     };
 
@@ -317,9 +358,6 @@ app.controller('Controller', ['$scope', '$compile', '$location',
           }
         };
 
-        if($scope.data.treeList === undefined)
-          $scope.data.treeList = [];
-
         var indent = createIndent(level);
         for(i = 0; i < entryMap.length; i++) {
           var entry = entryMap[i];
@@ -327,7 +365,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
           var text = document.createElement('span');
           if(entry.children) {
             text.innerHTML = indent + '+ ' + entry.title;
-            text.setAttribute('ng-click', 'onClick(data.treeList[' + $scope.data.treeList.length + '])');
+            text.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
             $compile(text)($scope);
           }
           else
@@ -338,7 +376,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
           entry.open = false;
           entry.level = level;
           entry.onClick = onClick;
-          $scope.data.treeList.push(entry);
+          $scope.pageElements.push(entry);
         }
       }
       
@@ -359,8 +397,10 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
       return element;
     };
-
-    var showContent = function(content) {
+	
+	var createPage = function(content) {
+	  $scope.pageElements = [];
+	  
 	  var options = content.options;
 
       var titleDiv = document.getElementById('contentTitle');
@@ -371,8 +411,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         createElement(titleDiv, definition);
       }
       contentWidth = titleDiv.offsetWidth - 2 - 15;
+	  contentHeight = document.getElementById('sidebar').offsetHeight - 2;
 
-      var contentDiv = document.getElementById('contentBody');
+	  var contentDiv = document.getElementById('contentBody');
       contentDiv.innerHTML = '';
       var items = content.page;
       for(var i = 0; i < items.length; i++) {
@@ -385,6 +426,15 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         var isLast = (i === items.length-1);
         createElement(contentDiv, definition);
       }
+	};
+
+    var showContent = function(content) {
+	  if(content === undefined)
+	    console.error('showContent was called with undefined content');
+	  else if(content.type === 'page')
+	    createPage(content);
+	  else
+	    createElement(document.getElementById('contentBody'), content);
     };
   }
 ]);

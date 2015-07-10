@@ -9,7 +9,18 @@ public class ContentPage extends ContentItem {
 	private ContentTitleBar titleBar;
 	
 	public ContentPage() {
-	}	
+	}
+	
+	public ContentPage(String title) {
+	  titleBar = new ContentTitleBar();
+    titleBar.addContentItem(new ContentText(5, 5, title, ContentText.TextType.TITLE));
+	}
+	
+	public ContentGroup createContentGroup() {
+	  ContentGroup group = new ContentGroup();
+	  groups.add(group);
+	  return group;
+	}
 	
 	public void addContentGroup(ContentGroup group) {				
 		groups.add(group);
@@ -29,7 +40,7 @@ public class ContentPage extends ContentItem {
 	}
 	
 	public String getContentString() {
-	  String s = "{\"options\": " + options + ", \"titlebar\": " + titleBar + ", \"page\": [";
+	  String s = "{\"type\": \"page\", \"options\": " + options + ", \"titlebar\": " + titleBar + ", \"page\": [";
 	  for(int i=0; i<groups.size(); i++)
 	    s += (i > 0 ? ", " : "") + groups.get(i).getContentString(); 
 	  return s + "]}";

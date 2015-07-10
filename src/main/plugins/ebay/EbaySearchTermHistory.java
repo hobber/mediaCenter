@@ -26,6 +26,10 @@ public class EbaySearchTermHistory implements DataSchemaObjectInterface {
     terms.add(path, term);
   }
   
+  public EbaySearchTermGroup getTerms() {
+    return terms;
+  }
+  
   public void update() {
     terms.update();
   }

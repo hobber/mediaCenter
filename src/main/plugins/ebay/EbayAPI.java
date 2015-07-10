@@ -91,6 +91,10 @@ public class EbayAPI {
     }
   }
   
+  public EbaySearchTermHistory getSearchTermHistory() {
+    return history;
+  }
+  
   LinkedList<EbayListItem> findByKeywords(String keywords) {
     String keywordsEencoded = HTTPUtils.replaceSpaces(keywords);
     Logger.log("Ebay: find by keywords " + keywordsEencoded);
