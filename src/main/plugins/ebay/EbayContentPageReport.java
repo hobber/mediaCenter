@@ -3,11 +3,12 @@ package main.plugins.ebay;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.LinkedList;
+import java.util.List;
 
 import main.plugins.ebay.EbayAPI.AuctionType;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
+import main.server.content.ContentItem;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.ContentTitleBar;
@@ -27,7 +28,7 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   }
 
   @Override
-  public ContentPage handleAPIRequest(String parameter) {
+  public ContentItem handleAPIRequest(String parameter) {
     if(parameter.length() == 0)
       return getMainPage();
     return getDetailPage(parameter);
@@ -40,7 +41,8 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
     page.setTitleBar(titleBar);
     titleBar.addContentItem(new ContentText(5, 5, "Ebay Report", ContentText.TextType.TITLE));
     
-    LinkedList<EbayListItem> list = api.findByKeywords("20+Euro+PP+Trias");
+    EbaySearchConfiguration searchConfiguration = new EbaySearchConfiguration(api, "20+Euro+PP+Trias");
+    List<EbayListItem> list = searchConfiguration.search();
     for(EbayListItem item : list)
       page.addContentGroup(convertListItemToContentGroup(item));
     

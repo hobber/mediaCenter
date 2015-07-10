@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import main.plugins.Plugin;
 import main.server.content.ContentErrorPage;
+import main.server.content.ContentItem;
 import main.server.content.ContentPage;
 import main.utils.Logger;
 
@@ -43,7 +44,7 @@ public class ContentMenuEntry {
     return container;
   }
   
-  public ContentPage handleAPIRequest(String pageName, String parameter) {
+  public ContentItem handleAPIRequest(String pageName, String parameter) {
     ContentMenuSubEntry entry = subEntryMap.get(pageName);
     if(entry == null) {
       Logger.error("invalid page name " + pageName + " for plugin " + plugin.getName());

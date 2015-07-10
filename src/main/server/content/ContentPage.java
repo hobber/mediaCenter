@@ -2,7 +2,7 @@ package main.server.content;
 
 import java.util.LinkedList;
 
-public class ContentPage {
+public class ContentPage extends ContentItem {
 
 	private LinkedList<ContentGroup> groups = new LinkedList<ContentGroup>();
 	private ContentOptions options;

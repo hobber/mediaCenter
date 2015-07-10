@@ -1,6 +1,7 @@
 package main.plugins.ebay;
 
 import main.server.content.ContentGroup;
+import main.server.content.ContentItem;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.ContentTextTree;
@@ -17,7 +18,10 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
   }
 
   @Override
-  public ContentPage handleAPIRequest(String parameter) {
+  public ContentItem handleAPIRequest(String parameter) {
+    System.out.println("parameter: " + parameter + " (" + parameter.length() + ")");
+    if(parameter.length() > 0)
+      return loadCategories(Long.parseLong(parameter));
     return getMainPage();
   }
   
@@ -27,25 +31,30 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
     ContentTitleBar titleBar = new ContentTitleBar();
     page.setTitleBar(titleBar);
     titleBar.addContentItem(new ContentText(5, 5, "Ebay Config", ContentText.TextType.TITLE));
-    
-//    for(Long id : api.getStorageIdList()) {
-//      EbayFullItem response = api.findByItemId(id.toString());
-//      if(response == null)
-//        continue;
-//      page.addContentGroup(EbayContentPageReport.createItemGroup(response));
-//    }
-    
+
     ContentGroup group = new ContentGroup();
     page.addContentGroup(group);
     ContentTextTree tree = new ContentTextTree(20, 30);
     group.put(tree);
-    tree.addLeaf("1", "node 1");
-    tree.addNode("2", "node 2");
-    ContentTextTree node = new ContentTextTree();
-    node.addLeaf("3.1", "node 3.1");
-    node.addLeaf("3.2", "node 3.2");
-    tree.addNode("3", "node 3", node);
+    
+    EbayCategory rootCategory = api.loadCategory(-1);
+    for(EbayCategory category : rootCategory.getChildren())
+      if(category.isLeaf())
+        tree.addLeaf("" + category.getId(), category.getName());
+      else
+        tree.addNode("" + category.getId(), category.getName());
     
     return page;
+  }
+  
+  private ContentTextTree loadCategories(long id) {
+    EbayCategory parentCategory = api.loadCategory(id);
+    ContentTextTree tree = new ContentTextTree();
+    for(EbayCategory category : parentCategory.getChildren())
+      if(category.isLeaf())
+        tree.addLeaf("" + category.getId(), category.getName());
+      else
+        tree.addNode("" + category.getId(), category.getName());
+    return tree;
   }
 }

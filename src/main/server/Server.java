@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import main.Main;
 import main.http.HTTPUtils;
 import main.plugins.PluginController;
+import main.server.content.ContentItem;
 import main.server.content.ContentPage;
 import main.server.content.UserContentGroup;
 import main.server.menu.ContentMenuEntry;
@@ -106,9 +107,10 @@ public class Server implements HttpHandler {
 		headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
 		
 		String parameterValue = parameter != null ? parameter.get(0) : ""; 
-		ContentPage page = PluginController.handleAPIRequest(pluginName, pageName, parameterValue);
+		System.out.println("PARAMETER:" + parameterValue + ", " + (parameter == null ? "" : parameter.get(0)));
+		ContentItem item = PluginController.handleAPIRequest(pluginName, pageName, parameterValue);
 		
-		byte[] response = page.getContentString().getBytes();
+		byte[] response = item.getContentString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);
 		OutputStream os = exchange.getResponseBody();
 		os.write(response);		
@@ -141,7 +143,10 @@ public class Server implements HttpHandler {
 			  return;
 			}
 			
-			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(1));
+			int parametersStart = uri.indexOf('?') + 1;
+			if(parametersStart <= 0)
+			  parametersStart = 1;
+			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));
 			for(Entry<String, List<String>> entry : parameters.entrySet()) {
 			  System.out.print("parameter " + entry.getKey());
 			  for(String value : entry.getValue())
@@ -153,7 +158,7 @@ public class Server implements HttpHandler {
 			  if(uri.startsWith("/menu"))
           handleMenuRequest(exchange);        
 			  else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page"))
-					handleAPIRequest(exchange, parameters.get("plugin").get(0), parameters.get("page").get(0), parameters.get("parameters"));
+					handleAPIRequest(exchange, parameters.get("plugin").get(0), parameters.get("page").get(0), parameters.get("parameter"));
 				else
 				  handleFileRequest(exchange, uri);
 			}

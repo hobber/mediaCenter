@@ -4,12 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import main.server.content.ContentErrorPage;
-import main.server.content.ContentPage;
+import main.server.content.ContentItem;
 import main.server.menu.ContentMenuEntry;
-import main.utils.SortedMap;
 
 public class PluginController {
 
@@ -35,7 +32,7 @@ public class PluginController {
 	  return menuList;
 	}
 	
-	public static ContentPage handleAPIRequest(String pluginName, String pageName, String parameter) {
+	public static ContentItem handleAPIRequest(String pluginName, String pageName, String parameter) {
 	  ContentMenuEntry entry = menuMap.get(pluginName);
 	  if(entry == null)
 	    return new ContentErrorPage("unknown plugin " + pluginName);

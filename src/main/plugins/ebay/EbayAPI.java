@@ -135,7 +135,7 @@ public class EbayAPI {
   }
   
   EbayCategory loadCategory(long categoryId) {
-    String url = SHOP_URL + "?callname=GetCategoryInfo&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&CategoryID=" + categoryId + "&IncludeSelector=ChildCategories";
+    String url = SHOP_URL + "?callname=GetCategoryInfo&responseencoding=JSON&appid=" + appId + "&version=" + API_VERSION + "&CategoryID=" + categoryId + "&IncludeSelector=ChildCategories";    
     HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);
     if(response.failed()) {
       Logger.error("EbayAPI: failed to send request");

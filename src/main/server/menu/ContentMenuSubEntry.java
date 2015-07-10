@@ -1,9 +1,9 @@
 package main.server.menu;
 
-import org.json.JSONObject;
-
+import main.server.content.ContentItem;
 import main.server.content.ContentOnClick;
-import main.server.content.ContentPage;
+
+import org.json.JSONObject;
 
 public abstract class ContentMenuSubEntry {
 
@@ -34,5 +34,5 @@ public abstract class ContentMenuSubEntry {
    this.subId = subId;
   }
   
-  public abstract ContentPage handleAPIRequest(String parameter);
+  public abstract ContentItem handleAPIRequest(String parameter);
 }

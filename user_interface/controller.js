@@ -22,9 +22,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     $scope.clickedMenu = function(pluginName, pageName) {
 	  $location.path('mediacenter');
       $location.search({plugin: pluginName, page: pageName});
-	  load('plugin=' + pluginName + '&page=' + pageName, showContent);
+	  load('plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
 	  $scope.$watch('$location.path', function() {
-	    console.log('CHANGED LOCATION:', $location.path(), $location.search());
+	    console.log('CHANGED LOCATION:', $location.path(), $location.search(), $location.url());
       });
     };
     
@@ -32,10 +32,13 @@ app.controller('Controller', ['$scope', '$compile', '$location',
        entry.onClick();
     };
     
-    var load = function(request, callback) {	
+    var load = function(request, parameter, callback) {	
       try {
         var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', request, true);
+		if(parameter)
+          xmlHttp.open('GET', request + '&parameter=' + parameter, true);
+		else
+		  xmlHttp.open('GET', request, true);
         xmlHttp.send();
         xmlHttp.onloadend = function() {
           try {
@@ -297,11 +300,12 @@ app.controller('Controller', ['$scope', '$compile', '$location',
           else {
             if(this.children === 'load') {
 			  var context = this;
-              load(this.id, function(response) {
+              load($location.url(), this.id, function(response) {
+			  console.log('RESPONSE:', response);
 			    if(response === undefined)
 				  return;
 			    context.node.childNodes[0].innerHTML = indent + '&ndash;&nbsp;&nbsp; ' + context.title;
-                buildTree(response, context.node, context.level + 1);
+                buildTree(response.children, context.node, context.level + 1);
                 context.open = true;
 			  });
 			}
