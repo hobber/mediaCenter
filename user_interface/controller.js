@@ -205,40 +205,68 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
 	  element.innerHTML = definition.text;
 	  element.onClick = function() {
-	    //load($location.url(), definition.parameter, showContent);
-		var width = 500;
-		var height = 400;
-		var overlay = document.getElementById('contentOverlay');
-		//var overlayCover = document.getElementById('contentOverlayCover');
-		var overlayBody = document.getElementById('contentOverlay');
-		overlayBody.innerHTML = '';
-		overlay.style.visibility = 'visible';
-		overlayBody.style.width = width + 'px';
-		overlayBody.style.height = height + 'px';
-		//overlayCover.style.width = contentWidth + 'px';
-		//overlayCover.style.height = contentHeight + 'px';
-		overlayBody.style.left = ((contentWidth - width) / 2) + 'px';
-		overlayBody.style.top = ((contentHeight - height) / 2) + 'px';
-		console.log('HEIGHT:', contentHeight);
-		var text = document.createElement('span');
-		overlayBody.appendChild(text);
-		text.innerHTML = 'Content you want the user to see goes here.';
-		var button = document.createElement('button');
-		overlayBody.appendChild(button);
-		button.innerHTML = 'close';
-		button.setAttribute('ng-click', 'closeOverlay()');
-		$compile(button)($scope);
-		setDisabledRecursive(document.getElementById('contentTitle'), true);
-		setDisabledRecursive(document.getElementById('contentBody'), true);
-		var overlay = document.getElementById('contentOverlay');
-		
+	    load($location.url(), definition.parameter, showContent);
 	  };
 	  $compile(element)($scope);
 	  $scope.pageElements.push(element);
       return element;
     };
+	
+	/**
+     * OVERLAY
+     *  - items: will shown in the overlay
+	 *  - caption: caption of overlay
+	 *  - width: width of overlay [int]
+	 *  - height: height of overlay [int]
+     */
+    contentFactories.overlay = function(parent, definition) {
+	  var overlay = document.getElementById('contentOverlay');	  
+	  overlay.style.visibility = 'visible';
+	  overlay.style.width = definition.width + 'px';
+	  overlay.style.height = definition.height + 'px';
+	  overlay.style.left = ((contentWidth - definition.width) / 2) + 'px';
+	  overlay.style.top = ((contentHeight - definition.height) / 2) + 'px';
+	  
+	  var overlayTitle = document.getElementById('contentOverlayTitle');
+	  overlayTitle.innerHTML = '';
+	  var caption = document.createElement('div');
+	  overlayTitle.appendChild(caption);
+	  caption.innerHTML = definition.caption;
+	  caption.style.position = 'absolute';
+	  caption.style.left = '5px';
+	  var closeButton = document.createElement('img');
+	  overlayTitle.appendChild(closeButton);
+	  closeButton.setAttribute('src', 'content/close_button.svg');
+	  closeButton.style.width = '20px';
+	  closeButton.style.height = '20px';
+	  closeButton.style.right = '0px';
+	  closeButton.style.position = 'absolute';
+	  closeButton.setAttribute('onmouseover', 'this.src=\'content/close_button_active.svg\'');
+	  closeButton.setAttribute('onmouseout', 'this.src=\'content/close_button.svg\'');
+      closeButton.setAttribute('ng-click', 'closeOverlay()');
+	  $compile(closeButton)($scope);	  
+	  
+	  var overlayBody = document.getElementById('contentOverlayBody');
+	  overlayBody.innerHTML = '';
+	  for(var i = 0; i < definition.items.length; i++) {
+        var item = definition.items[i];
+        if(contentFactories[item.type] === undefined) {
+          console.error('ERROR: unsupported content type ' + item.type);
+          continue;
+        }
+        createElement(overlayBody, item);
+      }
+	  
+	  setDisabledRecursive(document.getElementById('contentTitle'), true);
+	  setDisabledRecursive(document.getElementById('contentBody'), true);
+    };
 
-    contentFactories.group = function(parent, definition, isLast) {
+	/**
+     * GOUP
+     *  - items: will shown in the overlay
+	 *  -?options: show groupBoarder flag
+     */
+    contentFactories.group = function(parent, definition) {
       var groupElement = document.createElement('div');
       parent.appendChild(groupElement);
       groupElement.setAttribute('id', 'contentContainer');
@@ -258,7 +286,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
 
       var style = 'height: ' + maxY + 'px;';
-      if(isLast !== true && (definition.options && definition.options.groupBoarder !== false))
+      if(definition.options && definition.options.groupBoarder !== false)
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
       return groupElement;

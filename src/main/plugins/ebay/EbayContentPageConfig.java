@@ -5,6 +5,7 @@ import java.util.List;
 import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentItem;
+import main.server.content.ContentOverlay;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.content.ContentTitleBar;
@@ -46,8 +47,8 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
   }
   
   private ContentItem showCreateGroupDialog() {
-    ContentGroup group = new ContentGroup();
-    group.put(new ContentText(5, 5, "create"));
-    return group;
+    ContentOverlay overlay = new ContentOverlay("create Group", 300, 100);
+    overlay.put(new ContentText(5, 5, "create"));
+    return overlay;
   }
 }

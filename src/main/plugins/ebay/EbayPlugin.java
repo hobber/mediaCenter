@@ -34,7 +34,7 @@ public class EbayPlugin implements Plugin {
   @Override
   public ContentMenuEntry getMenuEntry() {    
     ContentMenuEntry entry = new ContentMenuEntry(this, Plugin.ICON_PATH + "ebay.svg");
-    entry.addSubMenuEntry(reportPage);
+//    entry.addSubMenuEntry(reportPage);
     entry.addSubMenuEntry(configPage);
     return entry;
   }
