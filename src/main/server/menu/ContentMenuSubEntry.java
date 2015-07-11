@@ -1,5 +1,7 @@
 package main.server.menu;
 
+import java.util.Map;
+
 import main.server.content.ContentItem;
 import main.server.content.ContentOnClick;
 
@@ -34,5 +36,5 @@ public abstract class ContentMenuSubEntry {
    this.subId = subId;
   }
   
-  public abstract ContentItem handleAPIRequest(String parameter);
+  public abstract ContentItem handleAPIRequest(Map<String, String> parameters);
 }

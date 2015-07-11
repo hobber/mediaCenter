@@ -11,8 +11,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
     };
 
-    $scope.clickedMenu = function(pluginName, pageName) {
-	  $scope.closeOverlay();
+    $scope.clickedMenu = function(pluginName, pageName) {	  
 	  $location.path('mediacenter');
       $location.search({plugin: pluginName, page: pageName});
 	  load('plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
@@ -191,6 +190,67 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 	
 	/**
+     * INPUT FORM
+	 *  - parameter: will be used as parameter on submit to API
+     *  - buttonCaption: caption of submit button [string]
+     *  - items: list of input fields, whereas each must must define
+	 *      - caption: caption of input field 
+	 *      - name: name of value on submit to API
+     */
+    contentFactories.inputForm = function(parent, definition) {
+      var element = document.createElement('div');
+	  parent.appendChild(element);
+	  element.setAttribute('id', 'contentContainer');
+	  
+	  var x = 5, y = 5, maxCaptionWidth = 0;
+	  for(var i = 0; i < definition.items.length; i++) {
+        var item = definition.items[i];
+        var caption = document.createElement('span');
+		element.appendChild(caption);
+		element.setAttribute('id', 'contentItem');
+		caption.style.left = x + 'px';
+		caption.style.top = y + 'px';
+		caption.innerHTML = item.caption + ':';
+		y += caption.clientHeight;
+		if(caption.clientWidth > maxCaptionWidth)
+		  maxCaptionWidth = caption.clientWidth;
+      }
+	  
+	  x +=  maxCaptionWidth + 10;
+	  y = 5;
+	  var values = [];
+	  for(i = 0; i < definition.items.length; i++) {
+        var item = definition.items[i];
+        var input = document.createElement('input');
+		element.appendChild(input);
+		element.setAttribute('id', 'contentItem');
+		input.style.left = x + 'px';
+		input.style.top = y + 'px';
+		input.name = item.name;
+		y += caption.clientHeight;
+		values.push(input);
+      }
+	  
+	  var button = document.createElement('button');
+	  element.appendChild(button);
+	  button.setAttribute('id', 'contentItem');
+	  button.style.left = '5px';
+      button.style.top = y + 'px';
+      button.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
+	  button.innerHTML = definition.buttonCaption;
+	  button.onClick = function() {
+	    var parameter = definition.parameter;
+	    for(i = 0; i < values.length; i++)
+		  parameter += '&' + values[i].name + '=' + values[i].value;
+	    load($location.url(), parameter, showContent);
+	  };
+	  $compile(button)($scope);
+	  $scope.pageElements.push(button);
+
+      return element;
+    };
+	
+	/**
      * BUTTON
      *  - text: text which will be displayed [string]
      *  - x: x-offset [int]
@@ -201,7 +261,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       var element = document.createElement('button');
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
-      element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
+      element.style.left = definition.x + 'px';
+      element.style.top = definition.y + 'px;';
       element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
 	  element.innerHTML = definition.text;
 	  element.onClick = function() {
@@ -215,7 +276,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	/**
      * OVERLAY
      *  - items: will shown in the overlay
-	 *  - caption: caption of overlay
+	 *  - caption: caption of overlay [string]
 	 *  - width: width of overlay [int]
 	 *  - height: height of overlay [int]
      */
@@ -262,7 +323,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 
 	/**
-     * GOUP
+     * GROUP
      *  - items: will shown in the overlay
 	 *  -?options: show groupBoarder flag
      */
@@ -427,6 +488,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 	
 	var createPage = function(content) {
+	  $scope.closeOverlay();
 	  $scope.pageElements = [];
 	  
 	  var options = content.options;

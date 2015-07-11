@@ -2,14 +2,14 @@ package main.server.menu;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-
-import org.json.JSONObject;
+import java.util.Map;
 
 import main.plugins.Plugin;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentItem;
-import main.server.content.ContentPage;
 import main.utils.Logger;
+
+import org.json.JSONObject;
 
 public class ContentMenuEntry {
   
@@ -44,12 +44,13 @@ public class ContentMenuEntry {
     return container;
   }
   
-  public ContentItem handleAPIRequest(String pageName, String parameter) {
+  public ContentItem handleAPIRequest(Map<String, String> parameters) {
+    String pageName = parameters.remove("page");
     ContentMenuSubEntry entry = subEntryMap.get(pageName);
     if(entry == null) {
       Logger.error("invalid page name " + pageName + " for plugin " + plugin.getName());
       return new ContentErrorPage("invalid page name " + pageName + " for plugin " + plugin.getName());
     }
-    return entry.handleAPIRequest(parameter);
+    return entry.handleAPIRequest(parameters);
   }
 }

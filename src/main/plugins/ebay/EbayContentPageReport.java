@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import main.plugins.ebay.EbayAPI.AuctionType;
 import main.server.content.ContentGroup;
@@ -28,10 +29,10 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   }
 
   @Override
-  public ContentItem handleAPIRequest(String parameter) {
-    if(parameter.length() == 0)
+  public ContentItem handleAPIRequest(Map<String, String> parameters) {
+    if(parameters.size() == 0)
       return getMainPage();
-    return getDetailPage(parameter);
+    return getDetailPage(parameters.get("itemId"));
   }
   
   private ContentPage getMainPage() {

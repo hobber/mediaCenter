@@ -2,16 +2,12 @@ package main.http;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+
+import main.utils.Logger;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -75,8 +71,8 @@ public class HTTPUtils {
 		return s;
 	}
 	
-	public static Map<String, List<String>> splitQueryParameters(String parameters) throws UnsupportedEncodingException {
-	  final Map<String, List<String>> query_pairs = new LinkedHashMap<String, List<String>>();
+	public static Map<String, String> splitQueryParameters(String parameters) throws UnsupportedEncodingException {
+	  final Map<String, String> query_pairs = new LinkedHashMap<String, String>();
 	  if(parameters == null)
 	    return query_pairs;
 	  
@@ -84,11 +80,9 @@ public class HTTPUtils {
 	  for (String pair : pairs) {
 	    final int idx = pair.indexOf("=");
 	    final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-	    if (!query_pairs.containsKey(key)) {
-	      query_pairs.put(key, new LinkedList<String>());
-	    }
 	    final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
-	    query_pairs.get(key).add(value);
+      if(query_pairs.put(key, value) != null)
+        Logger.error("parameter string contains parameter " + key + " multiple times");
 	  }
 	  return query_pairs;
 	}

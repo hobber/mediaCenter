@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +24,7 @@ import main.server.menu.ContentMenuEntry;
 import main.utils.ConfigElementGroup;
 import main.utils.Logger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
 
@@ -102,19 +104,28 @@ public class Server implements HttpHandler {
     os.close();  
 	}
 	
-	private void handleAPIRequest(HttpExchange exchange, String pluginName, String pageName, List<String> parameter) throws IOException {
+	private void handleAPIGetRequest(HttpExchange exchange, Map<String, String> parameters) throws IOException {
+		ContentItem item = PluginController.handleAPIRequest(parameters);
+		
 		Headers headers = exchange.getResponseHeaders();
-		headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
-		
-		String parameterValue = parameter != null ? parameter.get(0) : ""; 
-		ContentItem item = PluginController.handleAPIRequest(pluginName, pageName, parameterValue);
-		
+    headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
 		byte[] response = item.getContentString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);
 		OutputStream os = exchange.getResponseBody();
 		os.write(response);		
 		os.close();
 	}
+	
+	private void handleAPIPostRequest(HttpExchange exchange, Map<String, String> parameters) throws IOException {    
+    PluginController.handleAPIRequest(parameters);
+    byte[] response = "OK".getBytes();
+    Headers headers = exchange.getResponseHeaders();
+    headers.set("Content-Type","text/plain");
+    exchange.sendResponseHeaders(200, 2);
+    OutputStream os = exchange.getResponseBody();
+    os.write(response); 
+    os.close();
+  }
 
 	private void handleFileRequest(HttpExchange exchange, String uri) throws IOException {
 	  String path = RESSOURCE_PATH + uri;
@@ -135,7 +146,7 @@ public class Server implements HttpHandler {
 		try {
 			String method = exchange.getRequestMethod();
 			String uri = exchange.getRequestURI().toString();
-			System.out.println("URI: " + uri);
+			System.out.println("URI: " + uri + " (" + method + ")");
 			
 			if(uri.startsWith("error?")) {
 			  Logger.error(uri);
@@ -145,13 +156,13 @@ public class Server implements HttpHandler {
 			int parametersStart = uri.indexOf('?') + 1;
 			if(parametersStart <= 0)
 			  parametersStart = 1;
-			Map<String, List<String>> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));			
+			Map<String, String> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));			
 
 			if(method.equals("GET")) {
 			  if(uri.startsWith("/menu"))
           handleMenuRequest(exchange);        
 			  else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page"))
-					handleAPIRequest(exchange, parameters.get("plugin").get(0), parameters.get("page").get(0), parameters.get("parameter"));
+					handleAPIGetRequest(exchange, parameters);					
 				else
 				  handleFileRequest(exchange, uri);
 			}
@@ -165,6 +176,10 @@ public class Server implements HttpHandler {
 				  System.err.print("ERROR: " + uri.substring(6) + " ");
 				  copy(exchange.getRequestBody(), System.out);
 				  System.err.println("");
+				}
+				else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page")) {				  
+				  parameters.putAll(HTTPUtils.splitQueryParameters(IOUtils.toString(exchange.getRequestBody())));
+          handleAPIPostRequest(exchange, parameters);
 				}
 				else {
 					System.out.print("post ");
