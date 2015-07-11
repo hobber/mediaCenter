@@ -3,7 +3,7 @@ package main.server.content;
 import org.json.JSONException;
 
 public class ContentText extends ContentItem {
-	
+  
 	public enum TextType {
 		NORMAL, TITLE, SUBTITLE, BLOCK
 	}

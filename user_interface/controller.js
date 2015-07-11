@@ -21,7 +21,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
     
     $scope.onClick = function(index) {
-      $scope.pageElements[index].onClick();
+	  var element = $scope.pageElements[index];
+	  if(element.disabled !== true)
+        element.onClick();
     };
 	
 	$scope.closeOverlay = function() {
@@ -36,10 +38,11 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     var load = function(request, parameter, callback) {	
       try {
         var xmlHttp = new XMLHttpRequest();
-		if(parameter)
-          xmlHttp.open('GET', request + '&parameter=' + parameter, true);
-		else
-		  xmlHttp.open('GET', request, true);
+		
+		var parameterText = parameter !== undefined ? '&parameter=' + parameter : '';
+		parameterText += $scope.selectedElement !== undefined ? '&selectionId=' + $scope.selectedElement.selectionId : '';
+		xmlHttp.open('GET', request + parameterText, true);
+		  
         xmlHttp.send();
         xmlHttp.onloadend = function() {
           try {
@@ -167,18 +170,20 @@ app.controller('Controller', ['$scope', '$compile', '$location',
      *  - y: y-offset [int]
      *  - ?style: additional style parameters (bold,...) [string]
      *  - ?options:
-     *      - ?fullWidth [true, fals] ... table fill full content width
+	 *      - ?selectionId: the text selectable, selected ID will be send on next API call [string]
      *  - ?widths: defines widths of columns [array of strings]
      */
     contentFactories.text = function(parent, definition) {
       var element = document.createElement('span');
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
-      if(definition.style === undefined)
+      
+	  if(definition.style === undefined)
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;');
       else
         element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px;' + definition.style);
-      if(definition.url === undefined)
+      
+	  if(definition.url === undefined)
         element.innerHTML = definition.text;
       else {
         var text = document.createElement('a');
@@ -186,6 +191,34 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         text.innerHTML = definition.text;
         text.setAttribute('href', definition.url);
       }
+	  
+	  if(definition.options && definition.options.selectionId !== undefined) {
+	    element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
+        element.selectionId = definition.options.selectionId;
+		element.onSelect = function() {
+		  element.style.color = 'blue';
+		};
+		element.onUnselect = function() {
+		  element.style.color = 'black';
+		};
+	    element.onClick = function() {
+		  if($scope.selectedElement === undefined) {
+	        $scope.selectedElement = element;
+			element.onSelect();
+	      }
+		  else if($scope.selectedElement !== element) {
+		    $scope.selectedElement.onUnselect();
+			$scope.selectedElement = element;
+			element.onSelect();
+		  }
+		  else {
+		    delete $scope.selectedElement;
+			element.onUnselect();
+		  }
+	    };
+	    $compile(element)($scope);
+	    $scope.pageElements.push(element);
+	  }
       return element;
     };
 	
@@ -227,7 +260,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 		input.style.left = x + 'px';
 		input.style.top = y + 'px';
 		input.name = item.name;
-		y += caption.clientHeight;
+		y += input.clientHeight;
 		values.push(input);
       }
 	  
@@ -262,7 +295,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
       element.style.left = definition.x + 'px';
-      element.style.top = definition.y + 'px;';
+      element.style.top = definition.y + 'px';
       element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
 	  element.innerHTML = definition.text;
 	  element.onClick = function() {
@@ -325,7 +358,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	/**
      * GROUP
      *  - items: will shown in the overlay
-	 *  -?options: show groupBoarder flag
+	 *  -?options: optional list of following options
+	 *      - 	: use border-bottom [boolean]
      */
     contentFactories.group = function(parent, definition) {
       var groupElement = document.createElement('div');
@@ -347,7 +381,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
 
       var style = 'height: ' + maxY + 'px;';
-      if(definition.options && definition.options.groupBoarder !== false)
+      if(definition.options && definition.options.groupBoarder)
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
       return groupElement;
@@ -489,6 +523,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	
 	var createPage = function(content) {
 	  $scope.closeOverlay();
+	  delete delete $scope.selectedElement;
 	  $scope.pageElements = [];
 	  
 	  var options = content.options;

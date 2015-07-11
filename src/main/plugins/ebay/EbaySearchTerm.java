@@ -6,11 +6,12 @@ import java.util.LinkedList;
 import main.utils.FileReader;
 import main.utils.FileWriter;
 
-public class EbaySearchTerm extends EbaySearchTermBase {
+public class EbaySearchTerm implements EbaySearchTermBase {
 
   private EbayAPI api;
   private String searchTerm;
   private int id;
+  private boolean deleted = false;
   
   public EbaySearchTerm(EbayAPI api, FileReader file) throws IOException {
     this.api = api;
@@ -21,6 +22,22 @@ public class EbaySearchTerm extends EbaySearchTermBase {
     this.api = api;
     this.searchTerm = searchTerm;
     this.id = id;
+  }
+  
+  public String getName() {
+    return searchTerm;
+  }
+  
+  public void rename(String searchTerm) {
+    this.searchTerm = searchTerm;
+  }
+  
+  public void delete() {
+    deleted = true;
+  }
+  
+  public boolean isDeleted() {
+    return deleted;
   }
   
   @Override

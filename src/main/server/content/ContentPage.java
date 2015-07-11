@@ -1,6 +1,7 @@
 package main.server.content;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class ContentPage extends ContentItem {
 
@@ -26,9 +27,8 @@ public class ContentPage extends ContentItem {
 		groups.add(group);
 	}
 	
-	public void merge(ContentPage page) {
-	  for(int i=0; i<page.groups.size(); i++)
-	    groups.add(page.groups.get(i));
+	public void addContentGroups(List<ContentGroup> groups) {
+	  this.groups.addAll(groups);
 	}
 	
 	public void setOptions(ContentOptions options) {

@@ -7,7 +7,6 @@ import org.json.JSONException;
 public class ContentGroup extends ContentItem {	
 	
   private LinkedList<ContentItem> items = new LinkedList<ContentItem>();
-  private ContentOptions options;
   
 	public ContentGroup() {
 		try {
@@ -19,10 +18,6 @@ public class ContentGroup extends ContentItem {
 	
 	public void put(ContentItem item) {		
 	  items.add(item);
-	}
-	
-	public void setOptions(ContentOptions options) {
-	  this.options = options;
 	}
 	
 	@Override

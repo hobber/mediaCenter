@@ -5,11 +5,19 @@ import java.io.IOException;
 import main.data.DataSchemaObjectInterface;
 import main.utils.FileWriter;
 
-public abstract class EbaySearchTermBase implements DataSchemaObjectInterface {
+public abstract interface EbaySearchTermBase extends DataSchemaObjectInterface {
   
-  public abstract void writeValue(FileWriter file) throws IOException;
+  public void writeValue(FileWriter file) throws IOException;
   
-  public abstract void update();
+  public void update();
   
-  public abstract String toString();
+  public String getName();
+  
+  public void rename(String name);
+  
+  public void delete();
+  
+  public boolean isDeleted();
+  
+  public String toString();
 }

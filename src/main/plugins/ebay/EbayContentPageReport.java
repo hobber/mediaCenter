@@ -42,8 +42,7 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
     page.setTitleBar(titleBar);
     titleBar.addContentItem(new ContentText(5, 5, "Ebay Report", ContentText.TextType.TITLE));
     
-    EbaySearchConfiguration searchConfiguration = new EbaySearchConfiguration(api, "20+Euro+PP+Trias");
-    List<EbayListItem> list = searchConfiguration.search();
+    List<EbayListItem> list = api.findByKeywords("20+Euro+PP+Trias");
     for(EbayListItem item : list)
       page.addContentGroup(convertListItemToContentGroup(item));
     
