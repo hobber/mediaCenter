@@ -61,6 +61,10 @@ public class EbayMinimalItem extends DataObject {
   public Long getEndTime() {
     return endTime.get();
   }
+  
+  public float getPrice() {
+    return price.get();
+  }
 
   @Override
   public String toString() {

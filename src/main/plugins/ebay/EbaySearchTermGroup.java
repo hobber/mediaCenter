@@ -1,10 +1,8 @@
 package main.plugins.ebay;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import main.utils.FileReader;
 import main.utils.FileWriter;

@@ -19,7 +19,6 @@ public class EbayFullItem {
   public EbayFullItem(JSONContainer definition) {
     title = definition.getString("Title", "");
     JSONContainer currentPrice = definition.getSubContainer("CurrentPrice");
-    System.out.println("currentPrice: " + currentPrice);
     price = currentPrice.getFloat("Value", 0.0f);
     currency = currentPrice.getString("CurrencyID", "EUR");
     if(currency.equals("EUR"))

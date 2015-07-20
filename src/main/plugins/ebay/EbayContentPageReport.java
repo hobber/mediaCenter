@@ -3,29 +3,66 @@ package main.plugins.ebay;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import main.plugins.ebay.EbayAPI.AuctionType;
 import main.server.content.ContentGroup;
-import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
-import main.server.content.ContentTitleBar;
 import main.server.menu.ContentMenuSubEntry;
 import main.utils.Logger;
 
 public class EbayContentPageReport extends ContentMenuSubEntry {
 
+  private static class Statistic {
+    
+    private String name;
+    private float minimum;
+    private float average;
+    private float maximum;
+    
+    private Statistic(String name, float minimum, float average, float maximum) {
+      this.name = name;
+      this.minimum = minimum;
+      this.average = average;
+      this.maximum = maximum;
+    }
+    
+    public static Statistic create(String name, List<EbayMinimalItem> terms) {
+      Float minimum = 0.0f;
+      Float sum = 0.0f;
+      Float maximum = 0.0f;
+      for(EbayMinimalItem term : terms) {
+        float price = term.getPrice();
+        if(minimum == 0.0 || price < minimum)
+          minimum = price;
+        if(price > maximum)
+          maximum = price;
+        sum += price;
+      }
+      return new Statistic(name, minimum, sum / terms.size(), maximum);
+    }
+    
+    @Override
+    public String toString() {
+      return name + ": " + minimum + " - " + maximum + " (" + average + ")";
+    }
+  }
+  
   static final SimpleDateFormat ITEM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   static final SimpleDateFormat PRINT_DATE_FORMAT = new SimpleDateFormat("dd.MM.YYYY HH:mm:ss");
   
   private EbayAPI api;
+  private EbaySearchTermHistory history;
+  private List<Statistic> statistic = new LinkedList<Statistic>();
   
   public EbayContentPageReport(EbayAPI api) {
     super("Report");
     this.api = api;
+    this.history = api.getSearchTermHistory();
   }
 
   @Override
@@ -36,17 +73,25 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   }
   
   private ContentPage getMainPage() {
-    ContentPage page = new ContentPage();
+    ContentPage page = new ContentPage("Ebay Report");
+    statistic.clear();
+    updateAnalysis(history.getTerms());
     
-    ContentTitleBar titleBar = new ContentTitleBar();
-    page.setTitleBar(titleBar);
-    titleBar.addContentItem(new ContentText(5, 5, "Ebay Report", ContentText.TextType.TITLE));
-    
-    List<EbayListItem> list = api.findByKeywords("20+Euro+PP+Trias");
-    for(EbayListItem item : list)
-      page.addContentGroup(convertListItemToContentGroup(item));
+    for(Statistic entry : statistic) {
+      ContentGroup group = page.createContentGroup();
+      group.put(new ContentText(5, 5, entry.toString()));
+    }
     
     return page;
+  }
+  
+  private void updateAnalysis(EbaySearchTermGroup group) {
+    for(EbaySearchTermBase term : group.getTerms()) {
+      if(term instanceof EbaySearchTermGroup)
+        updateAnalysis((EbaySearchTermGroup)term);
+      else
+        statistic.add(Statistic.create(term.getName(), api.getItemsForSearchTerm(((EbaySearchTerm)term).getId())));
+    }
   }
   
   public static ContentGroup createItemGroup(EbayFullItem item) {
@@ -63,17 +108,6 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
     ContentPage page = new ContentPage();
     page.addContentGroup(createItemGroup(item));
     return page;
-  }
-  
-  private ContentGroup convertListItemToContentGroup(EbayListItem item) {
-    ContentGroup group = new ContentGroup();
-    group.appendLink(getContentOnClickElement(item.getItemId()));
-    group.put(new ContentImage(0, 0, 80, 80, item.getImage()));
-    group.put(new ContentText(95,  5, item.getTitle() + " - " + item.getPrice() + item.getCurrency() + ", " + 
-      getAuctionTypeString(item.getAuctionType())));
-    group.put(new ContentText(95, 30, EbayContentPageReport.convertToPrintDate(item.getEndTime())));
-    group.put(new ContentText(95, 55, "click", item.getItemUrl()));
-    return group;
   }
   
   static Calendar convertItemDate(String date) {
@@ -93,6 +127,8 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   static AuctionType getAuctionType(String name) {
     if(name.equalsIgnoreCase("FIXEDPRICEITEM"))
       return AuctionType.FIXEDPRICE;
+    if(name.equalsIgnoreCase("CHINESE"))
+      return AuctionType.AUCTIONWITHBIN;
     try {
       return AuctionType.valueOf(name.toUpperCase());
     } catch(IllegalArgumentException e) {

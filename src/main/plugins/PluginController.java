@@ -42,8 +42,10 @@ public class PluginController {
 	}
 	
 	public static void update() {
-	  for(Plugin plugin : plugins.values())
+	  for(Plugin plugin : plugins.values()) {
       plugin.update();
+      plugin.saveState();
+	  }
 	}
 	
 	public static void shutdown() {

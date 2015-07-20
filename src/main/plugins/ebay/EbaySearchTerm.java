@@ -60,37 +60,8 @@ public class EbaySearchTerm implements EbaySearchTermBase {
   
   public void update() {
     LinkedList<EbayListItem> list = api.findByKeywords(searchTerm);
-    float minimumFixed = 0.0f;
-    float minimumAuction = 0.0f;
-    float sumFixed = 0.0f;
-    float sumAuction = 0.0f;
-    float averageFixed = 0.0f;
-    float averageAuction = 0.0f;
-    int counterFixed = 0;
-    int counterAuction = 0;
-    
-    for(EbayListItem item : list) {
-      api.registerSearchTermResult(this, item.toMinimalItem());
-      float price = item.getPrice();
-      EbayAPI.AuctionType type = item.getAuctionType();
-      if(type == EbayAPI.AuctionType.FIXEDPRICE) {
-        sumFixed += price;
-        if(minimumFixed == 0.0f || price < minimumFixed)
-          minimumFixed = price;
-        counterFixed++;
-      }
-      else if(type == EbayAPI.AuctionType.AUCTION || type == EbayAPI.AuctionType.AUCTIONWITHBIN) {
-        sumAuction += price;
-        if(minimumAuction == 0.0f || price < minimumAuction)
-          minimumAuction = price;
-        counterAuction++;
-      }
-    }
-        
-    if(counterFixed > 0)
-      averageFixed = sumFixed / counterFixed;
-    if(counterAuction > 0)
-      averageAuction = sumAuction / counterAuction;   
+    for(EbayListItem item : list)
+      api.registerSearchTermResult(this, item.toMinimalItem());   
   }
   
   @Override

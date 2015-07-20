@@ -12,7 +12,6 @@ import main.utils.FileWriter;
 import main.utils.JSONArray;
 import main.utils.JSONContainer;
 import main.utils.Logger;
-import main.utils.Path;
 
 public class EbayAPI {
   
@@ -48,11 +47,11 @@ public class EbayAPI {
     
     try {
       FileReader file = new FileReader(databaseFileName);
-      storage = new EbayItemStorage(file);
+      storage = new EbayItemStorage(this, file);
       history = new EbaySearchTermHistory(this, file);
     } catch(IOException e) {
       Logger.error(e);
-      storage = new EbayItemStorage();
+      storage = new EbayItemStorage(this);
       history = new EbaySearchTermHistory(this);
     }
     
@@ -188,7 +187,7 @@ public class EbayAPI {
     storage.add(searchTerm, item);
   }
   
-  public List<Long> getStorageIdList() {
-    return storage.getIdList();
+  public List<EbayMinimalItem> getItemsForSearchTerm(int searchTermId) {
+    return storage.getItemsForSearchTerm(searchTermId);
   }
 }

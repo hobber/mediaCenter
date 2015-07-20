@@ -1,14 +1,19 @@
 package main.plugins.ebay;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import main.data.DataSchemaObjectInterface;
 import main.utils.FileReader;
 import main.utils.FileWriter;
+import main.utils.Logger;
 import main.utils.SortedMap;
 
 public class EbayItemStorage implements DataSchemaObjectInterface {
@@ -38,6 +43,18 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
       return item.getId();
     }
     
+    public long getEndTime() {
+      return item.getEndTime();
+    }
+    
+    public int getSearchTermId() {
+      return searchTermId;
+    }
+    
+    public EbayMinimalItem getItem() {
+      return item;
+    }
+    
     @Override
     public void readValue(FileReader file) throws IOException {
       searchTermId = file.readInt();
@@ -56,21 +73,42 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
     }
   }
   
-  
-  
-  
-  private SortedMap<Long, Item> items = new SortedMap<Long, Item>();
+  private EbayAPI api;
+  private SortedMap<Long, Item> completedItems = new SortedMap<Long, Item>();
+  private SortedMap<Long, Item> activeItems = new SortedMap<Long, Item>();
+  private Map<Integer, List<EbayMinimalItem>> itemMap = new HashMap<Integer, List<EbayMinimalItem>>();
 
-  public EbayItemStorage() {
+  public EbayItemStorage(EbayAPI api) {
+    this.api = api;
   }
   
-  public EbayItemStorage(FileReader file) throws IOException {
+  public EbayItemStorage(EbayAPI api, FileReader file) throws IOException {
+    this.api = api;
     if(file != null)
       readValue(file);
   }
   
   public void update() {
-    
+    long now = Calendar.getInstance().getTimeInMillis();
+    Iterator<Map.Entry<Long, Item>> iterator = activeItems.entrySet().iterator();
+    int completed = 0;
+    while(iterator.hasNext()) {
+      Map.Entry<Long, Item> entry = iterator.next();
+      if(entry.getValue().getEndTime() <= now) {
+        String id = Long.toString(entry.getValue().getItemId());
+        EbayFullItem item = api.findByItemId(id);
+        if(item != null) {
+          iterator.remove();
+          int searchTermId = entry.getValue().getSearchTermId();
+          completedItems.put(entry.getKey(), new Item(searchTermId, item.toMinimalItem()));
+          completed++;
+        }
+        else 
+          Logger.error("could not complete item " + entry.getValue());
+      }
+    }
+    Logger.log("have " + activeItems.size() + " active items after update, " + completed + (completed == 1 ? " was" : " were")+ " completed");
+    sortCompletedItemsBySearchTermIds();
   }
 
   @Override
@@ -78,29 +116,50 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
     int size = file.readInt();
     for(int i = 0; i < size; i++) {
       Item item = new Item(file);
-      items.put(item.getItemId(), item);
-      System.out.println("read " + item);
+      completedItems.put(item.getItemId(), item);
     }
+    size = file.readInt();
+    for(int i = 0; i < size; i++) {
+      Item item = new Item(file);
+      activeItems.put(item.getItemId(), item);
+    }
+    Logger.log("read " + completedItems.size() + " completed items + " + activeItems.size() + " active items");
+    sortCompletedItemsBySearchTermIds();
   }
 
   @Override
   public void writeValue(FileWriter file) throws IOException {
-    items.sortForValues(Item.comparator);
-    file.writeInt(items.size());
-    for(Entry<Long, Item> entry : items.entrySet()) {
+    completedItems.sortForValues(Item.comparator);
+    file.writeInt(completedItems.size());
+    for(Entry<Long, Item> entry : completedItems.entrySet()) {
       entry.getValue().writeValue(file);
-      System.out.println("write " + entry.getValue());
+    }    
+    activeItems.sortForValues(Item.comparator);
+    file.writeInt(activeItems.size());
+    for(Entry<Long, Item> entry : activeItems.entrySet()) {
+      entry.getValue().writeValue(file);
     }
   }
   
   public void add(EbaySearchTerm searchTerm, EbayMinimalItem item) {
-    items.put(item.getId(), new Item(searchTerm.getId(), item));
+    activeItems.put(item.getId(), new Item(searchTerm.getId(), item));
   }
   
-  public List<Long> getIdList() {
-    List<Long> list = new LinkedList<Long>();
-    for(Entry<Long, Item> entry : items.entrySet())
-      list.add(entry.getValue().getItemId());
+  public List<EbayMinimalItem> getItemsForSearchTerm(int searchTermId) {
+    List<EbayMinimalItem> list = itemMap.get(searchTermId);
+    if(list == null)
+      return new LinkedList<EbayMinimalItem>();
     return list;
+  }
+
+  private void sortCompletedItemsBySearchTermIds() {
+    completedItems.sortForValues(Item.comparator);
+    itemMap = new HashMap<Integer, List<EbayMinimalItem>>();
+    for(Item entry : completedItems.values()) {
+      int termId = entry.getSearchTermId();
+      if(itemMap.containsKey(termId) == false)
+        itemMap.put(termId, new LinkedList<EbayMinimalItem>());
+      itemMap.get(termId).add(entry.getItem());
+    }
   }
 }
