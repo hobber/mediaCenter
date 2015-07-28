@@ -1,7 +1,11 @@
 package main.http;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
@@ -86,4 +90,19 @@ public class HTTPUtils {
 	  }
 	  return query_pairs;
 	}
+	
+	public static void saveWebImage(URL url, String fileName) throws IOException {
+    InputStream is = url.openStream();
+    OutputStream os = new FileOutputStream(fileName);
+
+    byte[] b = new byte[2048];
+    int length;
+
+    while ((length = is.read(b)) != -1) {
+      os.write(b, 0, length);
+    }
+
+    is.close();
+    os.close();
+  }
 }

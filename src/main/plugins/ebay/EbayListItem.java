@@ -15,6 +15,8 @@ public class EbayListItem {
   private Calendar endTime;
   private AuctionType type;
   private String itemUrl;
+  private String categoryId;
+  private String categoryName;
   
   public EbayListItem(JSONContainer definition) {
     title = definition.getArray("title").getString(0, "");
@@ -36,6 +38,9 @@ public class EbayListItem {
     endTime = EbayContentPageReport.convertItemDate(listingInfo.getArray("endTime").getString(0,  ""));
     type = EbayContentPageReport.getAuctionType(listingInfo.getArray("listingType").getString(0, "").toUpperCase());
     itemUrl = definition.getArray("viewItemURL").getString(0, "");
+    
+    categoryId = definition.getArray("primaryCategory").getContainer(0).getString("categoryId", null);
+    categoryName = definition.getArray("primaryCategory").getContainer(0).getString("categoryName", null);
   }
   
   public String getTitle() {
@@ -70,7 +75,15 @@ public class EbayListItem {
     return itemUrl;
   }
   
-  public EbayMinimalItem toMinimalItem() {
-    return new EbayMinimalItem(itemId, type, endTime, price);
+  public String getCategoryId() {
+    return categoryId;
+  }
+  
+  public String getCategoryName() {
+    return categoryName;
+  }
+  
+  public EbayMinimalItem toMinimalItem(int imageId) {
+    return new EbayMinimalItem(itemId, title, type, endTime, price, imageId);
   }
 }

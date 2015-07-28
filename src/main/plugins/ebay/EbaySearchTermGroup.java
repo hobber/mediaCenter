@@ -98,7 +98,6 @@ public class EbaySearchTermGroup implements EbaySearchTermBase {
         continue;
       file.writeByte((byte)(term instanceof EbaySearchTerm ? 0 : 1));
       term.writeValue(file);
-      System.out.println("write " + term);
     }
   }
   

@@ -11,6 +11,7 @@ public class EbaySearchTerm implements EbaySearchTermBase {
   private EbayAPI api;
   private String searchTerm;
   private int id;
+  private long categoryId = -1;
   private boolean deleted = false;
   
   public EbaySearchTerm(EbayAPI api, FileReader file) throws IOException {
@@ -45,6 +46,7 @@ public class EbaySearchTerm implements EbaySearchTermBase {
     int length = file.readInt();
     searchTerm = file.readString(length);
     id = file.readInt();
+    categoryId = file.readLong();
   }
 
   @Override
@@ -52,20 +54,33 @@ public class EbaySearchTerm implements EbaySearchTermBase {
     file.writeInt(searchTerm.length());
     file.writeString(searchTerm);
     file.writeInt(id);
+    file.writeLong(categoryId);
   }
   
   public int getId() {
     return id;
   }
   
+  public void setCategoryId(long categoryId) {
+    this.categoryId = categoryId; 
+  }
+  
   public void update() {
     LinkedList<EbayListItem> list = api.findByKeywords(searchTerm);
-    for(EbayListItem item : list)
-      api.registerSearchTermResult(this, item.toMinimalItem());   
+    for(EbayListItem item : list) {
+      if(categoryId >= 0 && Long.parseLong(item.getCategoryId()) != categoryId) {
+        System.out.println("skip " + item);
+        continue;
+      }
+      if(api.knowsItemId(Long.parseLong(item.getItemId())))
+        continue;
+      int imageId = api.saveImageAndGetId(item.getImage());
+      api.registerSearchTermResult(this, item.toMinimalItem(imageId));
+    }
   }
   
   @Override
   public String toString() {
-    return id + ": " + searchTerm;
+    return id + ": " + searchTerm + (categoryId >= 0 ? " (" + categoryId + ")" : "");
   }
 }

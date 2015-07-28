@@ -1,6 +1,8 @@
 package main.plugins.ebay;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import main.data.DataSchemaObjectInterface;
+import main.http.HTTPUtils;
 import main.utils.FileReader;
 import main.utils.FileWriter;
 import main.utils.Logger;
@@ -77,6 +80,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
   private SortedMap<Long, Item> completedItems = new SortedMap<Long, Item>();
   private SortedMap<Long, Item> activeItems = new SortedMap<Long, Item>();
   private Map<Integer, List<EbayMinimalItem>> itemMap = new HashMap<Integer, List<EbayMinimalItem>>();
+  private int imageCounter;
 
   public EbayItemStorage(EbayAPI api) {
     this.api = api;
@@ -100,7 +104,8 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
         if(item != null) {
           iterator.remove();
           int searchTermId = entry.getValue().getSearchTermId();
-          completedItems.put(entry.getKey(), new Item(searchTermId, item.toMinimalItem()));
+          int imageId = saveImageAndGetId(item.getImage());
+          completedItems.put(entry.getKey(), new Item(searchTermId, item.toMinimalItem(imageId)));
           completed++;
         }
         else 
@@ -113,6 +118,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
 
   @Override
   public void readValue(FileReader file) throws IOException {
+    imageCounter = file.readInt();
     int size = file.readInt();
     for(int i = 0; i < size; i++) {
       Item item = new Item(file);
@@ -129,6 +135,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
 
   @Override
   public void writeValue(FileWriter file) throws IOException {
+    file.writeInt(imageCounter);
     completedItems.sortForValues(Item.comparator);
     file.writeInt(completedItems.size());
     for(Entry<Long, Item> entry : completedItems.entrySet()) {
@@ -141,6 +148,24 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
     }
   }
   
+  public boolean knowsItemId(long itemId) {
+    return completedItems.containsKey(itemId) || activeItems.containsKey(itemId);
+  }
+  
+  public int saveImageAndGetId(String imageUrl) {
+    try {
+      HTTPUtils.saveWebImage(new URL(imageUrl), String.format("data/images/ebay/%09d.jpg", imageCounter));
+      int id = imageCounter;
+      imageCounter++;
+      return id;
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return 0;
+  }
+  
   public void add(EbaySearchTerm searchTerm, EbayMinimalItem item) {
     activeItems.put(item.getId(), new Item(searchTerm.getId(), item));
   }
@@ -150,6 +175,13 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
     if(list == null)
       return new LinkedList<EbayMinimalItem>();
     return list;
+  }
+  
+  public void filterResultsForCategory(int searchTermId, long categoryId) {
+    List<EbayMinimalItem> list = itemMap.remove(searchTermId);
+    
+    // TODO
+    
   }
 
   private void sortCompletedItemsBySearchTermIds() {

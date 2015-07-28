@@ -179,8 +179,15 @@ public class EbayAPI {
     }
     else
       term = new EbaySearchTermGroup(this, file);
-    System.out.println("read " + term);
     return term;
+  }
+  
+  public boolean knowsItemId(long itemId) {
+    return storage.knowsItemId(itemId);
+  }
+  
+  public int saveImageAndGetId(String imageUrl) {
+    return storage.saveImageAndGetId(imageUrl);
   }
   
   public void registerSearchTermResult(EbaySearchTerm searchTerm, EbayMinimalItem item) {
@@ -189,5 +196,9 @@ public class EbayAPI {
   
   public List<EbayMinimalItem> getItemsForSearchTerm(int searchTermId) {
     return storage.getItemsForSearchTerm(searchTermId);
+  }
+  
+  public void filterResultsForCategory(int searchTermId, long categoryId) {
+    storage.filterResultsForCategory(searchTermId, categoryId);
   }
 }

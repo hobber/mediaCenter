@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import main.plugins.ebay.EbayAPI.AuctionType;
+import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
+import main.server.content.ContentImage;
 import main.server.content.ContentItem;
+import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.menu.ContentMenuSubEntry;
@@ -19,19 +22,21 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
 
   private static class Statistic {
     
+    private int searchTermId;
     private String name;
     private float minimum;
     private float average;
     private float maximum;
     
-    private Statistic(String name, float minimum, float average, float maximum) {
+    private Statistic(int searchTermId, String name, float minimum, float average, float maximum) {
+      this.searchTermId = searchTermId;
       this.name = name;
       this.minimum = minimum;
       this.average = average;
       this.maximum = maximum;
     }
     
-    public static Statistic create(String name, List<EbayMinimalItem> terms) {
+    public static Statistic create(int searchTermId, String name, List<EbayMinimalItem> terms) {
       Float minimum = 0.0f;
       Float sum = 0.0f;
       Float maximum = 0.0f;
@@ -43,7 +48,11 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
           maximum = price;
         sum += price;
       }
-      return new Statistic(name, minimum, sum / terms.size(), maximum);
+      return new Statistic(searchTermId, name, minimum, sum / terms.size(), maximum);
+    }
+    
+    public int getSearchTermId() {
+      return searchTermId;
     }
     
     @Override
@@ -69,7 +78,9 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   public ContentItem handleAPIRequest(Map<String, String> parameters) {
     if(parameters.size() == 0)
       return getMainPage();
-    return getDetailPage(parameters.get("itemId"));
+    if(parameters.containsKey("action") && parameters.get("action").equals("setCategory"))
+      return setCategory(parameters.get("parameter"), parameters.get("categoryID"));
+    return getDetailPage(parameters.get("parameter"));
   }
   
   private ContentPage getMainPage() {
@@ -79,35 +90,62 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
     
     for(Statistic entry : statistic) {
       ContentGroup group = page.createContentGroup();
+      group.setOptions(new ContentOptions("onClickParameter", Integer.toString(entry.getSearchTermId())));
       group.put(new ContentText(5, 5, entry.toString()));
     }
     
     return page;
   }
   
+  private ContentPage getDetailPage(String parameter) {
+    ContentPage page = new ContentPage("Ebay Report");
+    int id = 0;
+    try {
+      id = Integer.parseInt(parameter);
+    } catch(NumberFormatException e) {
+      Logger.error(e);
+      return page;
+    }
+    
+    List<EbayMinimalItem> items = api.getItemsForSearchTerm(id);
+    for(EbayMinimalItem item : items) {
+      EbayFullItem fullItem = api.findByItemId(Long.toString(item.getId()));
+      if(fullItem != null)
+        page.addContentGroup(createItemGroup(fullItem, parameter));
+    }
+    
+    return page;
+  }
+  
+  private ContentPage setCategory(String parameter, String categoryId) {
+    api.filterResultsForCategory(Integer.parseInt(parameter), Long.parseLong(categoryId));
+    return getDetailPage(parameter);
+  }
+  
   private void updateAnalysis(EbaySearchTermGroup group) {
     for(EbaySearchTermBase term : group.getTerms()) {
       if(term instanceof EbaySearchTermGroup)
         updateAnalysis((EbaySearchTermGroup)term);
-      else
-        statistic.add(Statistic.create(term.getName(), api.getItemsForSearchTerm(((EbaySearchTerm)term).getId())));
+      else {
+        int id = ((EbaySearchTerm)term).getId();
+        statistic.add(Statistic.create(id, term.getName(), api.getItemsForSearchTerm(id)));
+      }
     }
   }
   
-  public static ContentGroup createItemGroup(EbayFullItem item) {
+  public static ContentGroup createItemGroup(EbayFullItem item, String parameter) {
     ContentGroup group = new ContentGroup();
-    group.put(new ContentText(5, 5, item.getItemId() + ", " + getAuctionTypeString(item.getAuctionType())));
-    group.put(new ContentText(5, 45, item.getTitle() + ", " + item.getPrice() + item.getCurrency() + ", " + 
-      EbayContentPageReport.convertToPrintDate(item.getEndTime())));
-    group.put(new ContentText(5, 85, "click", item.getItemUrl()));
+    String image = item.getImage();
+    if(image != null)
+      group.put(new ContentImage(5, 5, 100, 100, item.getImage()));
+    group.put(new ContentText(105, 5, item.getTitle() + " (" + item.getPrice() + item.getCurrency() + " - " + 
+      EbayContentPageReport.convertToPrintDate(item.getEndTime()) + ")"));
+    group.put(new ContentText(105, 45, item.getItemId() + ", " + getAuctionTypeString(item.getAuctionType()) + ", " +
+      item.getCategoryName() + " (" + item.getCategoryId() + ")"));
+    group.put(new ContentText(105, 85, "open", item.getItemUrl()));
+    group.put(new ContentButton(150, 85, "set Category as filter", parameter + "&action=setCategory&categoryID=" + item.getCategoryId()));
+    group.setOptions(new ContentOptions("groupBoarder", "true"));
     return group;
-  }
-  
-  private ContentPage getDetailPage(String id) {
-    EbayFullItem item = api.findByItemId(id);
-    ContentPage page = new ContentPage();
-    page.addContentGroup(createItemGroup(item));
-    return page;
   }
   
   static Calendar convertItemDate(String date) {

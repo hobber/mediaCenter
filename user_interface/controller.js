@@ -14,6 +14,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     $scope.clickedMenu = function(pluginName, pageName) {	  
 	  $location.path('mediacenter');
       $location.search({plugin: pluginName, page: pageName});
+	  $scope.plugin = pluginName;
+	  $scope.page = pageName;
 	  load('plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
 	  $scope.$watch('$location.path', function() {
 	    console.log('CHANGED LOCATION:', $location.path(), $location.search(), $location.url());
@@ -151,6 +153,14 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     var contentWidth = 0;
 	var contentHeight = 0;
 
+	/**
+	 * IMAGE
+	 *  - x: x-offset [int]
+     *  - y: y-offset [int]
+	 *  - width: width of image [int]
+	 *  - height: height of image [int]
+	 *  - src: uri of image [string]
+	 */
     contentFactories.img = function(parent, definition) {
       var element = document.createElement('img');
       parent.appendChild(element);
@@ -359,7 +369,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
      * GROUP
      *  - items: will shown in the overlay
 	 *  -?options: optional list of following options
-	 *      - 	: use border-bottom [boolean]
+	 *      - groupBoarder: use border-bottom [boolean]
+	 *      - onClickParameter: parameter for api call on click event [string]
      */
     contentFactories.group = function(parent, definition) {
       var groupElement = document.createElement('div');
@@ -384,6 +395,16 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       if(definition.options && definition.options.groupBoarder)
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
+	  
+	  if(definition.options && definition.options.onClickParameter) {
+		groupElement.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
+		groupElement.onClick = function() {
+		  console.log('clicked');
+		  load($location.url(), definition.options.onClickParameter, showContent);
+		};
+        $compile(groupElement)($scope);
+		$scope.pageElements.push(groupElement);
+	  }
       return groupElement;
     };
 
@@ -513,12 +534,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 
     var createElement = function(parent, definition) {
-      var element = contentFactories[definition.type](parent, definition);
-      if(definition.onClick) {
-        element.setAttribute('ng-click', 'clickedElement("' + definition.onClick + '")');
-        $compile(element)($scope);
-      }
-      return element;
+      return contentFactories[definition.type](parent, definition);
     };
 	
 	var createPage = function(content) {
