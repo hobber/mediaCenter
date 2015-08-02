@@ -72,10 +72,16 @@ public class EbaySearchTerm implements EbaySearchTermBase {
         System.out.println("skip " + item);
         continue;
       }
+      
       if(api.knowsItemId(Long.parseLong(item.getItemId())))
         continue;
       int imageId = api.saveImageAndGetId(item.getImage());
       api.registerSearchTermResult(this, item.toMinimalItem(imageId));
+      
+      String categoryId = item.getCategoryId();
+      String categoryName = item.getCategoryName();
+      if(categoryId != null && categoryName != null)
+        api.registerCategory(Long.parseLong(categoryId), categoryName);
     }
   }
   

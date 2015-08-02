@@ -190,6 +190,18 @@ public class EbayAPI {
     return storage.saveImageAndGetId(imageUrl);
   }
   
+  public String getImageFileNameFromId(int imageId) {
+    return storage.getImageFileNameFromId(imageId, false);
+  }
+  
+  public void registerCategory(long id, String name) {
+    storage.registerCategory(id, name);
+  }
+  
+  public String getCategoryName(long id) {
+    return storage.getCategoryName(id);
+  }
+  
   public void registerSearchTermResult(EbaySearchTerm searchTerm, EbayMinimalItem item) {
     storage.add(searchTerm, item);
   }

@@ -39,8 +39,8 @@ public class EbayListItem {
     type = EbayContentPageReport.getAuctionType(listingInfo.getArray("listingType").getString(0, "").toUpperCase());
     itemUrl = definition.getArray("viewItemURL").getString(0, "");
     
-    categoryId = definition.getArray("primaryCategory").getContainer(0).getString("categoryId", null);
-    categoryName = definition.getArray("primaryCategory").getContainer(0).getString("categoryName", null);
+    categoryId = definition.getArray("primaryCategory").getContainer(0).getArray("categoryId").getString(0, null);
+    categoryName = definition.getArray("primaryCategory").getContainer(0).getArray("categoryName").getString(0, null);
   }
   
   public String getTitle() {
