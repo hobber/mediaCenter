@@ -22,7 +22,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       });
     };
     
-    $scope.onClick = function(index) {
+    $scope.onClick = function(index) {	
 	  var element = $scope.pageElements[index];
 	  if(element.disabled !== true)
         element.onClick();
@@ -395,8 +395,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       if(definition.options && definition.options.groupBoarder)
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
-	  
-	  if(definition.options && definition.options.onClickParameter) {
+
+	  if(definition.options !== undefined && definition.options.onClickParameter !== undefined) {
 		groupElement.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
 		groupElement.onClick = function() {
 		  console.log('clicked');

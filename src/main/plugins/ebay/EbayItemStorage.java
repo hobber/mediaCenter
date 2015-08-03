@@ -113,7 +113,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
           Logger.error("could not complete item " + entry.getValue());
       }
     }
-    Logger.log("have " + activeItems.size() + " active items after update, " + completed + (completed == 1 ? " was" : " were")+ " completed");
+    Logger.log("Ebay: have " + activeItems.size() + " active items after update, " + completed + (completed == 1 ? " was" : " were")+ " completed");
     sortCompletedItemsBySearchTermIds();
   }
 
@@ -138,7 +138,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
       categoryMap.put(id, name);
     }
     
-    Logger.log("read " + completedItems.size() + " completed items + " + activeItems.size() + " active items, " + categoryMap.size() + " categories");
+    Logger.log("Ebay: read " + completedItems.size() + " completed items + " + activeItems.size() + " active items, " + categoryMap.size() + " categories");
     sortCompletedItemsBySearchTermIds();
   }
 
@@ -159,7 +159,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
       file.writeInt(entry.getValue().length());
       file.writeString(entry.getValue());
     }
-      
+    Logger.log("Ebay: write " + completedItems.size() + " completed items + " + activeItems.size() + " active items, " + categoryMap.size() + " categories"); 
   }
   
   public boolean knowsItemId(long itemId) {
@@ -204,15 +204,23 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
   }
   
   public void filterResultsForCategory(int searchTermId, long categoryId) {
-    List<EbayMinimalItem> list = itemMap.remove(searchTermId);
+    List<EbayMinimalItem> list = itemMap.get(searchTermId);
     if(list == null)
       return;
     for(Iterator<EbayMinimalItem> iterator = list.iterator(); iterator.hasNext(); ) {
       EbayMinimalItem item = iterator.next();
-      if(item.getCategoryId() != categoryId)
+      if(item.getCategoryId() != categoryId) {
         iterator.remove();
+        if(completedItems.remove(item.getId()) == null)
+          Logger.error("Ebay: failed to remove " + item + " from completed item list");
+      }
     }
-    itemMap.put(searchTermId, list);
+    
+    SortedMap<Long, Item> clearedActiveItems = new SortedMap<Long, Item>();
+    for(Entry<Long, Item> entry : activeItems.entrySet())
+      if(entry.getValue().getSearchTermId() != searchTermId || entry.getValue().getItem().getCategoryId() == categoryId)
+        clearedActiveItems.put(entry.getKey(), entry.getValue());
+    activeItems = clearedActiveItems;
   }
 
   private void sortCompletedItemsBySearchTermIds() {

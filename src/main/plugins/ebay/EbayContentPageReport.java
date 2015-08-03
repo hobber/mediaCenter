@@ -109,15 +109,17 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
       return page;
     }
     
+    boolean hasCategory = api.searchTermHasCategory(id);
     List<EbayMinimalItem> items = api.getItemsForSearchTerm(id);
     for(EbayMinimalItem item : items)
-      page.addContentGroup(createItemGroup(item, parameter));
+      page.addContentGroup(createItemGroup(item, parameter, !hasCategory));
     
     return page;
   }
   
   private ContentPage setCategory(String parameter, String categoryId) {
     api.filterResultsForCategory(Integer.parseInt(parameter), Long.parseLong(categoryId));
+    api.saveState();
     return getDetailPage(parameter);
   }
   
@@ -132,14 +134,15 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
     }
   }
   
-  private ContentGroup createItemGroup(EbayMinimalItem item, String parameter) {
+  private ContentGroup createItemGroup(EbayMinimalItem item, String parameter, boolean allowToSetCategory) {
     ContentGroup group = new ContentGroup();
     String imageFileName = api.getImageFileNameFromId(item.getImageId());
     group.put(new ContentImage(5, 5, 100, 100, imageFileName));
     group.put(new ContentText(105, 5, item.getTitle() + " (" + item.getPrice() + "€ - " + 
       EbayContentPageReport.convertToPrintDate(item.getEndTime()) + ")"));
     group.put(new ContentText(105, 45, "category: " + api.getCategoryName(item.getCategoryId())));
-    group.put(new ContentButton(150, 85, "set Category as filter", parameter + "&action=setCategory&categoryID=" + item.getCategoryId()));
+    if(allowToSetCategory)
+      group.put(new ContentButton(150, 85, "set Category as filter", parameter + "&action=setCategory&categoryID=" + item.getCategoryId()));
     group.setOptions(new ContentOptions("groupBoarder", "true"));
     return group;
   }

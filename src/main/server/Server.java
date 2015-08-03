@@ -141,7 +141,7 @@ public class Server implements HttpHandler {
 		try {
 			String method = exchange.getRequestMethod();
 			String uri = exchange.getRequestURI().toString();
-			System.out.println("URI: " + uri + " (" + method + ")");
+//			System.out.println("URI: " + uri + " (" + method + ")");
 			
 			if(uri.startsWith("error?")) {
 			  Logger.error(uri);

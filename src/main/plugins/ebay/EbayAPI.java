@@ -79,7 +79,7 @@ public class EbayAPI {
     storage.update();
   }
   
-  public void saveState() {
+  public void saveState() {    
     try {
       FileWriter file = new FileWriter(databaseFileName);
       storage.writeValue(file);
@@ -210,7 +210,17 @@ public class EbayAPI {
     return storage.getItemsForSearchTerm(searchTermId);
   }
   
+  public boolean searchTermHasCategory(int searchTermId) {
+    return history.searchTermHasCategory(searchTermId);
+  }
+  
   public void filterResultsForCategory(int searchTermId, long categoryId) {
+    EbaySearchTerm term = history.getSearchTerm(searchTermId);
+    if(term == null) {
+      Logger.error("Ebay: could not find search term " + searchTermId + " to set category");
+      return;
+    }
+    term.setCategoryId(categoryId);
     storage.filterResultsForCategory(searchTermId, categoryId);
   }
 }

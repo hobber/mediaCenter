@@ -65,13 +65,15 @@ public class EbaySearchTerm implements EbaySearchTermBase {
     this.categoryId = categoryId; 
   }
   
+  public boolean hasCategory() {
+    return categoryId != -1;
+  }
+  
   public void update() {
     LinkedList<EbayListItem> list = api.findByKeywords(searchTerm);
     for(EbayListItem item : list) {
-      if(categoryId >= 0 && Long.parseLong(item.getCategoryId()) != categoryId) {
-        System.out.println("skip " + item);
+      if(categoryId >= 0 && Long.parseLong(item.getCategoryId()) != categoryId)
         continue;
-      }
       
       if(api.knowsItemId(Long.parseLong(item.getItemId())))
         continue;
