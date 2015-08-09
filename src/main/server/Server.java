@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,6 @@ import main.Main;
 import main.http.HTTPUtils;
 import main.plugins.PluginController;
 import main.server.content.ContentItem;
-import main.server.content.UserContentGroup;
 import main.server.menu.ContentMenuEntry;
 import main.utils.ConfigElementGroup;
 import main.utils.Logger;
@@ -34,8 +32,6 @@ public class Server implements HttpHandler {
 	private static Server INSTANCE;
 	private HttpServer server;
 	private int portNumber;
-	
-	private Map<String, UserContentGroup> contentGroups = new HashMap<String, UserContentGroup>();
 	
 	private Server(ConfigElementGroup config) {
 		portNumber = config.getInt("port", 11011);
@@ -189,16 +185,5 @@ public class Server implements HttpHandler {
 		} catch(Exception e) {
 		  Logger.error(e);
 		}
-	}
-	
-	public static boolean registerUserContentGroup(UserContentGroup group) {		
-		String name = group.getName();
-		if(INSTANCE.contentGroups.containsKey(name)) {
-			System.err.println("ERROR: " + name + " was already added");
-			return false;
-		}
-		
-		INSTANCE.contentGroups.put(name, group);		
-		return true;
 	}
 }

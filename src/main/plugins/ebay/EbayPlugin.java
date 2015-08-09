@@ -7,13 +7,16 @@ import main.utils.ConfigElementGroup;
 public class EbayPlugin implements Plugin {
   
   private EbayAPI api;
-  private EbayContentPageReport reportPage;
-  private EbayContentPageConfig configPage;
+  private ContentMenuEntry entry;
   
   public EbayPlugin(ConfigElementGroup config) {
     api = new EbayAPI(config);
-    reportPage = new EbayContentPageReport(api);
-    configPage = new EbayContentPageConfig(api);
+    EbayContentPageReport reportPage = new EbayContentPageReport(api);
+    EbayContentPageConfig configPage = new EbayContentPageConfig(api);
+    
+    entry = new ContentMenuEntry(this, Plugin.ICON_PATH + "ebay.svg");
+    entry.addSubMenuEntry(reportPage);
+    entry.addSubMenuEntry(configPage);
   }
   
   @Override
@@ -33,9 +36,6 @@ public class EbayPlugin implements Plugin {
 
   @Override
   public ContentMenuEntry getMenuEntry() {    
-    ContentMenuEntry entry = new ContentMenuEntry(this, Plugin.ICON_PATH + "ebay.svg");
-    entry.addSubMenuEntry(reportPage);
-    entry.addSubMenuEntry(configPage);
     return entry;
   }
 }
