@@ -109,18 +109,18 @@ public class TMDBSearchPage implements UserContentPage {
 			
 		  ContentGroup infos = new ContentGroup();
 		  page.addContentGroup(infos);		
-			infos.put(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));			
+			infos.add(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));			
 		  	
 			ContentText cast = new ContentText(20, 43, "&bull;Besetzung");
-			infos.put(cast);
+			infos.add(cast);
 			cast.appendLink(new ContentOnClick(context, "cast="+id));
 						
 			ContentText similar = new ContentText(20, 66, "&bull;Ähnliche Serien");
-			infos.put(similar);
+			infos.add(similar);
 			similar.appendLink(new ContentOnClick(context, "similar="+id));
 			
 			ContentText episodes = new ContentText(20, 89, "&bull;Episoden");
-			infos.put(episodes);
+			infos.add(episodes);
 			episodes.appendLink(new ContentOnClick(context, "episodes="+id));			
 		} catch(JSONException e) {
 			System.err.println("ERROR: " + e.getMessage());

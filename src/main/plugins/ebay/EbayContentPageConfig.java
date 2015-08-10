@@ -8,7 +8,6 @@ import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentInputForm;
 import main.server.content.ContentItem;
-import main.server.content.ContentOptions;
 import main.server.content.ContentOverlay;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
@@ -54,13 +53,13 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
   private ContentPage getMainPage() {
     ContentPage page = new ContentPage("Ebay Config");
     ContentGroup description = page.createContentGroup();    
-    description.put(new ContentText(5, 5, "To perform one of the following operations on one oft the elements first click on the element."));
+    description.add(new ContentText(5, 5, "To perform one of the following operations on one oft the elements first click on the element."));
     ContentGroup actions = page.createContentGroup();
-    actions.put(new ContentButton(5, 5, "add group", "createGroupDialog"));
-    actions.put(new ContentButton(90, 5, "add search term", "createTermDialog"));
-    actions.put(new ContentButton(210, 5, "rename", "renameItemDialog"));
-    actions.put(new ContentButton(279, 5, "delete", "deleteItemDialog"));
-    actions.setOptions(new ContentOptions("groupBoarder", "true"));
+    actions.add(new ContentButton(5, 5, "add group", "createGroupDialog"));
+    actions.add(new ContentButton(90, 5, "add search term", "createTermDialog"));
+    actions.add(new ContentButton(210, 5, "rename", "renameItemDialog"));
+    actions.add(new ContentButton(279, 5, "delete", "deleteItemDialog"));
+    actions.useGroupBoarder();
     
     termList.clear();
     page.addContentGroups(buildTreeFromSearchTermGroup(searchTermHistory.getTerms(), 0));
@@ -79,16 +78,16 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
       list.add(contentGroup);
       if(term instanceof EbaySearchTermGroup) {
         ContentText text = new ContentText(5, 5, indent + "&bull; " + term.getName());
-        contentGroup.put(text);
+        contentGroup.add(text);
         EbaySearchTermGroup termGroup = (EbaySearchTermGroup)term;
-        text.setOptions(new ContentOptions("selectionId", Integer.toString(termList.size())));
+        text.setSelectionId(Integer.toString(termList.size()));
         termList.add(termGroup);
         list.addAll(buildTreeFromSearchTermGroup(termGroup, level + 1));
       }
       else {
         ContentText text = new ContentText(5, 5, indent + "&ndash; " + term.getName());
-        contentGroup.put(text);
-        text.setOptions(new ContentOptions("selectionId", Integer.toString(termList.size())));
+        contentGroup.add(text);
+        text.setSelectionId(Integer.toString(termList.size()));
         termList.add(term);
       }
     }
@@ -105,11 +104,11 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
     
     if(index == null || (index >= 0 && index < termList.size() - 1 && termList.get(index) instanceof EbaySearchTermGroup)) {
       ContentInputForm form = new ContentInputForm("createGroup", "add");
-      overlay.put(form);
+      overlay.add(form);
       form.addInput("name", "name");
     }
     else
-      overlay.put(new ContentText(5, 5, "Groups can only be added to groups!"));    
+      overlay.add(new ContentText(5, 5, "Groups can only be added to groups!"));    
     return overlay;
   }
   
@@ -135,11 +134,11 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
     
     if(index == null || (index >= 0 && index < termList.size() - 1 && termList.get(index) instanceof EbaySearchTermGroup)) {
       ContentInputForm form = new ContentInputForm("createTerm", "add");
-      overlay.put(form);
+      overlay.add(form);
       form.addInput("search term", "name");
     }
     else
-      overlay.put(new ContentText(5, 5, "Search terms can only be added to groups!"));    
+      overlay.add(new ContentText(5, 5, "Search terms can only be added to groups!"));    
     return overlay;
   }
   
@@ -165,11 +164,11 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
     
     if(index != null) {
       ContentInputForm form = new ContentInputForm("renameItem", "rename");
-      overlay.put(form);
+      overlay.add(form);
       form.addInput("new name", "name");
     }
     else
-      overlay.put(new ContentText(5, 5, "You must select an item to rename it!"));    
+      overlay.add(new ContentText(5, 5, "You must select an item to rename it!"));    
     return overlay;
   }
   
@@ -192,13 +191,13 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
     
     if(index != null) {
       ContentGroup warning = new ContentGroup();
-      overlay.put(warning);
-      warning.put(new ContentText(5, 5, "Are you sure that you want to delete this item?"));
+      overlay.add(warning);
+      warning.add(new ContentText(5, 5, "Are you sure that you want to delete this item?"));
       ContentInputForm form = new ContentInputForm("deleteItem", "delete");
-      overlay.put(form);
+      overlay.add(form);
     }
     else
-      overlay.put(new ContentText(5, 5, "You must select an item to delete it!"));    
+      overlay.add(new ContentText(5, 5, "You must select an item to delete it!"));    
     return overlay;
   }
   

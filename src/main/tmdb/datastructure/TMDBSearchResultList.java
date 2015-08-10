@@ -43,8 +43,8 @@ public class TMDBSearchResultList implements ContentObject {
 		for(TMDBSearchResult result : resultList) {		
 			ContentGroup group = new ContentGroup();
 			page.addContentGroup(group);
-			group.put(new ContentImage(0, 0, 100, 150, TMDB.getPosterURL(result.getPosterPath(), true)));
-			group.put(new ContentText(120, 20, result.getDescription()));	
+			group.add(new ContentImage(0, 0, 100, 150, TMDB.getPosterURL(result.getPosterPath(), true)));
+			group.add(new ContentText(120, 20, result.getDescription()));	
 			group.appendLink(new ContentOnClick(context, "show="+result.getId()));
 		}
 		return page;

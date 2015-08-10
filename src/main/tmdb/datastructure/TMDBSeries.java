@@ -82,46 +82,46 @@ public class TMDBSeries extends DataObject implements ContentObject {
 		ContentGroup group = new ContentGroup();
 		page.addContentGroup(group);
 		
-		group.put(new ContentImage(0, 0, 300, 450, TMDB.getPosterURL(schema.getString("posterPath"), false)));		
+		group.add(new ContentImage(0, 0, 300, 450, TMDB.getPosterURL(schema.getString("posterPath"), false)));		
 		
 		int x = 330, y = 20, stepY = 23;
-		group.put(new ContentText(x, y, schema.getString("name"), ContentText.TextType.TITLE));
+		group.add(new ContentText(x, y, schema.getString("name"), ContentText.TextType.TITLE));
 		y += stepY * 2;
 		
 		String genres = "Genres: ";
 		List<Integer> genreIds = schema.getIdList("genreIds");
 		for(int i=0; i<genreIds.size(); i++)
 			genres += (i > 0 ? ", " : "") + TMDB.getGenreName(genreIds.get(i));
-		group.put(new ContentText(x, y, genres)); 
+		group.add(new ContentText(x, y, genres)); 
 		y += stepY;
 				
 		short minRunTime = schema.getShort("minRunTime");
 		short maxRunTime = schema.getShort("maxRunTime");
 		if(minRunTime > 0) {
 			if(minRunTime == maxRunTime)
-				group.put(new ContentText(x, y, "Dauer: " + minRunTime + "min"));
+				group.add(new ContentText(x, y, "Dauer: " + minRunTime + "min"));
 			else
-				group.put(new ContentText(x, y, "Dauer: " + minRunTime + "-" + maxRunTime + "min"));
+				group.add(new ContentText(x, y, "Dauer: " + minRunTime + "-" + maxRunTime + "min"));
 			y += stepY;
 		}
 		
 		int numberOfSeasons = schema.getInt("numberOfSeasons");
 		int numberOfEpisodes = schema.getInt("numberOfEpisodes");
 		boolean completed = schema.getByte("completed") > 0 ? true : false;		
-		group.put(new ContentText(x, y, "Folgen: " + numberOfEpisodes + (completed ? "" : "+") + 
+		group.add(new ContentText(x, y, "Folgen: " + numberOfEpisodes + (completed ? "" : "+") + 
 				                            " in " + numberOfSeasons + " Staffel" + (numberOfSeasons > 0 ? "n" : "")));
 		y += stepY;
 		
-		group.put(new ContentText(x, y, "Bewertung: " + Math.round(schema.getFloat("popularity")*10.0)/10.0));
+		group.add(new ContentText(x, y, "Bewertung: " + Math.round(schema.getFloat("popularity")*10.0)/10.0));
 		y += stepY;
 	  
 	  String homepage = schema.getString("homepage");
 	  if(homepage.length() > 0) {
-	  	group.put(new ContentText(x, y, "Homepage: ", homepage));
+	  	group.add(new ContentText(x, y, "Homepage: ", homepage));
 	  	y += stepY;
 	  }
 				
-		group.put(new ContentText(x, y+stepY, "Inhalt: " + schema.getString("summary"), ContentText.TextType.BLOCK));
+		group.add(new ContentText(x, y+stepY, "Inhalt: " + schema.getString("summary"), ContentText.TextType.BLOCK));
 		return page;
 	}
 	

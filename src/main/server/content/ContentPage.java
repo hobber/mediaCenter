@@ -1,48 +1,40 @@
 package main.server.content;
 
-import java.util.LinkedList;
 import java.util.List;
+
 
 public class ContentPage extends ContentItem {
 
-	private LinkedList<ContentGroup> groups = new LinkedList<ContentGroup>();
-	private ContentOptions options;
-	private ContentTitleBar titleBar;
+	private ContentItemList content = new ContentItemList();
 	
 	public ContentPage() {
+	  super("page");
 	}
 	
 	public ContentPage(String title) {
-	  titleBar = new ContentTitleBar();
-    titleBar.addContentItem(new ContentText(5, 5, title, ContentText.TextType.TITLE));
+	  super("page");
+	  setAttribute("titlebar", new ContentTitleBar(title));
+	  setAttribute("page", content);
 	}
+	
+	public ContentPage(ContentTitleBar titleBar) {
+    super("page");
+    setAttribute("titlebar", titleBar);
+    setAttribute("page", content);
+  }
 	
 	public ContentGroup createContentGroup() {
 	  ContentGroup group = new ContentGroup();
-	  groups.add(group);
+	  content.add(group);
 	  return group;
 	}
 	
 	public void addContentGroup(ContentGroup group) {				
-		groups.add(group);
+		content.add(group);
 	}
 	
 	public void addContentGroups(List<ContentGroup> groups) {
-	  this.groups.addAll(groups);
-	}
-	
-	public void setOptions(ContentOptions options) {
-		this.options = options;
-	}
-	
-	public void setTitleBar(ContentTitleBar menu) {
-		this.titleBar = menu;
-	}
-	
-	public String getContentString() {
-	  String s = "{\"type\": \"page\", \"options\": " + options + ", \"titlebar\": " + titleBar + ", \"page\": [";
-	  for(int i=0; i<groups.size(); i++)
-	    s += (i > 0 ? ", " : "") + groups.get(i).getContentString(); 
-	  return s + "]}";
+	  for(ContentGroup group : groups)
+	    content.add(group);
 	}
 }

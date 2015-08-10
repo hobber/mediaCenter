@@ -3,7 +3,6 @@ package main.server.menu;
 import java.util.Map;
 
 import main.server.content.ContentItem;
-import main.server.content.ContentOnClick;
 
 import org.json.JSONObject;
 
@@ -25,10 +24,6 @@ public abstract class ContentMenuSubEntry {
     JSONObject container = new JSONObject();
     container.put("name", name);
     return container;
-  }
-  
-  public ContentOnClick getContentOnClickElement(String parameter) {
-    return new ContentOnClick(id, subId, parameter);
   }
   
   public void setIds(int id, int subId) {

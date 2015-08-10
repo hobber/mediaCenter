@@ -25,19 +25,19 @@ public class TMDBLibraryPage implements UserContentPage {
 		ContentPage page = new ContentPage();			
 		ContentTitleBar menu = new ContentTitleBar();
 		page.setTitleBar(menu);
-		menu.put(new ContentBackButton(0));
+		menu.add(new ContentBackButton(0));
 
 		ContentGroup series = new ContentGroup();		
 		page.addContentGroup(series);
 
-		series.put(new ContentText(5, 5, "Once upon a time"));
+		series.add(new ContentText(5, 5, "Once upon a time"));
 		ContentGroup season = new ContentGroup();
 		series.appendLink(season);
-		season.put(new ContentText(5, 5, "Season 01"));		
+		season.add(new ContentText(5, 5, "Season 01"));		
 		ContentGroup episode = new ContentGroup();
 		season.appendLink(episode);
 		ContentImage image = new ContentImage(0, 0, 100, 120, "http://image.tmdb.org/t/p/w500/6S8rM2Qq3B3g3dgAnJlilgUc2dE.jpg");
-		episode.put(image);
+		episode.add(image);
 
 		return page;
   }

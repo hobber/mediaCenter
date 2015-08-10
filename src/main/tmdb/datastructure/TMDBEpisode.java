@@ -30,8 +30,8 @@ public class TMDBEpisode {
 		String summary = episodeNumber + ": " + name + " (" + airDate + ")";
 		if(averageVote > 0)
 			summary += "     Bewertung: " + averageVote;
-		group.put(new ContentText(5, 5, summary));		
-		group.put(new ContentText(5, 28, "Inhalt: " + overview));
+		group.add(new ContentText(5, 5, summary));		
+		group.add(new ContentText(5, 28, "Inhalt: " + overview));
 		return group;
 	}
 }

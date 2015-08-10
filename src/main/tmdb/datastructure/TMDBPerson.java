@@ -64,39 +64,39 @@ public class TMDBPerson implements ContentObject {
 		ContentGroup person = new ContentGroup();
 		page.addContentGroup(person);
 		
-		person.put(new ContentImage(0, 0, 300, 450, TMDB.getPosterURL(profilePath, false)));
+		person.add(new ContentImage(0, 0, 300, 450, TMDB.getPosterURL(profilePath, false)));
 		
 		int x = 330, y = 20, stepY = 23;
-		person.put(new ContentText(x, y, name, ContentText.TextType.TITLE));
+		person.add(new ContentText(x, y, name, ContentText.TextType.TITLE));
 		y += 2*stepY;
 		
 		if(birthday.length() > 0) {
 			String birth = "Geburt: " + TMDB.getDate(birthday);
 			if(placeOfBirth.length() > 0)
 				birth += " (" + placeOfBirth + ")";
-			person.put(new ContentText(x, y, birth));
+			person.add(new ContentText(x, y, birth));
 			y += stepY;
 		}
 		
 		if(deathday.length() > 0) {
-			person.put(new ContentText(x, y, "Tod: " + TMDB.getDate(deathday)));
+			person.add(new ContentText(x, y, "Tod: " + TMDB.getDate(deathday)));
 			y += stepY;
 		}
 				
 	  if(homepage.length() > 0) {
-	  	person.put(new ContentText(x, y, "Homepage: ", homepage));
+	  	person.add(new ContentText(x, y, "Homepage: ", homepage));
 	  	y += stepY;
 	  }			
 		
 		if(biography.length() > 0)
-			person.put(new ContentText(x, y+stepY, "Details: " + biography, ContentText.TextType.BLOCK));		
+			person.add(new ContentText(x, y+stepY, "Details: " + biography, ContentText.TextType.BLOCK));		
 		
 		ContentGroup infos = new ContentGroup();
 	  page.addContentGroup(infos);		
-		infos.put(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));
+		infos.add(new ContentText(10, 10, "Weiter Informationen:", ContentText.TextType.SUBTITLE));
 		
 		ContentText films = new ContentText(20, 43, "&bull;Filmografie");
-		infos.put(films);
+		infos.add(films);
 		films.appendLink(new ContentOnClick(context, "personCredits="+id));
 	  return page;
   }

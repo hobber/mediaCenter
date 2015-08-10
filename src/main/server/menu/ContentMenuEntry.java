@@ -13,19 +13,19 @@ import org.json.JSONObject;
 
 public class ContentMenuEntry {
   
-  private Plugin plugin;
+  private String pluginName;
   private String iconPath;
   private HashMap<String, ContentMenuSubEntry> subEntryMap = new HashMap<String, ContentMenuSubEntry>();  
   private LinkedList<ContentMenuSubEntry> subEntryList = new LinkedList<ContentMenuSubEntry>();
   
   public ContentMenuEntry(Plugin plugin, String iconPath) {
-    this.plugin = plugin;
+    this.pluginName = plugin.getName();
     this.iconPath = iconPath;
   }
   
   public void addSubMenuEntry(ContentMenuSubEntry entry) {
     if(subEntryMap.containsKey(entry.getName())) {
-      Logger.error("Plugin " + plugin.getName() + " already contains a page with name " + entry.getName());
+      Logger.error("Plugin " + pluginName + " already contains a page with name " + entry.getName());
       return;
     }
     subEntryMap.put(entry.getName(), entry);
@@ -33,7 +33,7 @@ public class ContentMenuEntry {
   }
   
   public String getName() {
-    return plugin.getName();
+    return pluginName;
   } 
   
   public JSONObject toJSON() {
@@ -48,8 +48,8 @@ public class ContentMenuEntry {
     String pageName = parameters.remove("page");
     ContentMenuSubEntry entry = subEntryMap.get(pageName);
     if(entry == null) {
-      Logger.error("invalid page name " + pageName + " for plugin " + plugin.getName());
-      return new ContentErrorPage("invalid page name " + pageName + " for plugin " + plugin.getName());
+      Logger.error("invalid page name " + pageName + " for plugin " + pluginName);
+      return new ContentErrorPage("invalid page name " + pageName + " for plugin " + pluginName);
     }
     return entry.handleAPIRequest(parameters);
   }

@@ -100,7 +100,8 @@ public class Server implements HttpHandler {
 		
 		Headers headers = exchange.getResponseHeaders();
     headers.add("Content-Type", "application/jsonp; charset=ISO-8859-1");
-		byte[] response = item.getContentString().getBytes();
+    System.out.println("response: " + item.toString());
+		byte[] response = item.toString().getBytes();
 		exchange.sendResponseHeaders(200, response.length);
 		OutputStream os = exchange.getResponseBody();
 		os.write(response);		

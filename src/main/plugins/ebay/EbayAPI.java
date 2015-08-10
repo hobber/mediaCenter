@@ -94,8 +94,7 @@ public class EbayAPI {
   }
   
   LinkedList<EbayListItem> findByKeywords(String keywords) {
-    String keywordsEencoded = HTTPUtils.replaceSpaces(keywords);
-    Logger.log("Ebay: find by keywords " + keywordsEencoded);
+    String keywordsEencoded = HTTPUtils.replaceSpaces(keywords);    
     String url = String.format(SEARCH_URL + "?OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=" + 
                  appId + "&GLOBAL-ID=" + globalId + "&RESPONSE-DATA-FORMAT=JSON&keywords=" + keywordsEencoded);
     HTTPResponse response = HTTPUtils.sendHTTPGetRequest(url);

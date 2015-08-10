@@ -161,7 +161,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	 *  - height: height of image [int]
 	 *  - src: uri of image [string]
 	 */
-    contentFactories.img = function(parent, definition) {
+    contentFactories.image = function(parent, definition) {
       var element = document.createElement('img');
       parent.appendChild(element);
       element.setAttribute('id', 'contentItem');
@@ -179,9 +179,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
      *  - x: x-offset [int]
      *  - y: y-offset [int]
      *  - ?style: additional style parameters (bold,...) [string]
-     *  - ?options:
-	 *      - ?selectionId: the text selectable, selected ID will be send on next API call [string]
-     *  - ?widths: defines widths of columns [array of strings]
+     *  - ?selectionId: the text selectable, selected ID will be send on next API call [string]
      */
     contentFactories.text = function(parent, definition) {
       var element = document.createElement('span');
@@ -202,9 +200,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         text.setAttribute('href', definition.url);
       }
 	  
-	  if(definition.options && definition.options.selectionId !== undefined) {
+	  if(definition.selectionId !== undefined) {
 	    element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
-        element.selectionId = definition.options.selectionId;
+        element.selectionId = definition.selectionId;
 		element.onSelect = function() {
 		  element.style.color = 'blue';
 		};
@@ -368,9 +366,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	/**
      * GROUP
      *  - items: will shown in the overlay
-	 *  -?options: optional list of following options
-	 *      - groupBoarder: use border-bottom [boolean]
-	 *      - onClickParameter: parameter for api call on click event [string]
+	 *  - ?groupBoarder: use border-bottom [boolean]
+	 *  - ?onClickParameter: parameter for api call on click event [string]
      */
     contentFactories.group = function(parent, definition) {
       var groupElement = document.createElement('div');
@@ -392,15 +389,15 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
 
       var style = 'height: ' + maxY + 'px;';
-      if(definition.options && definition.options.groupBoarder)
+      if(definition.groupBoarder === true)
         style +='border-bottom: 1px solid #000000; ';
       groupElement.setAttribute('style', style);
 
-	  if(definition.options !== undefined && definition.options.onClickParameter !== undefined) {
+	  if(definition.onClickParameter !== undefined) {
 		groupElement.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
 		groupElement.onClick = function() {
 		  console.log('clicked');
-		  load($location.url(), definition.options.onClickParameter, showContent);
+		  load($location.url(), definition.onClickParameter, showContent);
 		};
         $compile(groupElement)($scope);
 		$scope.pageElements.push(groupElement);

@@ -41,7 +41,7 @@ public class TMDBEpisodeList implements ContentObject {
 	  	LinkedList<TMDBEpisode> season = episodes.get(i);
 	  	ContentGroup group = new ContentGroup();
 	  	page.addContentGroup(group);
-	  	group.put(new ContentText(5, 5, "Staffel " + (i+1), ContentText.TextType.SUBTITLE));
+	  	group.add(new ContentText(5, 5, "Staffel " + (i+1), ContentText.TextType.SUBTITLE));
 	  	
 	  	for(int j=0; j<season.size(); j++) {	  		
 	  		page.addContentGroup(season.get(j).getContentGroup(context));

@@ -34,6 +34,7 @@ public class EbaySearchTermHistory implements DataSchemaObjectInterface {
   }
   
   public void update() {
+    Logger.log("Ebay: update search term history");
     terms.update();
   }
   

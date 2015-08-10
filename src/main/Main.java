@@ -2,6 +2,7 @@ package main;
 import main.plugins.PluginController;
 import main.plugins.ebay.EbayPlugin;
 import main.server.Server;
+import main.server.content.ContentImage;
 import main.utils.ConfigFile;
 import main.utils.Logger;
 

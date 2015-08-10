@@ -91,10 +91,10 @@ public class TMDBPersonCredits implements ContentObject {
 	  ContentGroup group = new ContentGroup();
 	  page.addContentGroup(group);
 	  
-	  group.put(new ContentText(10, 5, "Filmografie:", ContentText.TextType.SUBTITLE));	  
+	  group.add(new ContentText(10, 5, "Filmografie:", ContentText.TextType.SUBTITLE));	  
 	  
 	  ContentTable table = new ContentTable(10, 35, 3, 60);
-	  group.put(table);
+	  group.add(table);
 	  for(SingleCredit credit: creditList) {
 	  	LinkedList<ContentItem> columns = new LinkedList<ContentItem>();
 	  	columns.add(new ContentImage(0, 0, 40, 60, TMDB.getPosterURL(credit.getPosterPath(), true)));	  	

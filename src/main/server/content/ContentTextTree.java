@@ -1,39 +1,33 @@
 package main.server.content;
 
-import org.json.JSONObject;
 
 public class ContentTextTree extends ContentItem {
   
-  public ContentTextTree() {
-    data.put("type", "texttree");
+  private static class ContentTextTreeNode extends ContentItem {
+    
+    public ContentTextTreeNode(String id, String title, boolean isLeafe) {
+      super("texttreenode");
+      setAttribute("id", id);
+      setAttribute("title", title);
+      if(isLeafe == false)
+        setAttribute("children", "load");
+    }
   }
   
+  private ContentItemList children = new ContentItemList();
+  
   public ContentTextTree(int x, int y) {
-    data.put("type", "texttree");
-    data.put("x", x);
-    data.put("y", y);
+    super("texttree");
+    setAttribute("x", x);
+    setAttribute("y", y);
+    setAttribute("children", children);
   }
   
   public void addNode(String id, String title) {
-    JSONObject element = new JSONObject();
-    element.put("id", id);
-    element.put("title", title);
-    element.put("children", "load");
-    data.append("children", element);
+    children.add(new ContentTextTreeNode(id, title, false));
   }
   
-  public void addNode(String id, String title, ContentTextTree children) {
-    JSONObject element = new JSONObject();
-    element.put("id", id);
-    element.put("title", title);
-    element.put("children", children);
-    data.append("children", element);
-  }
-  
-  public void addLeaf(String id, String title) {
-    JSONObject element = new JSONObject();
-    element.put("id", id);
-    element.put("title", title);
-    data.append("children", element);
+  public void addLeafe(String id, String title) {
+    children.add(new ContentTextTreeNode(id, title, true));
   }
 }
