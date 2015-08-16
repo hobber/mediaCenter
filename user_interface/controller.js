@@ -11,15 +11,10 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       }
     };
 
-    $scope.clickedMenu = function(pluginName, pageName) {	  
-	  $location.path('mediacenter');
-      $location.search({plugin: pluginName, page: pageName});
+    $scope.clickedMenu = function(pluginName, pageName) {	
 	  $scope.plugin = pluginName;
-	  $scope.page = pageName;
-	  load('plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
-	  $scope.$watch('$location.path', function() {
-	    console.log('CHANGED LOCATION:', $location.path(), $location.search(), $location.url());
-      });
+	  $scope.page = pageName;  
+	  load($location.path() + '?plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
     };
     
     $scope.onClick = function(index) {	
@@ -41,14 +36,25 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       try {
         var xmlHttp = new XMLHttpRequest();
 		
-		var parameterText = parameter !== undefined ? '&parameter=' + parameter : '';
+		var parameterText = '';
+		if(typeof parameter === 'object')
+		  for(name in parameter)
+		    parameterText += '&' + name + '=' + parameter[name];
+        else if(parameter !== undefined)
+ 		  parameterText = '&parameter=' + parameter;
 		parameterText += $scope.selectedElement !== undefined ? '&selectionId=' + $scope.selectedElement.selectionId : '';
+		
+		if($scope.previouslyLoaded === request + parameterText)
+		  return;
+		else
+		  $scope.previouslyLoaded = request + parameterText;
+		
 		xmlHttp.open('GET', request + parameterText, true);
 		  
         xmlHttp.send();
         xmlHttp.onloadend = function() {
           try {
-            if(xmlHttp.status === 200) {
+            if(xmlHttp.status === 200) {			
               callback(JSON.parse(xmlHttp.response));
             } else {
               console.log('request failed');
@@ -81,6 +87,10 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	    setDisabledRecursive(element.children[i], disabled);
 	  element.disabled = disabled;
 	};
+	
+    window.onhashchange = function() {
+	  load($location.url(), undefined, showContent);
+    };
 
     //========================================================================= MENU
 
@@ -395,8 +405,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 
 	  if(definition.onClickParameter !== undefined) {
 		groupElement.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
-		groupElement.onClick = function() {
-		  console.log('clicked');
+		groupElement.onClick = function() {		  
 		  load($location.url(), definition.onClickParameter, showContent);
 		};
         $compile(groupElement)($scope);
@@ -538,6 +547,11 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  $scope.closeOverlay();
 	  delete delete $scope.selectedElement;
 	  $scope.pageElements = [];
+	  
+	  if(content.location !== undefined) {
+	    $location.search(content.location);
+		$scope.$apply();
+      }
 	  
 	  var options = content.options;
 

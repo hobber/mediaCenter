@@ -7,18 +7,22 @@ public class ContentPage extends ContentItem {
 
 	private ContentItemList content = new ContentItemList();
 	
-	public ContentPage() {
+	public ContentPage(ContentLocation location) {
 	  super("page");
+	  setAttribute("location", location);
+	  setAttribute("page", content);
 	}
 	
-	public ContentPage(String title) {
+	public ContentPage(ContentLocation location, String title) {
 	  super("page");
+	  setAttribute("location", location);
 	  setAttribute("titlebar", new ContentTitleBar(title));
 	  setAttribute("page", content);
 	}
 	
-	public ContentPage(ContentTitleBar titleBar) {
+	public ContentPage(ContentLocation location, ContentTitleBar titleBar) {
     super("page");
+    setAttribute("location", location);
     setAttribute("titlebar", titleBar);
     setAttribute("page", content);
   }

@@ -11,8 +11,8 @@ public class EbayPlugin implements Plugin {
   
   public EbayPlugin(ConfigElementGroup config) {
     api = new EbayAPI(config);
-    EbayContentPageReport reportPage = new EbayContentPageReport(api);
-    EbayContentPageConfig configPage = new EbayContentPageConfig(api);
+    EbayContentPageReport reportPage = new EbayContentPageReport(getName(), api);
+    EbayContentPageConfig configPage = new EbayContentPageConfig(getName(), api);
     
     entry = new ContentMenuEntry(this, Plugin.ICON_PATH + "ebay.svg");
     entry.addSubMenuEntry(reportPage);

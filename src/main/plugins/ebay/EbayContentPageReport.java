@@ -12,6 +12,7 @@ import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
 import main.server.content.ContentItem;
+import main.server.content.ContentLocation;
 import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
@@ -66,12 +67,14 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   static final SimpleDateFormat ITEM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   static final SimpleDateFormat PRINT_DATE_FORMAT = new SimpleDateFormat("dd.MM.YYYY HH:mm:ss");
   
+  private String pluginName;
   private EbayAPI api;
   private EbaySearchTermHistory history;
   private List<Statistic> statistic = new LinkedList<Statistic>();
   
-  public EbayContentPageReport(EbayAPI api) {
+  public EbayContentPageReport(String pluginName, EbayAPI api) {
     super("Report");
+    this.pluginName = pluginName;
     this.api = api;
     this.history = api.getSearchTermHistory();
   }
@@ -86,7 +89,7 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   }
   
   private ContentPage getMainPage() {
-    ContentPage page = new ContentPage("Ebay Report");
+    ContentPage page = new ContentPage(new ContentLocation(pluginName, getName()), "Ebay Report");
     statistic.clear();
     updateAnalysis(history.getTerms());
     
@@ -100,7 +103,7 @@ public class EbayContentPageReport extends ContentMenuSubEntry {
   }
   
   private ContentPage getDetailPage(String parameter) {
-    ContentPage page = new ContentPage("Ebay Report");
+    ContentPage page = new ContentPage(new ContentLocation(pluginName, getName(), parameter), "Ebay Report");
     int id = 0;
     try {
       id = Integer.parseInt(parameter);

@@ -8,6 +8,7 @@ import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentInputForm;
 import main.server.content.ContentItem;
+import main.server.content.ContentLocation;
 import main.server.content.ContentOverlay;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
@@ -16,12 +17,14 @@ import main.utils.Path;
 
 public class EbayContentPageConfig extends ContentMenuSubEntry {
 
+  private String pluginName;
   private EbayAPI api;
   private EbaySearchTermHistory searchTermHistory;
   private LinkedList<EbaySearchTermBase> termList = new LinkedList<EbaySearchTermBase>();
   
-  public EbayContentPageConfig(EbayAPI api) {
+  public EbayContentPageConfig(String pluginName, EbayAPI api) {
     super("Config");
+    this.pluginName = pluginName;
     this.api = api;
     this.searchTermHistory = api.getSearchTermHistory();
   }
@@ -51,7 +54,7 @@ public class EbayContentPageConfig extends ContentMenuSubEntry {
   }
   
   private ContentPage getMainPage() {
-    ContentPage page = new ContentPage("Ebay Config");
+    ContentPage page = new ContentPage(new ContentLocation(pluginName, getName()), "Ebay Config");
     ContentGroup description = page.createContentGroup();    
     description.add(new ContentText(5, 5, "To perform one of the following operations on one oft the elements first click on the element."));
     ContentGroup actions = page.createContentGroup();
