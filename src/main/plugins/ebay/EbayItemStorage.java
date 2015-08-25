@@ -181,7 +181,7 @@ public class EbayItemStorage implements DataSchemaObjectInterface {
   }
   
   public String getImageFileNameFromId(int imageId, boolean directoryPrefix) {
-    return String.format((directoryPrefix ? "user_interface/" : "") + "data/images/ebay/%09d.jpg", imageId);
+    return String.format((directoryPrefix ? "user_interface/" : "") + "data/ebay/%09d.jpg", imageId);
   }
   
   public void registerCategory(long id, String name) {

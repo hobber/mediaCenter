@@ -1,5 +1,6 @@
 package main;
 import main.plugins.PluginController;
+import main.plugins.creator.CreatorPlugin;
 import main.plugins.ebay.EbayPlugin;
 import main.server.Server;
 import main.server.content.ContentImage;
@@ -40,6 +41,7 @@ public class Main {
 		  
 //		  PluginController.register(new AustrianCharts());
 		  PluginController.register(new EbayPlugin(config.getElement("config.plugins.ebay")));
+		  PluginController.register(new CreatorPlugin());
 		  
 		  
 		  PluginController.update();

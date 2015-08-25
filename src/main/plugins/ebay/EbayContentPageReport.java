@@ -13,7 +13,6 @@ import main.server.content.ContentGroup;
 import main.server.content.ContentImage;
 import main.server.content.ContentItem;
 import main.server.content.ContentLocation;
-import main.server.content.ContentOptions;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.menu.ContentMenuSubEntry;

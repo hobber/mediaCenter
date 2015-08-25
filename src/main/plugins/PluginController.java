@@ -7,6 +7,7 @@ import java.util.Map;
 
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentItem;
+import main.server.content.ContentLocation;
 import main.server.menu.ContentMenuEntry;
 
 public class PluginController {
@@ -37,7 +38,7 @@ public class PluginController {
 	  String pluginName = parameters.remove("plugin");
 	  ContentMenuEntry entry = menuMap.get(pluginName);
 	  if(entry == null)
-	    return new ContentErrorPage("unknown plugin " + pluginName);
+	    return new ContentErrorPage(new ContentLocation(pluginName, parameters.get("page")), "unknown plugin " + pluginName);
 	  return entry.handleAPIRequest(parameters);
 	}
 	

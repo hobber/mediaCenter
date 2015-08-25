@@ -25,7 +25,7 @@ public class TMDBLibraryPage implements UserContentPage {
 		ContentPage page = new ContentPage();			
 		ContentTitleBar menu = new ContentTitleBar();
 		page.setTitleBar(menu);
-		menu.add(new ContentBackButton(0));
+		menu.addFixedWidthText(new ContentBackButton(0));
 
 		ContentGroup series = new ContentGroup();		
 		page.addContentGroup(series);

@@ -4,7 +4,7 @@ package main.server.content;
 public class ContentText extends ContentItem {
   
 	public enum TextType {
-		NORMAL, TITLE, SUBTITLE, BLOCK
+		NORMAL, TITLE, SUBTITLE, BLOCK, FIXED_SIZE
 	}
 
 	public ContentText(int x, int y, String text) {
@@ -36,6 +36,8 @@ public class ContentText extends ContentItem {
 		  setAttribute("style", "font-size: 21px; font-weight: 700;");
 		else if(type == TextType.BLOCK)
 		  setAttribute("style", "text-align: justify; margin-right: 50px;");
+		else if(type == TextType.FIXED_SIZE)
+		  setAttribute("style", "font-family:'Courier New', Arial;");
 	}
 	
 	public void setSelectionId(String id) {

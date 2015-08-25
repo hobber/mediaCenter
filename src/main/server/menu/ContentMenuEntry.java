@@ -7,6 +7,7 @@ import java.util.Map;
 import main.plugins.Plugin;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentItem;
+import main.server.content.ContentLocation;
 import main.utils.Logger;
 
 import org.json.JSONObject;
@@ -49,7 +50,7 @@ public class ContentMenuEntry {
     ContentMenuSubEntry entry = subEntryMap.get(pageName);
     if(entry == null) {
       Logger.error("invalid page name " + pageName + " for plugin " + pluginName);
-      return new ContentErrorPage("invalid page name " + pageName + " for plugin " + pluginName);
+      return new ContentErrorPage(new ContentLocation(pluginName, pageName), "invalid page name " + pageName + " for plugin " + pluginName);
     }
     return entry.handleAPIRequest(parameters);
   }

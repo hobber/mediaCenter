@@ -107,8 +107,10 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       for(var entryName in response) {
         var entry = response[entryName];
 		
-		if(entry.subentries === undefined || entry.subentries.length === 0)
+		if(entry.subentries === undefined || entry.subentries.length === 0) {
+		  console.error('ignore menu entry' + entryName + ' because it has no subentries');
 		  continue;
+		}
 
         if(firstPluginName === undefined) {
           firstPluginName = entryName;
@@ -163,6 +165,49 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     var contentWidth = 0;
 	var contentHeight = 0;
 
+	/**
+	 * GENERIC
+	 *  - typeTag: type of the generic element
+	 *  - ?x: x-offset [int]
+     *  - ?y: y-offset [int]
+	 *  - ?fullWidth: element should have full remaining content width [bool / string]
+	 *  - ?value: value for innerHTML
+	 */
+    contentFactories.generic = function(parent, definition) {
+      var element = document.createElement(definition.typeTag);
+	  var style = '';
+      parent.appendChild(element);
+      element.setAttribute('id', 'contentItem');
+	  if(definition.x !== undefined)
+	    style += 'left: ' + definition.x + 'px;';
+	  if(definition.y !== undefined)
+	    style += 'top: ' + definition.y + 'px;';
+	  if(definition.value !== undefined)
+	    element.innerHTML = definition.value;
+	  for(var attributeName in definition) {
+	    if(attributeName === 'typeTag' || attributeName === 'type' || 
+		   attributeName === 'value' || attributeName === 'fullWidth' ||
+		   attributeName === 'x' || attributeName === 'y')
+		  continue;
+		if(attributeName === 'style')
+		  style += definition.style;
+		else
+		  element[attributeName] = definition[attributeName];
+	  }
+
+	  if(style.length > 0)
+	    element.setAttribute('style', style);
+	  if(definition.fullWidth === true || definition.fullWidth === 'true') {
+	    style += 'width: ' + (contentWidth - definition.x) + 'px;';
+		element.originalWidth = element.clientWidth;
+		console.log('width:', definition.value, element.clientWidth, element.offsetWidth, element.originalWidth, element);
+	  }
+	  if(style.length > 0)
+	    element.setAttribute('style', style);
+
+      return element;
+    };
+	
 	/**
 	 * IMAGE
 	 *  - x: x-offset [int]
@@ -237,6 +282,37 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	    $compile(element)($scope);
 	    $scope.pageElements.push(element);
 	  }
+      return element;
+    };
+	
+	/**
+     * TEXTLINE
+     *  - text: list of text parts
+     *  - x: x-offset [int]
+     *  - y: y-offset [int]
+     */
+    contentFactories.textline = function(parent, definition) {
+      var element = document.createElement('div');
+      parent.appendChild(element);
+      element.setAttribute('id', 'contentItem');
+	  element.setAttribute('style', 'left: ' + definition.x + 'px; top: ' + definition.y + 'px');
+	  var x = 0;
+	  for(var i = 0; i < definition.text.length; i++) {
+	    var item = definition.text[i];
+        if(contentFactories[item.type] === undefined) {
+          console.error('ERROR: unsupported content type ' + item.type);
+          continue;
+        }
+
+		item.x = x;
+        var text = contentFactories[item.type](element, item);		
+		element.appendChild(text);
+		if(text.originalWidth !== undefined)
+		  x += text.originalWidth;
+		else
+          x += text.offsetWidth;
+	  }
+//    parent.appendChild(document.createElement('br'));
       return element;
     };
 	
@@ -556,14 +632,14 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  var options = content.options;
 
       var titleDiv = document.getElementById('contentTitle');
-      titleDiv.innerHTML = '';
-      var titlebar = content.titlebar || [];
-      for(var i = 0; i < titlebar.length; i++) {
-        var definition = titlebar[i];
-        createElement(titleDiv, definition);
-      }
       contentWidth = titleDiv.offsetWidth - 2 - 15;
-	  contentHeight = document.getElementById('sidebar').offsetHeight - 2;
+	  contentHeight = document.getElementById('sidebar').offsetHeight - 2;	  
+      titleDiv.innerHTML = '';
+	  if(content.titlebar !== undefined && content.titlebar.items !== undefined) {
+        var items = content.titlebar.items;
+        for(var i = 0; i < items.length; i++)
+          createElement(titleDiv, items[i]);
+      }
 
 	  var contentDiv = document.getElementById('contentBody');
       contentDiv.innerHTML = '';
