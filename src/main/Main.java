@@ -40,8 +40,9 @@ public class Main {
 		try {
 		  
 //		  PluginController.register(new AustrianCharts());
-		  PluginController.register(new EbayPlugin(config.getElement("config.plugins.ebay")));
-		  PluginController.register(new CreatorPlugin());
+		  PluginController.register(new CreatorPlugin(config.getElement("config.plugins.creator")));
+//		  PluginController.register(new EbayPlugin(config.getElement("config.plugins.ebay")));
+		  
 		  
 		  
 		  PluginController.update();

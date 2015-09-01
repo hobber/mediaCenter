@@ -1,8 +1,8 @@
 package main.utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -17,7 +17,19 @@ public class FileReader {
   
   public FileReader(String fileName) throws FileNotFoundException {
     this.fileName = fileName;
-    stream = new FileInputStream(fileName);    
+    File file = new File(fileName);
+    if(file.exists() == false) {
+      try {
+        if(file.createNewFile() == false)
+          Logger.error("could not create file " + fileName);
+        else
+          stream = new FileInputStream(fileName);
+      } catch(IOException e) {
+        Logger.error(e);
+      }
+    }
+    else
+      stream = new FileInputStream(fileName);
   }
   
   public void close() throws IOException {

@@ -12,4 +12,9 @@ public class ContentGenericItem extends ContentItem {
     super.setAttribute(name, value);
     return this;
   }
+  
+  public ContentGenericItem setOnClick(ContentEventOnClick event) {
+    super.setAttribute("onclick", event);
+    return this;
+  }
 }

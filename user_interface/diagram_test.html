@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html lang="de-AT">
+  <head>
+    <meta charset="UTF-8">
+    <title>Diagram Test</title>
+	<script src="./lib/diagram_drawer.js"></script>
+  </head>
+
+  <body>	
+	<script>
+	  var data = {
+	    type: 'Line-Chart',
+		yAxis: {
+		  values: [-10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+		},
+		//xAxis: {
+		//  values: [-2, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+		//},
+		data: {
+		  line1: {
+		    style: {
+			  color: 'blue'
+			},
+		    values: [10, 20, 30, 40, 50, 60, 70, 55, 80, 60, 40, 20, 0]
+		  }
+		}
+	  };
+	
+	  drawDiagram(data);
+	</script>
+  </body>
+</html>

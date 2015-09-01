@@ -17,7 +17,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  load($location.path() + '?plugin=' + pluginName + '&page=' + pageName, undefined, showContent);
     };
     
-    $scope.onClick = function(index) {	
+    $scope.onClick = function(index) {
 	  var element = $scope.pageElements[index];
 	  if(element.disabled !== true)
         element.onClick();
@@ -89,7 +89,11 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	};
 	
     window.onhashchange = function() {
-	  load($location.url(), undefined, showContent);
+	  console.log('location changed', $location.url(), $scope.ignoreLocationChange);
+	  if($scope.ignoreLocationChange !== true)
+	    load($location.url(), undefined, showContent);
+	  else
+	    $scope.ignoreLocationChange = false;
     };
 
     //========================================================================= MENU
@@ -172,6 +176,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
      *  - ?y: y-offset [int]
 	 *  - ?fullWidth: element should have full remaining content width [bool / string]
 	 *  - ?value: value for innerHTML
+	 *  - ?onclick: on click event
 	 */
     contentFactories.generic = function(parent, definition) {
       var element = document.createElement(definition.typeTag);
@@ -184,6 +189,34 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	    style += 'top: ' + definition.y + 'px;';
 	  if(definition.value !== undefined)
 	    element.innerHTML = definition.value;
+	  if(definition.onclick !== undefined) {
+	    element.setAttribute('ng-click', 'onClick('+ $scope.pageElements.length + ')');
+		
+		element.onSelect = function() {
+		  element.style.color = 'red';
+		};
+		element.onUnselect = function() {
+		  element.style.color = 'black';
+		};
+	    element.onClick = function() {
+		  if($scope.selectedElement === undefined) {
+	        $scope.selectedElement = element;
+			element.onSelect();
+	      }
+		  else if($scope.selectedElement !== element) {
+		    $scope.selectedElement.onUnselect();
+			$scope.selectedElement = element;
+			element.onSelect();
+		  }
+		  else {
+		    delete $scope.selectedElement;
+			element.onUnselect();
+		  }
+	    };
+		
+		$scope.pageElements.push(element);
+		$compile(element)($scope);
+	  }
 	  for(var attributeName in definition) {
 	    if(attributeName === 'typeTag' || attributeName === 'type' || 
 		   attributeName === 'value' || attributeName === 'fullWidth' ||
@@ -200,7 +233,6 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  if(definition.fullWidth === true || definition.fullWidth === 'true') {
 	    style += 'width: ' + (contentWidth - definition.x) + 'px;';
 		element.originalWidth = element.clientWidth;
-		console.log('width:', definition.value, element.clientWidth, element.offsetWidth, element.originalWidth, element);
 	  }
 	  if(style.length > 0)
 	    element.setAttribute('style', style);
@@ -312,7 +344,6 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 		else
           x += text.offsetWidth;
 	  }
-//    parent.appendChild(document.createElement('br'));
       return element;
     };
 	
@@ -328,38 +359,38 @@ app.controller('Controller', ['$scope', '$compile', '$location',
       var element = document.createElement('div');
 	  parent.appendChild(element);
 	  element.setAttribute('id', 'contentContainer');
-	  
-	  var x = 5, y = 5, maxCaptionWidth = 0;
+  
+	  var x = 5, y = 5, maxCaptionWidth = 0, values = [];
 	  for(var i = 0; i < definition.items.length; i++) {
         var item = definition.items[i];
         var caption = document.createElement('span');
-		element.appendChild(caption);
-		element.setAttribute('id', 'contentItem');
+		parent.appendChild(caption);
+		caption.setAttribute('id', 'contentItem');
 		caption.style.left = x + 'px';
 		caption.style.top = y + 'px';
 		caption.innerHTML = item.caption + ':';
-		y += caption.clientHeight;
+		
 		if(caption.clientWidth > maxCaptionWidth)
 		  maxCaptionWidth = caption.clientWidth;
-      }
-	  
-	  x +=  maxCaptionWidth + 10;
-	  y = 5;
-	  var values = [];
-	  for(i = 0; i < definition.items.length; i++) {
-        var item = definition.items[i];
-        var input = document.createElement('input');
-		element.appendChild(input);
-		element.setAttribute('id', 'contentItem');
+		
+		var input = document.createElement('input');
+		parent.appendChild(input);
+		input.setAttribute('id', 'contentItem');
 		input.style.left = x + 'px';
 		input.style.top = y + 'px';
+		console.log('add:', item, y, caption.clientHeight, input.clientHeight);
 		input.name = item.name;
-		y += input.clientHeight;
+		
+		y += input.clientHeight + 5;
 		values.push(input);
       }
 	  
+	  x +=  maxCaptionWidth + 10;
+	  for(i = 0; i < values.length; i++)
+        values[i].style.left = x + 'px';
+	  
 	  var button = document.createElement('button');
-	  element.appendChild(button);
+	  parent.appendChild(button);
 	  button.setAttribute('id', 'contentItem');
 	  button.style.left = '5px';
       button.style.top = y + 'px';
@@ -368,7 +399,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  button.onClick = function() {
 	    var parameter = definition.parameter;
 	    for(i = 0; i < values.length; i++)
-		  parameter += '&' + values[i].name + '=' + values[i].value;
+		  parameter += '&' + values[i].name + '="' + values[i].value + '"';
 	    load($location.url(), parameter, showContent);
 	  };
 	  $compile(button)($scope);
@@ -625,8 +656,12 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  $scope.pageElements = [];
 	  
 	  if(content.location !== undefined) {
+	    var currentUrl = $location.url();
+	    console.log('set location:', content.location, $scope.ignoreLocationChange);
 	    $location.search(content.location);
 		$scope.$apply();
+		if(currentUrl !== $location.url())
+		  $scope.ignoreLocationChange = true;
       }
 	  
 	  var options = content.options;

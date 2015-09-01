@@ -15,6 +15,9 @@
 	  <globalID>EBAY-AT</globalID>
 	  <file>Ebay.db</file>
     </ebay>
+	<creator>      
+	  <file>Creator.db</file>
+    </creator>
     <spotify>
       <clientID></clientID>
       <clientSecret></clientSecret>
