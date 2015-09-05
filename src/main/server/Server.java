@@ -132,12 +132,21 @@ public class Server implements HttpHandler {
     os.close(); 
 	}
 	
+	private void handleOauthResponse(HttpExchange exchange) throws IOException {
+    String msg = "hello";
+    byte[] response = msg.getBytes();
+    exchange.sendResponseHeaders(200, response.length);
+    OutputStream os = exchange.getResponseBody();
+    os.write(response);
+    os.close(); 
+  }
+	
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		try {
 			String method = exchange.getRequestMethod();
 			String uri = exchange.getRequestURI().toString();
-//			System.out.println("URI: " + uri + " (" + method + ")");
+			System.out.println("URI: " + uri + " (" + method + ")");
 			
 			if(uri.startsWith("error?")) {
 			  Logger.error(uri);
@@ -151,7 +160,9 @@ public class Server implements HttpHandler {
 
 			if(method.equals("GET")) {
 			  if(uri.startsWith("/menu"))
-          handleMenuRequest(exchange);        
+          handleMenuRequest(exchange); 
+			  else if(uri.startsWith("/oauth/"))
+			    handleOauthResponse(exchange);
 			  else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page"))
 					handleAPIGetRequest(exchange, parameters);					
 				else

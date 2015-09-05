@@ -1,9 +1,7 @@
 package main;
 import main.plugins.PluginController;
 import main.plugins.creator.CreatorPlugin;
-import main.plugins.ebay.EbayPlugin;
 import main.server.Server;
-import main.server.content.ContentImage;
 import main.utils.ConfigFile;
 import main.utils.Logger;
 
@@ -19,7 +17,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		String configFile = "config.xml";		
+	  String configFile = "config.xml";		
 		if(args.length == 1)
 			configFile = args[0];
 		else if(args.length > 1) {

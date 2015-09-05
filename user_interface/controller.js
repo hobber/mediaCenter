@@ -32,7 +32,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  setDisabledRecursive(document.getElementById('contentBody'), false);
 	};
     
-    var load = function(request, parameter, callback) {	
+    var load = function(request, parameter, callback) {
       try {
         var xmlHttp = new XMLHttpRequest();
 		
@@ -43,6 +43,13 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         else if(parameter !== undefined)
  		  parameterText = '&parameter=' + parameter;
 		parameterText += $scope.selectedElement !== undefined ? '&selectionId=' + $scope.selectedElement.selectionId : '';
+		
+		if($scope.inputElements !== undefined) {
+		  for(var i=0; i < $scope.inputElements.length; i++) {
+		    var input = $scope.inputElements[i];
+	        parameterText += '&' + input.name + '=' + input.value;
+		  }
+		}
 		
 		if($scope.previouslyLoaded === request + parameterText)
 		  return;
@@ -348,13 +355,53 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 	
 	/**
+	 * INPUT
+	 *  - x: x-offset [int]
+	 *  - y: y-offset [int]
+	 *  - captionWidth: width of caption [int]
+     *  - inputWidth: width of input field [int]	 
+	 *  - caption: caption of input field [string]
+	 *  - name: name of value on submit to API [string]
+	 *  -?value: initial value of input field [string]
+	 */
+	contentFactories.input = function(parent, definition) {
+	  var element = document.createElement('div');
+	  parent.appendChild(element);
+	  element.style.left = definition.x + 'px';
+	  element.style.top = definition.y + 'px';
+	  element.style.width = (definition.captionWidth + definition.inputWidth) + 'px';
+       
+	  var caption = document.createElement('span');
+	  element.appendChild(caption);
+	  caption.setAttribute('id', 'contentContainer');
+	  //caption.style.left = definition.x + 'px';
+	  //caption.style.top = definition.y + 'px';
+	  caption.style.width = definition.captionWidth + 'px';
+	  caption.innerHTML = definition.caption + ':';
+		
+	  var input = document.createElement('input');
+	  element.appendChild(input);
+	  input.setAttribute('id', 'contentItem');
+	  input.name = definition.name;
+	  input.style.left = definition.captionWidth + 'px';
+	  //input.style.left = (definition.captionWidth + definition.x) + 'px';
+	  //input.style.top = definition.y + 'px';
+	  input.style.width = definition.inputWidth + 'px';
+	  if(definition.value !== undefined)
+	    input.value = definition.value;
+	
+	  $scope.inputElements.push(input);
+	  return element;
+	}
+	
+	/**
      * INPUT FORM
 	 *  - parameter: will be used as parameter on submit to API
      *  - buttonCaption: caption of submit button [string]
      *  - items: list of input fields, whereas each must must define
 	 *      - caption: caption of input field  [string]
 	 *      - name: name of value on submit to API [string]
-	 *      - ?value: value for input field [string]
+	 *      - ?value: initial value of input field [string]
      */
     contentFactories.inputForm = function(parent, definition) {
       var element = document.createElement('div');
@@ -365,7 +412,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  for(var i = 0; i < definition.items.length; i++) {
         var item = definition.items[i];
         var caption = document.createElement('span');
-		parent.appendChild(caption);
+		element.appendChild(caption);
 		caption.setAttribute('id', 'contentItem');
 		caption.style.left = x + 'px';
 		caption.style.top = y + 'px';
@@ -375,11 +422,10 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 		  maxCaptionWidth = caption.clientWidth;
 		
 		var input = document.createElement('input');
-		parent.appendChild(input);
+		element.appendChild(input);
 		input.setAttribute('id', 'contentItem');
 		input.style.left = x + 'px';
 		input.style.top = y + 'px';
-		console.log('add:', item, y, caption.clientHeight, input.clientHeight);
 		input.name = item.name;
 		
 		if(item.value !== undefined)
@@ -394,7 +440,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
         values[i].style.left = x + 'px';
 	  
 	  var button = document.createElement('button');
-	  parent.appendChild(button);
+	  element.appendChild(button);
 	  button.setAttribute('id', 'contentItem');
 	  button.style.left = '5px';
       button.style.top = y + 'px';
@@ -409,6 +455,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  $compile(button)($scope);
 	  $scope.pageElements.push(button);
 
+	  element.style.height = (y + button.clientHeight + 10) + 'px';	  
       return element;
     };
 	
@@ -505,6 +552,8 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 
         var element = createElement(groupElement, item);
         var y = item.y + element.offsetHeight;
+		if(isNaN(y))
+		  y = element.style.height.substring(0, element.style.height.length - 2);
         if(y > maxY)
           maxY = y;
       }
@@ -658,6 +707,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  $scope.closeOverlay();
 	  delete delete $scope.selectedElement;
 	  $scope.pageElements = [];
+	  $scope.inputElements = [];
 	  
 	  if(content.location !== undefined) {
 	    var currentUrl = $location.url();

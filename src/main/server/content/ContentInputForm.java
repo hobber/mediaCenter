@@ -6,7 +6,7 @@ public class ContentInputForm extends ContentItem {
   private class ContentTextInput extends ContentItem {
     
     public ContentTextInput(String caption, String valueName, String value) {
-      super("textInput");
+      super("input");
       setAttribute("caption", caption);
       setAttribute("name", valueName); 
       if(value != null)

@@ -3,6 +3,7 @@ package main.plugins.creator;
 import java.util.Map;
 
 import main.server.content.ContentGroup;
+import main.server.content.ContentInput;
 import main.server.content.ContentInputForm;
 import main.server.content.ContentItem;
 import main.server.content.ContentLocation;
@@ -27,6 +28,9 @@ public class CreatorSessionStepInitialize {
     else
       form.addInput("endpoint", "endpoint");
         
+    ContentGroup test = page.createContentGroup();
+    test.add(new ContentInput(5, 5, 50, 50, "test", "value", "123"));
+    
     return page;
   }
 
