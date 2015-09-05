@@ -352,8 +352,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	 *  - parameter: will be used as parameter on submit to API
      *  - buttonCaption: caption of submit button [string]
      *  - items: list of input fields, whereas each must must define
-	 *      - caption: caption of input field 
-	 *      - name: name of value on submit to API
+	 *      - caption: caption of input field  [string]
+	 *      - name: name of value on submit to API [string]
+	 *      - ?value: value for input field [string]
      */
     contentFactories.inputForm = function(parent, definition) {
       var element = document.createElement('div');
@@ -380,6 +381,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 		input.style.top = y + 'px';
 		console.log('add:', item, y, caption.clientHeight, input.clientHeight);
 		input.name = item.name;
+		
+		if(item.value !== undefined)
+		  input.setAttribute('value', item.value);
 		
 		y += input.clientHeight + 5;
 		values.push(input);

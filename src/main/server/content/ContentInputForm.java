@@ -5,10 +5,12 @@ public class ContentInputForm extends ContentItem {
 
   private class ContentTextInput extends ContentItem {
     
-    public ContentTextInput(String caption, String valueName) {
+    public ContentTextInput(String caption, String valueName, String value) {
       super("textInput");
       setAttribute("caption", caption);
       setAttribute("name", valueName); 
+      if(value != null)
+        setAttribute("value", value);
     }
   }
   
@@ -22,6 +24,10 @@ public class ContentInputForm extends ContentItem {
   }
   
   public void addInput(String caption, String valueName) {
-     items.add(new ContentTextInput(caption, valueName));
+    items.add(new ContentTextInput(caption, valueName, null));
+  }
+  
+  public void addInput(String caption, String valueName, String value) {
+     items.add(new ContentTextInput(caption, valueName, value));
   }
 }

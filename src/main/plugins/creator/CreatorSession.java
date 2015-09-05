@@ -9,10 +9,11 @@ import main.utils.Timestamp;
 
 public class CreatorSession {
 
-  private int id;
-  private Timestamp timestamp;
-  private String name = "";
-  private String endpoint = "";
+  int id;
+  Timestamp timestamp;
+  String name = "";
+  String endpoint = "";
+  String currentStep = "";
   
   public CreatorSession(int sessionId) {
     id = sessionId;
@@ -42,21 +43,5 @@ public class CreatorSession {
     } catch(IOException e) {
       Logger.error(e);
     }
-  }
-  
-  public int getId() {
-    return id;
-  }
-  
-  public void setName(String name) {
-    this.name = name;
-  }
-  
-  public String getName() {
-    return name;
-  }
-  
-  public void setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
   }
 }
