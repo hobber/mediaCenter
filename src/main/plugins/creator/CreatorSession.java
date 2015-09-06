@@ -8,16 +8,19 @@ import main.utils.Logger;
 import main.utils.Timestamp;
 
 public class CreatorSession {
-
-  int id;
+  
+  public static final int DUMMY_ID = -1;
+  
+  Integer id;
   Timestamp timestamp;
   String name = "";
   String endpoint = "";
-  String currentStep = "";
+  String currentAction = "";
   
-  public CreatorSession(int sessionId) {
-    id = sessionId;
-    timestamp = new Timestamp();
+  public CreatorSession(int id, String currentAction) {
+    this.id = id;
+    this.currentAction = currentAction;
+    timestamp = new Timestamp();    
   }
   
   public CreatorSession(FileReader file) {
@@ -26,7 +29,7 @@ public class CreatorSession {
       timestamp = new Timestamp(file.readLong());
       name = file.readString(file.readInt());
       endpoint = file.readString(file.readInt());
-      Logger.log("session " + name + ": " + endpoint);
+      Logger.log("read session " + id + ": "+ name);
     } catch(IOException e) {
       Logger.error(e);
     }
@@ -40,6 +43,7 @@ public class CreatorSession {
       file.writeString(name);
       file.writeInt(endpoint.length());
       file.writeString(endpoint);
+      Logger.log("wrote session " + id + ": "+ name);
     } catch(IOException e) {
       Logger.error(e);
     }

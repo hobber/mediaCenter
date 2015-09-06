@@ -36,12 +36,13 @@ public class CreatorPlugin implements Plugin {
     
     try {
       FileReader file = new FileReader(databaseFileName);
-      createPage = new CreatorContentPageCreate(getName(), file);
+      CreatorSessionStore.initialize(file);
+      Logger.log("read " + CreatorSessionStore.getSize() + " sessions");
     } catch(IOException e) {
       Logger.error(e);
-      createPage = new CreatorContentPageCreate(getName());
     }
     
+    createPage = new CreatorContentPageCreate(getName());
     menuEntry = new ContentMenuEntry(this, Plugin.ICON_PATH + "creator.svg");
     menuEntry.addSubMenuEntry(createPage);
   }
@@ -60,7 +61,8 @@ public class CreatorPlugin implements Plugin {
   public void saveState() {
     try {
       FileWriter file = new FileWriter(databaseFileName);
-      createPage.saveState(file);
+      CreatorSessionStore.write(file);
+      Logger.log("wrote " + CreatorSessionStore.getSize() + " sessions");
     } catch(IOException e) {
       Logger.error(e);
     }

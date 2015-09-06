@@ -60,8 +60,8 @@ public class RequestParameters {
     for (String pair : pairs) {
       final int idx = pair.indexOf("=");
       final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-      String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
-      if(value.startsWith("\"") && value.endsWith("\""))
+      String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : "";
+      if(value.length() >= 2 && value.startsWith("\"") && value.endsWith("\""))
         value = value.substring(1, value.length() - 1);
       if(this.parameters.put(key, value) != null)
         Logger.error("parameter string contains parameter " + key + " multiple times");
@@ -77,6 +77,10 @@ public class RequestParameters {
     if(value == null)
       return "";
     return value;
+  }
+  
+  public void set(String parameterName, String parameterValue) {
+    parameters.put(parameterName, parameterValue);
   }
   
   public String get(String parameterName, String defaultValue) {

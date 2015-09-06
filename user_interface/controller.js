@@ -82,12 +82,9 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  var url = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/';
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.open('POST', url + 'error?file=' + error.fileName + '&line=' + error.lineNumber, true);
-	  xmlHttp.setRequestHeader('Content-type', 'text');
       xmlHttp.send(error.message);
       console.error('ERROR: ' + error.fileName + ':' + error.lineNumber + ' - ' + error.message);
     };
-	
-	handleError({message: 'this is a test', fileName: 'file.js', lineNumber: 123});
 	
 	var setDisabledRecursive = function(element, disabled) {
 	  if(element === undefined)
@@ -366,6 +363,7 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	 *  - caption: caption of input field [string]
 	 *  - name: name of value on submit to API [string]
 	 *  -?value: initial value of input field [string]
+	 *  -?error: error message beside input field
 	 */
 	contentFactories.input = function(parent, definition) {
 	  var element = document.createElement('div');
@@ -377,8 +375,6 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  var caption = document.createElement('span');
 	  element.appendChild(caption);
 	  caption.setAttribute('id', 'contentContainer');
-	  //caption.style.left = definition.x + 'px';
-	  //caption.style.top = definition.y + 'px';
 	  caption.style.width = definition.captionWidth + 'px';
 	  caption.innerHTML = definition.caption + ':';
 		
@@ -387,11 +383,20 @@ app.controller('Controller', ['$scope', '$compile', '$location',
 	  input.setAttribute('id', 'contentItem');
 	  input.name = definition.name;
 	  input.style.left = definition.captionWidth + 'px';
-	  //input.style.left = (definition.captionWidth + definition.x) + 'px';
-	  //input.style.top = definition.y + 'px';
 	  input.style.width = definition.inputWidth + 'px';
+	  
 	  if(definition.value !== undefined)
 	    input.value = definition.value;
+		
+	  if(definition.error !== undefined) {
+	    var error = document.createElement('span');
+		element.appendChild(error);
+		error.setAttribute('id', 'contentItem');
+		error.style.color = 'red';
+		error.style.left = (definition.captionWidth + definition.inputWidth + 10) + 'px';
+		error.innerHTML = definition.error;
+		element.style.width = (definition.captionWidth + definition.inputWidth + error.clientWidth + 10) + 'px';
+	  }
 	
 	  $scope.inputElements.push(input);
 	  return element;

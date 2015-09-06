@@ -1,8 +1,5 @@
 package main.plugins.creator;
 
-import java.io.IOException;
-import java.util.HashMap;
-
 import main.server.RequestParameters;
 import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
@@ -11,105 +8,56 @@ import main.server.content.ContentLocation;
 import main.server.content.ContentPage;
 import main.server.content.ContentText;
 import main.server.menu.ContentMenuSubEntry;
-import main.utils.FileReader;
-import main.utils.FileWriter;
 import main.utils.Logger;
 
 public class CreatorContentPageCreate extends ContentMenuSubEntry {
   
-  private int sessionCounter = 0;
-  private HashMap<Integer, CreatorSession> sessions = new HashMap<Integer, CreatorSession>();
+  private static final String SUB_ENTRY_NAME = "Create";
+  
+  private CreatorActionList actionList = new CreatorActionList("initstart");
   private ContentLocation location;
   
   public CreatorContentPageCreate(String pluginName) {
-    super("Create");
-    this.location = new ContentLocation(pluginName, getName());
-  }
-  
-  public CreatorContentPageCreate(String pluginName, FileReader file) {
-    super("Create");
-    this.location = new ContentLocation(pluginName, getName());
-    readState(file);
-  }
-  
-  private void readState(FileReader file) {
-    try {
-      sessionCounter = file.readInt();      
-      int size = file.readInt();
-      System.out.println("read " + size + " CreatorSessions");
-      for(int i = 0; i < size; i++) {
-        CreatorSession session = new CreatorSession(file);
-        sessions.put(session.id, session);
-      }
-    } catch(IOException e) {
-      Logger.error(e);
-    }
-  }
-  
-  public void saveState(FileWriter file) {
-    try {
-      file.writeInt(sessionCounter);
-      file.writeInt(sessions.size());
-      System.out.println("write " + sessions.size() + " CreatorSessions");
-      for(CreatorSession session : sessions.values())
-        session.write(file);
-    } catch(IOException e) {
-      Logger.error(e);
-    }
+    super(SUB_ENTRY_NAME);
+    this.location = new ContentLocation(pluginName, SUB_ENTRY_NAME);
+    
+    actionList.add(new CreatorSessionStepInitialize(location, "init").getActions());
+    actionList.add(new CreatorSessionStepCreate(location, "create").getActions());
   }
 
   @Override
   public ContentItem handleAPIRequest(RequestParameters parameters) {
     System.out.println("parameters: " + parameters);    
     
-    String parameter = parameters.get("parameter", null);
-    if(parameter != null) {
-      int sessionId = Integer.parseInt(parameter);
-      CreatorSession session = sessions.get(sessionId);
-      String action = parameters.get("action", null);
-      
-      if(action != null) {
-        if(action.equals("delete")) {
-          sessions.remove(sessionId);
+    String action = parameters.get("action", null);
+    
+    if(action != null) {
+
+      if(action.equals("delete")) {
+        String sessionId = parameters.get("parameter");
+        if(sessionId != null) {
+          CreatorSessionStore.remove(Integer.parseInt(sessionId));
           return showStartPage();
         }
-        
-        if(action.equals("open")) {
-          if(session == null)
-            return CreatorPlugin.createErrorPage(location, "invalid session ID " + sessionId);
-          action = session.currentStep;
+      }
+
+      if(action.equals("open")) {
+        String sessionId = parameters.get("parameter");
+        if(sessionId != null) {
+          CreatorSession session = CreatorSessionStore.get(Integer.parseInt(sessionId));
+          if(session != null)
+            parameters.set("action", session.currentAction);
+          else
+            parameters.set("action", "initstart");
         }
-        
-        if(action.equals("initialize")) {          
-          return CreatorSessionStepInitialize.start(location, session, -1);
-        }
-        
-        else if(action.equals("authentication")) {
-          if(session == null) {
-            session = new CreatorSession(sessionCounter++);
-            session.currentStep = "initialize";
-            sessions.put(session.id, session);            
-          }
-          
-          return CreatorSessionStepInitialize.authentication(location, session, parameters);
-        }
-        
-        else if(action.equals("create")) {
-          if(session == null) {
-            session = new CreatorSession(sessionCounter++);
-            session.currentStep = "initialize";
-            sessions.put(session.id, session);
-            
-            ContentItem error = CreatorSessionStepInitialize.complete(location, session, parameters);
-            if(error != null)
-              return error;
-            session.currentStep = "create";
-          }
-          
-          return CreatorSessionStepCreate.start(location, session);
-        }
-      }      
-    }
+      }
+
+      CreatorActionResult result = actionList.handle(parameters);
+      if(result.failed())
+        Logger.error("action " + action + " failed: " + result.getError());
+      else
+        return result.getPage();
+    }      
     
     return showStartPage();    
   }
@@ -117,7 +65,7 @@ public class CreatorContentPageCreate extends ContentMenuSubEntry {
   public ContentItem showStartPage() {
     ContentPage page = new ContentPage(location, "Creator");
     
-    for(CreatorSession session : sessions.values()) {
+    for(CreatorSession session : CreatorSessionStore.getAll()) {
       ContentGroup group = page.createContentGroup();
       group.add(new ContentButton(5,5, "open", session.id + "&action=open"));
       group.add(new ContentButton(55,5, "delete", session.id + "&action=delete"));
@@ -125,7 +73,7 @@ public class CreatorContentPageCreate extends ContentMenuSubEntry {
     }
     
     ContentGroup group = page.createContentGroup();
-    group.add(new ContentButton(5, 5, "Create new plugin", "-1&action=initialize"));    
+    group.add(new ContentButton(5, 5, "Create new plugin", "-1&action=initstart"));    
     
     return page;
   }
