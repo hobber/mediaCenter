@@ -2,9 +2,8 @@ package main.plugins.creator;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import main.server.RequestParameters;
 import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentItem;
@@ -60,17 +59,14 @@ public class CreatorContentPageCreate extends ContentMenuSubEntry {
   }
 
   @Override
-  public ContentItem handleAPIRequest(Map<String, String> parameters) {
-    System.out.print("parameters: ");
-    for(Entry<String, String> parameter : parameters.entrySet())
-      System.out.print(parameter.getKey() + "=" + parameter.getValue() + " ");
-    System.out.println("");
+  public ContentItem handleAPIRequest(RequestParameters parameters) {
+    System.out.println("parameters: " + parameters);    
     
-    String parameter = parameters.get("parameter");
+    String parameter = parameters.get("parameter", null);
     if(parameter != null) {
       int sessionId = Integer.parseInt(parameter);
       CreatorSession session = sessions.get(sessionId);
-      String action = parameters.get("action");
+      String action = parameters.get("action", null);
       
       if(action != null) {
         if(action.equals("delete")) {
@@ -85,7 +81,17 @@ public class CreatorContentPageCreate extends ContentMenuSubEntry {
         }
         
         if(action.equals("initialize")) {          
-          return CreatorSessionStepInitialize.start(location, session, -1, "create");
+          return CreatorSessionStepInitialize.start(location, session, -1);
+        }
+        
+        else if(action.equals("authentication")) {
+          if(session == null) {
+            session = new CreatorSession(sessionCounter++);
+            session.currentStep = "initialize";
+            sessions.put(session.id, session);            
+          }
+          
+          return CreatorSessionStepInitialize.authentication(location, session, parameters);
         }
         
         else if(action.equals("create")) {

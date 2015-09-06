@@ -1,50 +1,51 @@
 package main.plugins.creator;
 
-import java.util.Map;
-
+import main.server.RequestParameters;
+import main.server.content.ContentButton;
 import main.server.content.ContentGroup;
 import main.server.content.ContentInput;
-import main.server.content.ContentInputForm;
 import main.server.content.ContentItem;
 import main.server.content.ContentLocation;
 import main.server.content.ContentPage;
 
 public class CreatorSessionStepInitialize {
 
-  static ContentItem start(ContentLocation location, CreatorSession session, int dummySessionId, String nextStep) {    
+  static public ContentItem start(ContentLocation location, CreatorSession session, int sessionId) {    
     ContentPage page = new ContentPage(location, "Define endpoint");
     
+    String sessionName = session == null ? null : session.name;
+    String endpoint = session == null ? null : session.endpoint;
+    
     ContentGroup group = page.createContentGroup();
-    ContentInputForm form = new ContentInputForm(Integer.toString(dummySessionId) + "&action=" + nextStep, "create");
-    group.add(form);
-    
-    if(session != null && session.name.length() > 0)
-      form.addInput("name", "name", session.name);
-    else
-      form.addInput("name", "name");
-    
-    if(session != null && session.endpoint.length() > 0)
-      form.addInput("endpoint", "endpoint", session.endpoint);
-    else
-      form.addInput("endpoint", "endpoint");
-        
-    ContentGroup test = page.createContentGroup();
-    test.add(new ContentInput(5, 5, 50, 50, "test", "value", "123"));
+    group.add(new ContentInput(5, 5, 100, 250, "name", "name", sessionName));
+    group.add(new ContentInput(5, 25, 100, 250, "authentication", "authentication", endpoint));
+    group.add(new ContentButton(370, 20, "test", Integer.toString(sessionId) + "&action=authentication"));
     
     return page;
   }
-
-  static ContentItem complete(ContentLocation location, CreatorSession session, Map<String, String> parameters) {
+  
+  static public ContentItem authentication(ContentLocation location, CreatorSession session, RequestParameters parameters) {
     String name = parameters.get("name");    
-    if(name == null || name.length() == 0)
+    if(name.length() == 0)
       return CreatorPlugin.createErrorPage(location, "no valid session name defined");
     session.name = name;
     
     String endpoint = parameters.get("endpoint");
-    if(endpoint == null || endpoint.length() == 0)
+    if(endpoint.length() == 0)
       return CreatorPlugin.createErrorPage(location, "no valid endpoint defined");    
     session.endpoint = endpoint;
     
+    ContentPage page = new ContentPage(location, "Define endpoint");
+        
+    ContentGroup group = page.createContentGroup();
+    group.add(new ContentInput(5, 5, 100, 250, "name", "name", session.name));
+    group.add(new ContentInput(5, 25, 100, 250, "authentication", "authentication", session.endpoint));
+    group.add(new ContentButton(370, 20, "test", Integer.toString(session.id) + "&action=authentication"));
+    
+    return page;
+  }
+
+  static public ContentItem complete(ContentLocation location, CreatorSession session, RequestParameters parameters) {    
     return null;
   }
 }

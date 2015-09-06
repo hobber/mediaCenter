@@ -3,8 +3,8 @@ package main.plugins;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
+import main.server.RequestParameters;
 import main.server.content.ContentErrorPage;
 import main.server.content.ContentItem;
 import main.server.content.ContentLocation;
@@ -34,8 +34,8 @@ public class PluginController {
 	  return menuList;
 	}
 	
-	public static ContentItem handleAPIRequest(Map<String, String> parameters) {
-	  String pluginName = parameters.remove("plugin");
+	public static ContentItem handleAPIRequest(RequestParameters parameters) {
+	  String pluginName = parameters.get("plugin");
 	  ContentMenuEntry entry = menuMap.get(pluginName);
 	  if(entry == null)
 	    return new ContentErrorPage(new ContentLocation(pluginName, parameters.get("page")), "unknown plugin " + pluginName);

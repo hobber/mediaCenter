@@ -4,15 +4,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-import main.utils.Logger;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -74,48 +67,6 @@ public class HTTPUtils {
 			}
 		}
 		return s;
-	}
-	
-	public static Map<String, String> splitQueryParameters(String parameters) throws UnsupportedEncodingException {
-	  final Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-	  if(parameters == null)
-	    return query_pairs;
-	  String converted = URLDecoder.decode(parameters, "UTF-8");
-	  if(converted.indexOf('&') < 0 && converted.indexOf('=') < 0)
-	    return query_pairs;
-  
-	  byte[] parametersBytes = converted.getBytes();
-	  LinkedList<String> pairs = new LinkedList<String>();
-	  int parameterStart = 0;
-	  boolean split = true;
-	  for(int i = 0; i < parametersBytes.length; i++) {
-	    byte character = parametersBytes[i];
-	    if(character == '"' && i != parametersBytes.length - 1)
-	      split = !split;
-	    else if((character == '&' && split) || i == parametersBytes.length - 1) {
-	      if(i == parametersBytes.length - 1)
-	        i++;
-	      if(parameterStart == i)
-	        parameterStart++;
-	      else {
-	        String pair = converted.substring(parameterStart, i);
-	        pairs.add(pair);
-	        parameterStart = i + 1;
-	      }
-	    }
-	  }	  
-	  
-	  for (String pair : pairs) {
-	    final int idx = pair.indexOf("=");
-	    final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-	    String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
-	    if(value.startsWith("\"") && value.endsWith("\""))
-	      value = value.substring(1, value.length() - 1);
-      if(query_pairs.put(key, value) != null)
-        Logger.error("parameter string contains parameter " + key + " multiple times");
-	  }
-
-	  return query_pairs;
 	}
 	
 	public static void saveWebImage(URL url, String fileName) throws IOException {

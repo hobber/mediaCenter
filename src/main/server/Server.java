@@ -1,13 +1,11 @@
 package main.server;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 import main.Main;
 import main.http.HTTPUtils;
@@ -63,21 +61,6 @@ public class Server implements HttpHandler {
 		return true;
 	}
 	
-	private static long copy(InputStream is, OutputStream os) {
-		byte[] buf = new byte[8192];
-		long total = 0;
-		int len = 0;
-		try {
-			while (-1 != (len = is.read(buf))) {
-				os.write(buf, 0, len);
-				total += len;
-			}
-		} catch (IOException ioe) {
-			throw new RuntimeException("error reading stream", ioe);
-		}
-		return total;
-	}
-	
 	private void handleMenuRequest(HttpExchange exchange) throws IOException {
 	  List<ContentMenuEntry> list = PluginController.getMenuEntries();
 	  
@@ -95,7 +78,7 @@ public class Server implements HttpHandler {
     os.close();  
 	}
 	
-	private void handleAPIGetRequest(HttpExchange exchange, Map<String, String> parameters) throws IOException {
+	private void handleAPIGetRequest(HttpExchange exchange, RequestParameters parameters) throws IOException {
 		ContentItem item = PluginController.handleAPIRequest(parameters);
 		
 		Headers headers = exchange.getResponseHeaders();
@@ -107,8 +90,9 @@ public class Server implements HttpHandler {
 		os.close();
 	}
 	
-	private void handleAPIPostRequest(HttpExchange exchange, Map<String, String> parameters) throws IOException {    
+	private void handleAPIPostRequest(HttpExchange exchange, RequestParameters parameters) throws IOException {    
     PluginController.handleAPIRequest(parameters);
+    
     byte[] response = "OK".getBytes();
     Headers headers = exchange.getResponseHeaders();
     headers.set("Content-Type","text/plain");
@@ -148,51 +132,44 @@ public class Server implements HttpHandler {
 			String uri = exchange.getRequestURI().toString();
 			System.out.println("URI: " + uri + " (" + method + ")");
 			
-			if(uri.startsWith("error?")) {
-			  Logger.error(uri);
-			  return;
-			}
+			RequestParameters parameters = new RequestParameters(uri);
 			
-			int parametersStart = uri.indexOf('?') + 1;
-			if(parametersStart <= 0)
-			  parametersStart = 1;
-			Map<String, String> parameters = HTTPUtils.splitQueryParameters(uri.substring(parametersStart));			
-
 			if(method.equals("GET")) {
-			  if(uri.startsWith("/menu"))
-          handleMenuRequest(exchange); 
-			  else if(uri.startsWith("/oauth/"))
+			  if(uri.startsWith("/menu")) {
+          handleMenuRequest(exchange);
+			  }
+			  else if(uri.startsWith("/oauth/")) {
 			    handleOauthResponse(exchange);
-			  else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page"))
-					handleAPIGetRequest(exchange, parameters);					
-				else
+			  }
+			  else if(parameters.contains("plugin") && parameters.contains("page")) {
+					handleAPIGetRequest(exchange, parameters);
+			  }
+				else {
 				  handleFileRequest(exchange, uri);
+				}
 			}
 			else if(method.equals("POST")) {
-				if(uri.startsWith("/terminate")) {
+			  if(uri.startsWith("/terminate")) {
 					exchange.sendResponseHeaders(200, 0);
 					Main.shutdown();
 					server.stop(0);
 				}
-				else if(uri.startsWith("/error")) {
-				  System.err.print("ERROR: " + uri.substring(6) + " ");
-				  copy(exchange.getRequestBody(), System.out);
-				  System.err.println("");
+				else if(uri.startsWith("/error")) {				  
+				  Logger.error(parameters.get("file") + ":" + parameters.get("line") + " - " + IOUtils.toString(exchange.getRequestBody()));
+				  exchange.sendResponseHeaders(200, 0);
 				}
-				else if(parameters != null && parameters.containsKey("plugin") && parameters.containsKey("page")) {				  
-				  parameters.putAll(HTTPUtils.splitQueryParameters(IOUtils.toString(exchange.getRequestBody())));
+				else if(parameters.contains("plugin") && parameters.contains("page")) {
+				  parameters.add(IOUtils.toString(exchange.getRequestBody()));
           handleAPIPostRequest(exchange, parameters);
 				}
 				else {
-					System.out.print("post ");
-					copy(exchange.getRequestBody(), System.out);
-					System.out.println("");
+				  Logger.error("unhandled post: " + uri + " " + IOUtils.toString(exchange.getRequestBody()));
 					exchange.sendResponseHeaders(200, 0);
 				}
 			}
 			else {
-				exchange.sendResponseHeaders(405, 0);				
-			}		
+				exchange.sendResponseHeaders(405, 0);
+			}
 		} catch(Exception e) {
 		  Logger.error(e);
 		}

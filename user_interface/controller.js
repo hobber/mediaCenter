@@ -79,12 +79,15 @@ app.controller('Controller', ['$scope', '$compile', '$location',
     };
 
     var handleError = function(error) {
-	  var url = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/menu';
+	  var url = $location.protocol() + '://' + $location.host() + ':' + $location.port() + '/';
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.open('POST', url + 'error?file=' + error.fileName + '&line=' + error.lineNumber, true);
+	  xmlHttp.setRequestHeader('Content-type', 'text');
       xmlHttp.send(error.message);
       console.error('ERROR: ' + error.fileName + ':' + error.lineNumber + ' - ' + error.message);
     };
+	
+	handleError({message: 'this is a test', fileName: 'file.js', lineNumber: 123});
 	
 	var setDisabledRecursive = function(element, disabled) {
 	  if(element === undefined)
